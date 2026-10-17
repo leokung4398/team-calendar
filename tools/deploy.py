@@ -12,6 +12,7 @@ import glob
 import gzip
 import hashlib
 import os
+import subprocess
 import sys
 import time
 
@@ -132,6 +133,21 @@ def main():
                 print(f"⚠️ 規則發布失敗：{rc2.text[:200]}")
         else:
             print(f"⚠️ 規則編譯/上傳失敗：{rc.text[:200]}")
+
+    # 7. 自動同步推送至 GitHub Pages (https://leokung4398.github.io/team-calendar/)
+    if os.path.isdir(os.path.join(ROOT, ".git")):
+        try:
+            subprocess.run(["git", "add", "."], cwd=ROOT, check=True)
+            status = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
+            if status.stdout.strip():
+                msg = time.strftime("Auto deploy sync %Y-%m-%d %H:%M")
+                subprocess.run(["git", "commit", "-m", msg], cwd=ROOT, check=True)
+                subprocess.run(["git", "push", "origin", "main"], cwd=ROOT, check=True)
+                print("🐙 GitHub Pages 同步推送完成：https://leokung4398.github.io/team-calendar/")
+            else:
+                print("🐙 GitHub 已是最新狀態：https://leokung4398.github.io/team-calendar/")
+        except Exception as ge:
+            print(f"⚠️ GitHub 同步略過：{ge}")
 
 
 if __name__ == "__main__":
