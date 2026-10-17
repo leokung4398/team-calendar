@@ -1,0 +1,184 @@
+rules_version = '2';
+
+// ============================================================
+// 經營 Team 行事曆 - Firestore 安全規則
+// 貼到 Firebase 控制台 → Firestore Database → 規則 → 發布
+// ============================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- 共用函式 ----------
+    function signedIn() { return request.auth != null; }
+
+    // 只允許公司網域且列於經營 Team 白名單之帳號（若有修改，請同步修改 js/config.js）
+    function isCompany() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in [
+          'leokung@youbike.com.tw',
+          'chuehhaoyeh@youbike.com.tw',
+          'yichunlu@youbike.com.tw',
+          'joshchang@youbike.com.tw',
+          'benlai@youbike.com.tw',
+          'ciaopao@youbike.com.tw',
+          'aidpanchen@youbike.com.tw',
+          'sunnyting@youbike.com.tw',
+          'jackhsiao@youbike.com.tw',
+          'jhsu@youbike.com.tw'
+        ];
+    }
+
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function me() { return get(userPath(request.auth.uid)).data; }
+    function meAfter() { return getAfter(userPath(request.auth.uid)).data; }
+    function hasProfile() { return exists(userPath(request.auth.uid)); }
+
+    function isMember(gid) {
+      return isCompany() && hasProfile() && me().active == true && me().groupId == gid;
+    }
+    function isAdmin(gid) { return isMember(gid) && me().role == 'admin'; }
+    // 用於批次寫入（第一次初始化時，使用者文件與群組資料同時建立）
+    function isAdminAfter(gid) {
+      let u = meAfter();
+      return isCompany() && u.active == true && u.groupId == gid && u.role == 'admin';
+    }
+    function onlyChanged(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function isDate(s) { return s is string && s.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
+
+    // ---------- 系統設定（標記是否已產生第一位管理員） ----------
+    match /config/app {
+      allow read: if isCompany();
+      allow create: if isCompany()
+        && meAfter().role == 'admin'
+        && request.resource.data.bootstrappedBy == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ---------- 使用者 ----------
+    match /users/{uid} {
+      allow get: if isCompany() && request.auth.uid == uid;
+      allow list: if isCompany() && hasProfile() && me().active == true
+        && resource.data.groupId == me().groupId;
+
+      // 第一次登入建立自己的資料；只有在系統尚未初始化時，才能以 admin 身分建立
+      allow create: if isCompany() && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.active == true
+        && request.resource.data.groupId == 'default'
+        && (request.resource.data.role == 'member'
+            || (request.resource.data.role == 'admin'
+                && !exists(/databases/$(database)/documents/config/app)
+                && existsAfter(/databases/$(database)/documents/config/app)));
+
+      // 本人只能改顯示名稱/大頭貼/已讀時間；管理員可改其他人的角色、職位與啟用狀態
+      allow update: if (isCompany() && request.auth.uid == uid
+                        && onlyChanged(['displayName', 'photoURL', 'lastSeenActivityAt']))
+                    || (isAdmin(resource.data.groupId) && request.auth.uid != uid
+                        && onlyChanged(['role', 'title', 'active', 'deactivatedAt'])
+                        && request.resource.data.role in ['admin', 'member']
+                        && request.resource.data.active is bool
+                        && validDeactivatedAt());
+      // 停用滿 90 天才允許刪除；或預建帳號（isPreseeded == true）允許管理員隨時清理
+      allow delete: if purgeable(uid) || (isAdmin(resource.data.groupId) && resource.data.isPreseeded == true);
+
+      // 個人通知
+      match /notifications/{nid} {
+        allow read, delete: if (isCompany() && request.auth.uid == uid) || purgeable(uid);
+        allow update: if isCompany() && request.auth.uid == uid && onlyChanged(['read']);
+        allow create: if isMember(get(userPath(uid)).data.groupId)
+          && request.resource.data.actorUid == request.auth.uid;
+      }
+    }
+
+    // 停用時間只能設為「伺服器現在時間」或清除，避免倒填日期提早刪除
+    function validDeactivatedAt() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['deactivatedAt'])
+        || request.resource.data.deactivatedAt == null
+        || request.resource.data.deactivatedAt == request.time;
+    }
+    function purgeable(uid) {
+      let u = get(userPath(uid)).data;
+      return request.auth.uid != uid
+        && isAdmin(u.groupId)
+        && u.active == false
+        && u.deactivatedAt is timestamp
+        && u.deactivatedAt < request.time - duration.value(90, 'd');
+    }
+
+    // ---------- 組別 ----------
+    match /groups/{gid} {
+      allow read: if isMember(gid);
+      allow create: if isAdminAfter(gid);
+      allow update: if isAdmin(gid);
+      allow delete: if false;
+
+      match /eventTypes/{tid} {
+        allow read: if isMember(gid);
+        allow create, update: if isAdminAfter(gid);
+        allow delete: if false;
+      }
+
+      match /events/{eid} {
+        function validEvent() {
+          let d = request.resource.data;
+          return isDate(d.startDate) && isDate(d.endDate) && d.endDate >= d.startDate
+            && d.period in ['full', 'am', 'pm', 'custom']
+            && d.typeId is string
+            && d.ownerUid is string
+            && d.participantUids is list && d.participantUids.size() <= 50
+            && d.participantUids[0] == d.ownerUid
+            && d.updatedBy == request.auth.uid
+            && d.groupId == gid;
+        }
+        allow read: if isMember(gid);
+        allow create: if isMember(gid) && validEvent()
+          && request.resource.data.createdBy == request.auth.uid
+          && (request.resource.data.ownerUid == request.auth.uid || isAdmin(gid));
+        allow update: if isMember(gid) && validEvent()
+          && (resource.data.ownerUid == request.auth.uid || isAdmin(gid))
+          && request.resource.data.createdBy == resource.data.createdBy
+          && (request.resource.data.ownerUid == resource.data.ownerUid || isAdmin(gid));
+        allow delete: if isMember(gid)
+          && (resource.data.ownerUid == request.auth.uid || isAdmin(gid));
+      }
+
+      // 全組動態（只能新增，不能修改或刪除）
+      match /activities/{aid} {
+        allow read: if isMember(gid);
+        allow create: if isMember(gid) && request.resource.data.actorUid == request.auth.uid;
+        allow update, delete: if false;
+      }
+
+      // ---------- 系統與業務權限設定 ----------
+      match /settings/{settingId} {
+        allow read: if isMember(gid);
+        allow create, update: if isAdmin(gid);
+        allow delete: if false;
+      }
+
+      match /meetings/{mid} {
+        allow read: if isMember(gid);
+        allow create, delete: if isAdmin(gid);
+        allow update: if isMember(gid)
+          && (isAdmin(gid) || resource.data.recorderUid == request.auth.uid || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['agenda']));
+      }
+
+      // ---------- 模擬體驗排班規劃模組 ----------
+      match /simulationDuties/{month} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isAdmin(gid);
+      }
+
+      // ---------- 每日品管巡檢區域規劃模組 (北區 / 南區) ----------
+      match /dailyInspections/{zone} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isAdmin(gid);
+      }
+    }
+  }
+}

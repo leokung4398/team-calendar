@@ -1,0 +1,21 @@
+# 服務帳戶金鑰等機密檔案，絕對不要上傳
+*firebase-adminsdk*.json
+*admin*.json
+*serviceAccount*.json
+*.key
+.env
+.env.*
+
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+_selfcheck.html
+
+# 內部會議紀錄參考資料與獨立採購佈告欄子倉庫目錄，避免誤推上公開 GitHub
+會議記錄參考資料/
+bulletin/
+
+
