@@ -137,12 +137,15 @@ def main():
     # 7. 自動同步推送至 GitHub Pages (https://leokung4398.github.io/team-calendar/)
     if os.path.isdir(os.path.join(ROOT, ".git")):
         try:
-            subprocess.run(["git", "add", "."], cwd=ROOT, check=True)
-            status = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
+            subprocess.run(["git", "add", "."], cwd=ROOT, check=True, timeout=15)
+            status = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True, timeout=15)
             if status.stdout.strip():
                 msg = time.strftime("Auto deploy sync %Y-%m-%d %H:%M")
-                subprocess.run(["git", "commit", "-m", msg], cwd=ROOT, check=True)
-                subprocess.run(["git", "push", "origin", "main"], cwd=ROOT, check=True)
+                subprocess.run(["git", "commit", "-m", msg], cwd=ROOT, check=True, timeout=15)
+            # 檢查是否有尚未推送到 origin/main 的本地 commit
+            unpushed = subprocess.run(["git", "rev-list", "origin/main..HEAD", "--count"], cwd=ROOT, capture_output=True, text=True, timeout=15)
+            if unpushed.returncode == 0 and int(unpushed.stdout.strip() or "0") > 0:
+                subprocess.run(["git", "push", "origin", "main"], cwd=ROOT, check=True, timeout=45)
                 print("🐙 GitHub Pages 同步推送完成：https://leokung4398.github.io/team-calendar/")
             else:
                 print("🐙 GitHub 已是最新狀態：https://leokung4398.github.io/team-calendar/")
