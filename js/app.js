@@ -112,7 +112,7 @@ async function boot() {
       schedule: { label: '行事曆', icon: '🗓️', mount: mountSchedule },
       meeting: { label: '月會', icon: '💼', mount: mountMeeting },
       simulation: { label: '模擬體驗', icon: '🚲', mount: mountSimulation, permission: 'simulation' },
-      dailyReport: { label: '📝 每日回報', icon: '📝', mount: mountDailyReport, permission: 'dailyReport' },
+      dailyReport: { label: '每日回報', icon: '📝', mount: mountDailyReport, permission: 'dailyReport' },
       bulletin: { label: '採購佈告欄', icon: '📢', mount: mountBulletin, permission: 'bulletin' },
       admin: { label: '管理', icon: '⚙️', mount: mountAdmin, admin: true },
     };
