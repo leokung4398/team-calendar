@@ -1151,7 +1151,7 @@ export function startInteractiveDailyReportSpotlightTour() {
   }
 
   const step4Body = isMeSup
-    ? `您目前以<b>代理副理（${myName}）</b>身份登入！全組 9 位同仁的回報內容<b>僅您與填寫本人可見</b>，您可以在任一同仁已完成的卡片下方點選<b>「👍 點擊已閱」</b>或留下<b>「💬 主管回饋」</b>。`
+    ? `您目前以<b>代理副理（${myName}）</b>身份登入！擁有全組 9 位內外勤同仁回報內容之完整審閱權限，您可以在任一同仁已完成的卡片下方點選<b>「👍 點選已閱」</b>或留下<b>「💬 主管回饋」</b>。`
     : (isMeField
       ? `已自動為 <b>${myName}（外勤品管）</b> 展開專屬制式三問填寫區！包含：<br>① <b>地區</b>（支援<b>「① 縣市 ➔ ② 行政區」連動下拉選單</b>，選完自動收納為 <code>新北市（板橋區、中和區）</code>）<br>② <b>稽查場站數</b><br>③ <b>2.0 與 2.0E 的數量</b>（自動加總合計台數）<br>填完點擊<b>「📋 儲存並複製 LINE」</b>即可一鍵完成！`
       : `已自動為 <b>${myName}（${myTitle}）</b> 點開填寫面板！上方支援<b>「📥 一鍵帶入前次項目」</b>、<b>「🔢 自動整理編號」</b>與<b>「⚡ 職務常用詞彙快選膠囊」</b>；填完點擊<b>「📋 儲存並複製 LINE」</b>即可一氣呵成！`);
@@ -1162,7 +1162,7 @@ export function startInteractiveDailyReportSpotlightTour() {
       fallbackTarget: '.dr-hero-card',
       badge: '步驟 1 / 6',
       title: '⚡ 立即填寫回報 ＆ 一鍵複製個人 LINE 格式',
-      body: '全組 9 位同仁（3 位外勤品管＋6 位內勤）下班前點擊<b>「✍️ 立即填寫今日回報」</b>即可喚起極速快填抽屜！儲存後系統會依您的外勤／內勤身份<b>自動排版並複製個人專屬 LINE 回報格式</b>，直接去 LINE 貼上即可向代理副理回報！',
+      body: '全組 9 位同仁（3 位外勤品管＋6 位內勤）下班前點擊<b>「✍️ 立即填寫今日回報」</b>即可喚起置中快填視窗！儲存後系統會依您的外勤／內勤身份<b>自動排版並複製個人專屬 LINE 回報格式</b>，直接去 LINE 貼上即可回報！',
       position: 'bottom',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1174,7 +1174,7 @@ export function startInteractiveDailyReportSpotlightTour() {
       fallbackTarget: '.dr-hero-card',
       badge: '步驟 2 / 6',
       title: '🌀 日期補登切換 ＆ 颱風天全員免回報',
-      body: '上方支援<b>「‹ 前一天 / 後一天 ›」</b>隨時回頭查閱個人紀錄或補登進度；若遇颱風停班停課，主管或管理員只需點一下右側<b>「🌀 設為颱風天免回報」</b>，全體 9 位同仁當日即自動轉為颱風假免回報，並自動暫停 17:30 下班提醒！',
+      body: '上方支援<b>「‹ 前一天 / 後一天 ›」</b>隨時回頭查閱紀錄或補登進度；若遇颱風停班停課，只需點一下右側<b>「🌀 設為颱風天免回報」</b>，全體 9 位同仁當日即自動轉為颱風假免回報，並自動暫停 17:30 下班提醒！',
       position: 'bottom',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1216,8 +1216,8 @@ export function startInteractiveDailyReportSpotlightTour() {
       target: '#dr-field-section',
       fallbackTarget: '#dr-office-section',
       badge: '步驟 5 / 6',
-      title: '🔒 嚴格防代填 ＆ 回報內容僅代理副理可見',
-      body: '為保障回報真實性與工作隱私，<b>每個人只能填寫自己的回報（禁止他人代填）</b>；看板上雖公開顯示各組員「✅ 已回報 / ⏳ 待回報」狀態，但<b>所有回報的詳細內容僅代理副理（徐嘉鴻）與填寫本人可見</b>，其他同仁畫面會自動以 🔒 隱私保護遮罩隱藏！',
+      title: '🔒 內外勤分流查閱規則 ＆ 嚴格防代填',
+      body: '每個人僅能填寫自己的回報（防代填）！在查閱權限上：<br>• <b>🏢 內勤 6 位同仁進度</b>：比照 LINE 群組做法，<b>全體組員皆可公開查看</b>。<br>• <b>🚲 外勤 3 位品管回報</b>：因採另外回報機制，內容<b>僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫本人可見</b>，其他組員畫面自動以 🔒 遮罩保護！',
       position: 'top',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1228,8 +1228,8 @@ export function startInteractiveDailyReportSpotlightTour() {
       target: '.dr-history-section',
       fallbackTarget: '.dr-view-tabs',
       badge: '步驟 6 / 6',
-      title: '🔍 歷史紀錄檢索（個人回顧 ＆ 代理副理全組檢索）',
-      body: '切換至<b>「🔍 歷史紀錄檢索」</b>分頁，組員可隨時輸入關鍵字（如：信義區、採購、倉管、勞安）秒速搜尋<b>自己過往的所有回報紀錄</b>；而<b>代理副理（徐嘉鴻）</b>則可跨組員篩選與檢索全組 9 位同仁的歷史回報！',
+      title: '🔍 歷史回報紀錄檢索（跨日關鍵字秒速查詢）',
+      body: '切換至<b>「🔍 歷史回報紀錄檢索」</b>分頁，可依組員篩選或輸入關鍵字（如：板橋區、採購、倉管、勞安）秒速查詢過往回報紀錄（內勤紀錄全員皆可檢索，外勤紀錄則依權限僅開放徐嘉鴻、包于巧與本人檢索）！',
       position: 'top',
       beforeStep: () => {
         closeInlineEditorIfOpen();

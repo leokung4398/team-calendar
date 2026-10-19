@@ -94,6 +94,14 @@ export function isSupervisor(u) {
   return name.includes('徐嘉鴻') || (u.title || '').includes('副理');
 }
 
+/** 判斷組員是否為外勤品管三人的代理人（包于巧） */
+export function isFieldDeputy(u) {
+  if (!u) return false;
+  const name = u.displayName || '';
+  const email = (u.email || '').toLowerCase();
+  return name.includes('包于巧') || email.startsWith('ciaopao@');
+}
+
 /** 判斷組員是否為系統最高管理員（孔令淳 Leo / Admin）— 預設具備全系統最高管理與讀寫權限 */
 export function isSystemDesigner(u) {
   if (!u) return false;

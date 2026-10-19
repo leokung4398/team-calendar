@@ -1,13 +1,12 @@
 // 每日工作進度回報模組（#/dailyReport）
-// - 內勤 6 位同仁：每日下班回報工作進度（1. 今日完成事項 2. 明日預計待辦 3. 備註）
-// - 外勤品管 3 位同仁（孔令淳、葉爵豪、陸逸群）：每日下班制式化回報 3 項（地區、稽查場站數、2.0 與 2.0E 數量）
-// - 隱私保護機制：所有人可見「✅ 已回報 / ⏳ 待回報」狀態標籤，但具體回報內容嚴格限定僅「代理副理（徐嘉鴻）」與「填寫者本人」可見
+// - 內勤 6 位同仁：每日下班回報工作進度（1. 今日完成事項 2. 明日預計待辦 3. 備註），比照 LINE 群組做法全體組員皆可公開查看
+// - 外勤品管 3 位同仁（孔令淳、葉爵豪、陸逸群）：每日下班制式化回報 3 項（地區、稽查場站數、2.0 與 2.0E 數量），因採另外回報機制，內容僅「代理副理（徐嘉鴻）」、「外勤代理人（包于巧）」與「填寫者本人」可見
 // - 防代填保護：嚴格鎖定僅本人可填寫或編輯自己的回報
 // - 支援「🌀 颱風停班停課（全員免回報）」彈性切換、休假與例假日自動連動
-// - 支援 17:30 智慧溫和下班提醒 Toast + 行動端通勤拇指熱區懸浮按鈕（FAB）與底部快填抽屜（Bottom Sheet）
+// - 支援 17:30 智慧溫和下班提醒 Toast + 行動端通勤拇指熱區懸浮按鈕（FAB）與置中快填彈窗（Modal）
 
 import {
-  state, activeUsers, myUid, isAdmin, isFieldStaff, isSupervisor, isSystemDesigner, isOfficeReporter, isDailyReporter,
+  state, activeUsers, myUid, isAdmin, isFieldStaff, isSupervisor, isFieldDeputy, isSystemDesigner, isOfficeReporter, isDailyReporter,
   dailyReportDocOf, saveUserDailyReport, toggleTyphoonDay, acknowledgeDailyReport, eventList,
 } from '../data.js';
 import { eventsOfUserOn } from '../schedule.js';
@@ -170,14 +169,26 @@ export function isReportSubmitted(rep, u) {
   return !!(rep.todayTasks && String(rep.todayTasks).trim());
 }
 
-/** 判斷目前登入者是否有權限查看某位組員的回報詳細內容（限定：代理副理 徐嘉鴻、系統設計者 孔令淳、以及填寫者本人） */
-export function canViewReportContent(targetUid) {
+/**
+ * 判斷目前登入者是否有權限查看某位組員的回報詳細內容：
+ * 1. 內勤同仁（6位）的每日工作進度：比照目前 LINE 群組做法，全體組員皆可公開查看。
+ * 2. 外勤品管同仁（3位：孔令淳、葉爵豪、陸逸群）的回報：因採另外回報機制，僅「代理副理（徐嘉鴻）」、「外勤代理人（包于巧）」與「填寫者本人」（及最高管理權限）可見，其他組員看不到。
+ */
+export function canViewReportContent(targetUid, rep = null) {
   const me = state.me;
   const myId = myUid();
   if (!me || !myId) return false;
   if (targetUid === myId) return true;
   if (isSupervisor(me) || isSystemDesigner(me)) return true;
-  return false;
+
+  const targetUser = state.users.get(targetUid);
+  const isTargetField = isFieldStaff(targetUser) || rep?.reportType === 'field';
+  if (isTargetField) {
+    // 外勤三人的回報內容：僅包于巧（外勤代理人）與徐嘉鴻（代理副理）及本人可見
+    return isFieldDeputy(me);
+  }
+  // 內勤同仁的每日工作進度：全體組員皆可看見
+  return true;
 }
 
 /** 檢查某組員在指定日期是否有請假行程（typeId === 'leave'） */
@@ -334,8 +345,8 @@ export function mountDailyReport(root) {
               <div class="dr-eyebrow">📝 DAILY PROGRESS &amp; LINE REPORT HELPER</div>
               <h1 class="dr-title">每日工作進度回報中心</h1>
               <p class="dr-subtitle">
-                <strong>內勤同仁（6位）</strong>填寫今日工作事項，<strong>外勤品管同仁（3位）</strong>制式回報「地區（縣市 ➔ 行政區連動選單）、稽查場站數、2.0與2.0E數量」。<br>
-                🔒 <strong>隱私與防代填保護</strong>：每個人僅能填寫自己的回報，且<strong>所有回報詳細內容僅代理副理（徐嘉鴻）與本人可見</strong>。
+                <strong>🏢 內勤同仁（6位）</strong>填寫今日工作進度（比照 LINE 群組做法，全體組員皆可查看）；<strong>🚲 外勤品管同仁（3位）</strong>制式回報「地區、稽查場站數、2.0與2.0E數量」（僅代理副理 <strong>徐嘉鴻</strong>、外勤代理人 <strong>包于巧</strong> 與本人可見）。<br>
+                🔒 <strong>防代填保護</strong>：每個人僅能填寫或修改自己的回報。
               </p>
             </div>
             <div class="dr-hero-actions">
@@ -359,7 +370,7 @@ export function mountDailyReport(root) {
           <div class="dr-toolbar">
             <div class="dr-view-tabs">
               <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">📅 單日全員看板</button>
-              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 ${canViewAll ? '全組歷史紀錄檢索' : '我的歷史回報紀錄'}</button>
+              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 歷史回報紀錄檢索</button>
             </div>
 
             ${viewMode === 'daily' ? `
@@ -440,7 +451,7 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
           <h2>🚲 外勤品管同仁每日稽查回報（${fieldMembers.length} 位｜制式 3 題：地區・場站數・2.0/2.0E 台數）</h2>
-          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見</span>
+          <span class="muted" style="font-size:13px">🔒 外勤回報內容僅代理副理（徐嘉鴻）、代理人（包于巧）與本人可見</span>
         </div>
         <div class="dr-cards-grid">
           ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -451,7 +462,7 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
           <h2>🏢 內勤同仁每日工作進度（${officeMembers.length} 位）</h2>
-          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見</span>
+          <span class="muted" style="font-size:13px">👥 內勤工作進度全體組員皆可公開查看（僅限本人填寫）</span>
         </div>
         <div class="dr-cards-grid">
           ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -507,8 +518,8 @@ export function mountDailyReport(root) {
     const canEditThis = isMe || isDesigner;
     const isEditing = editingUid === u.uid && canEditThis;
 
-    // 僅「代理副理（徐嘉鴻）」與「填寫者本人」（及最高管理權限）可看見回報內容
-    const canSeeDetails = canViewReportContent(u.uid);
+    // 內勤全體可見；外勤僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與本人可見
+    const canSeeDetails = canViewReportContent(u.uid, rep);
 
     const ackList = Object.values(rep.ackBy || {});
     const myAck = !!(rep.ackBy && rep.ackBy[myId]);
@@ -547,7 +558,7 @@ export function mountDailyReport(root) {
                 <span class="dr-lock-icon">🔒</span>
                 <div>
                   <strong>${esc(u.displayName)} 已完成今日回報</strong>
-                  <div class="muted" style="font-size:12px">回報詳細內容僅代理副理（徐嘉鴻）與本人可見</div>
+                  <div class="muted" style="font-size:12px">外勤回報內容僅代理副理（徐嘉鴻）、代理人（包于巧）與本人可見</div>
                 </div>
               </div>
             `
@@ -560,7 +571,7 @@ export function mountDailyReport(root) {
           `
         )}
 
-        <!-- 主管已閱與回饋區（已閱徽章公開，主管文字回饋僅本人與代理副理可見） -->
+        <!-- 主管已閱與回饋區 -->
         ${(ackList.length > 0 || (canSeeDetails && rep.managerReply)) ? `
           <div class="dr-ack-box">
             ${ackList.length > 0 ? `
@@ -752,7 +763,7 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 外勤品管已填寫內容顯示區（僅本人、代理副理與系統設計者可見） */
+  /** 外勤品管已填寫內容顯示區（僅本人、代理副理 徐嘉鴻、外勤代理人 包于巧 可見） */
   function renderFieldReportBody(rep) {
     const v20 = Number(rep.fieldV20) || 0;
     const v20e = Number(rep.fieldV20E) || 0;
@@ -783,7 +794,7 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 內勤已填寫內容顯示區（僅本人、代理副理與系統設計者可見） */
+  /** 內勤已填寫內容顯示區（全體組員皆可查看） */
   function renderOfficeReportBody(rep) {
     return `
       <div class="dr-report-body">
@@ -807,18 +818,19 @@ export function mountDailyReport(root) {
     `;
   }
 
-  function renderHistoryExplorer({ users, canViewAll, myId }) {
-    // 蒐集歷史回報紀錄（若非代理副理或系統設計者，僅能檢索自己本人的歷史紀錄！）
+  function renderHistoryExplorer({ users }) {
+    // 蒐集歷史回報紀錄（內勤全員可見；外勤僅徐嘉鴻、包于巧與本人可見）
+    const viewableUsers = users.filter(u => !isSupervisor(u) && canViewReportContent(u.uid));
     const entries = [];
     const sortedDates = [...state.dailyReports.keys()].sort((a, b) => b.localeCompare(a));
     for (const d of sortedDates) {
       const doc = state.dailyReports.get(d);
       const reps = doc?.reports || {};
       for (const [uid, rep] of Object.entries(reps)) {
-        if (!canViewReportContent(uid)) continue;
+        if (!canViewReportContent(uid, rep)) continue;
         const u = state.users.get(uid);
         if (!isReportSubmitted(rep, u)) continue;
-        if (canViewAll && historyFilterUid !== 'all' && uid !== historyFilterUid) continue;
+        if (historyFilterUid !== 'all' && uid !== historyFilterUid) continue;
         const textBlob = `${u?.displayName || ''} ${rep.todayTasks || ''} ${rep.tomorrowTasks || ''} ${rep.fieldRegion || ''} ${rep.notes || ''} ${rep.managerReply || ''}`.toLowerCase();
         if (historyKeyword.trim() && !textBlob.includes(historyKeyword.trim().toLowerCase())) continue;
         entries.push({ date: d, uid, user: u, report: rep });
@@ -828,19 +840,13 @@ export function mountDailyReport(root) {
     return `
       <section class="card pad dr-history-section">
         <div class="dr-history-filters">
-          ${canViewAll ? `
-            <label class="dr-filter-item">
-              <span>👤 篩選組員：</span>
-              <select data-history-uid>
-                <option value="all" ${historyFilterUid === 'all' ? 'selected' : ''}>全部組員（${users.length} 人）</option>
-                ${users.map(u => `<option value="${esc(u.uid)}" ${historyFilterUid === u.uid ? 'selected' : ''}>${esc(u.displayName)}（${esc(u.title || '')}）</option>`).join('')}
-              </select>
-            </label>
-          ` : `
-            <div class="dr-filter-item">
-              <span>🔒 <strong>個人歷史回報紀錄</strong>（基於隱私保護，僅顯示您本人的過往回報）</span>
-            </div>
-          `}
+          <label class="dr-filter-item">
+            <span>👤 篩選組員：</span>
+            <select data-history-uid>
+              <option value="all" ${historyFilterUid === 'all' ? 'selected' : ''}>全部可查閱組員（${viewableUsers.length} 人）</option>
+              ${viewableUsers.map(u => `<option value="${esc(u.uid)}" ${historyFilterUid === u.uid ? 'selected' : ''}>${esc(u.displayName)}（${esc(u.title || '')}）</option>`).join('')}
+            </select>
+          </label>
           <label class="dr-filter-item grow">
             <span>🔍 關鍵字搜尋：</span>
             <input type="search" data-history-kw placeholder="搜尋地區、工作內容、採購、倉管、勞安..." value="${esc(historyKeyword)}">
@@ -1317,7 +1323,7 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
       <div class="dr-sheet-handle"></div>
       <div class="dr-sheet-head">
         <div>
-          <div class="dr-sheet-badge">${isField ? '🚲 外勤品管制式快填・僅代理副理可見' : '⚡ 通勤極速快填・僅代理副理可見'}</div>
+          <div class="dr-sheet-badge">${isField ? '🚲 外勤品管制式快填・僅徐嘉鴻與包于巧可見' : '⚡ 內勤每日進度快填・全組公開共享'}</div>
           <h3>📝 ${esc(fmtMD(dateStr))}（週${esc(weekdayZh(dateStr))}）${esc(me.displayName)} 回報</h3>
         </div>
         <button type="button" class="icon-btn" data-close-sheet aria-label="關閉">✕</button>
