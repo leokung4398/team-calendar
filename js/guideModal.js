@@ -130,19 +130,34 @@ export function openGuideModal() {
     `;
   };
 
-  const renderFooter = () => `
-    <div style="display:flex; align-items:center; gap:8px;">
-      <button type="button" class="btn ok-btn ghost" data-start-interactive-tour style="font-weight:700;">
-        🎮 啟動實景聚焦導覽
-      </button>
-      <span class="muted small-text hide-sm">像遊戲一樣逐一高亮畫面元件！</span>
-    </div>
-    <div class="spacer"></div>
-    ${currentStep > 0 ? `<button type="button" class="btn ghost" data-prev-guide>上一步</button>` : ''}
-    ${currentStep < steps.length - 1
-      ? `<button type="button" class="btn primary" data-next-guide>下一步 👉</button>`
-      : `<button type="button" class="btn ok-btn" data-close>完成導覽 🎉</button>`}
-  `;
+  const renderFooter = () => {
+    const s = steps[currentStep];
+    const isSimStep = s?.title?.includes('模擬體驗');
+    const isDailyStep = s?.title?.includes('每日回報');
+    return `
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn ok-btn ghost" data-start-interactive-tour style="font-weight:700;">
+          🎮 啟動全站實景導覽
+        </button>
+        ${isSimStep ? `
+          <button type="button" class="btn ghost" data-start-sim-tour style="font-weight:700; color:#b45309; background:#fef3c7; border-color:#fde68a;">
+            🎯 模擬體驗 6 步聚焦導覽
+          </button>
+        ` : ''}
+        ${isDailyStep ? `
+          <button type="button" class="btn ghost" data-start-dr-tour style="font-weight:700; color:#0f766e; background:#ccfbf1; border-color:#99f6e4;">
+            🎯 每日回報 6 步聚焦導覽
+          </button>
+        ` : ''}
+        <span class="muted small-text hide-sm">像遊戲一樣逐一高亮畫面元件！</span>
+      </div>
+      <div class="spacer"></div>
+      ${currentStep > 0 ? `<button type="button" class="btn ghost" data-prev-guide>上一步</button>` : ''}
+      ${currentStep < steps.length - 1
+        ? `<button type="button" class="btn primary" data-next-guide>下一步 👉</button>`
+        : `<button type="button" class="btn ok-btn" data-close>完成導覽 🎉</button>`}
+    `;
+  };
 
   const modal = openModal({
     title: '📖 經營 Team 行事曆操作指引',
@@ -168,6 +183,16 @@ export function openGuideModal() {
     modal.el.querySelector('[data-start-interactive-tour]')?.addEventListener('click', () => {
       modal.close();
       startInteractiveSpotlightTour();
+    });
+
+    modal.el.querySelector('[data-start-sim-tour]')?.addEventListener('click', () => {
+      modal.close();
+      startInteractiveSimulationSpotlightTour();
+    });
+
+    modal.el.querySelector('[data-start-dr-tour]')?.addEventListener('click', () => {
+      modal.close();
+      startInteractiveDailyReportSpotlightTour();
     });
 
     modal.el.querySelectorAll('[data-close]').forEach(b => {
@@ -1063,5 +1088,246 @@ export function startInteractiveSimulationSpotlightTour() {
 
   renderStep();
 }
+
+/** 📝 每日回報專屬・6 步深度實景聚焦導覽 (Interactive Daily Report Module Spotlight Tour) */
+export function startInteractiveDailyReportSpotlightTour() {
+  if (location.hash !== '#/dailyReport') {
+    location.hash = '#/dailyReport';
+  }
+
+  const tourSteps = [
+    {
+      target: '.dr-hero-actions',
+      fallbackTarget: '.dr-hero-card',
+      badge: '步驟 1 / 6',
+      title: '⚡ 立即填寫回報 ＆ 一鍵複製個人 LINE 格式',
+      body: '內勤同仁下班前點擊<b>「✍️ 立即填寫今日回報」</b>即可喚起極速快填抽屜！儲存後系統會自動將您的工作項目整理為 <code>1. 2. 3.</code> 條列編號並<b>自動複製個人專屬 LINE 回報格式</b>，直接去 LINE 群組貼上即可向代理副理回報！',
+      position: 'bottom',
+      beforeStep: () => {
+        document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+      }
+    },
+    {
+      target: '.dr-toolbar',
+      fallbackTarget: '.dr-hero-card',
+      badge: '步驟 2 / 6',
+      title: '🌀 日期補登切換 ＆ 颱風天全員免回報',
+      body: '上方支援<b>「‹ 前一天 / 後一天 ›」</b>隨時回頭查閱或補登過往進度；若遇颱風停班停課，主管或管理員只需點一下右側<b>「🌀 設為颱風天免回報」</b>，全體內勤同仁當日即自動轉為颱風假免回報，並自動暫停 17:30 下班提醒！',
+      position: 'bottom',
+      beforeStep: () => {
+        document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+      }
+    },
+    {
+      target: '.dr-stats-grid',
+      fallbackTarget: '.daily-report-page',
+      badge: '步驟 3 / 6',
+      title: '📊 當日回報進度總覽（休假與例假日自動連動）',
+      body: '即時統計 <b>6 位內勤同仁</b>的「✅ 已完成回報」與「⏳ 待回報」名單！若同仁當天在行事曆有登記<b>「公休/請假」</b>或遇國定例假日，系統會自動標示為<b>「🏖️ 今日休假免回報」</b>，絕不誤催。',
+      position: 'bottom',
+      beforeStep: () => {
+        document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+      }
+    },
+    {
+      target: '#dr-office-section .dr-member-card',
+      fallbackTarget: '#dr-office-section',
+      badge: '步驟 4 / 6',
+      title: '🏢 內勤同仁回報卡（帶入昨日項目 ＆ 職務快選膠囊）',
+      body: '展開編輯時，支援<b>「📥 一鍵帶入前次項目」</b>與依職務量身打造的<b>「⚡ 常用工作快選膠囊」</b>（採購、倉管、勞安、在庫、企劃專屬詞彙），點一下即可插入；代理副理（徐嘉鴻）還能在卡片下方一鍵點選<b>「👍 已閱」</b>或留下<b>「💬 主管回饋」</b>！',
+      position: 'top',
+      beforeStep: () => {
+        document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+      }
+    },
+    {
+      target: '#dr-exempt-section',
+      fallbackTarget: '.daily-report-page',
+      badge: '步驟 5 / 6',
+      title: '👔 代理副理審閱 ＆ 🚲 外勤品管同仁免回報',
+      body: '完美貼合團隊實際運作！<b>3 位外勤品管同仁（孔令淳、葉爵豪、陸逸群）</b>預設標示為<b>「🚲 外勤品管（免回報）」</b>，不列入未交名單也無 17:30 提醒打擾，但仍可隨時透明檢視全組進度或自由補充紀錄。',
+      position: 'top',
+      beforeStep: () => {
+        document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+      }
+    },
+    {
+      target: '.dr-history-section',
+      fallbackTarget: '.dr-view-tabs',
+      badge: '步驟 6 / 6',
+      title: '🔍 歷史紀錄檢索（依組員篩選 ＆ 關鍵字秒搜）',
+      body: '切換至<b>「🔍 歷史紀錄檢索」</b>分頁，即可依特定組員或輸入關鍵字（如：採購、倉管、勞安、車柱）跨日期秒速搜尋過往所有的工作進度，月底寫月報或追蹤專案超輕鬆！',
+      position: 'top',
+      beforeStep: () => {
+        document.querySelector('.dr-tab-btn[data-view-mode="history"]')?.click();
+      }
+    }
+  ];
+
+  let stepIdx = 0;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'tour-overlay';
+  overlay.style.zIndex = '999999';
+
+  const svgBackdrop = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svgBackdrop.setAttribute('class', 'tour-svg-backdrop');
+  svgBackdrop.style.zIndex = '999999';
+  svgBackdrop.innerHTML = `
+    <defs>
+      <mask id="dr-tour-mask">
+        <rect width="100%" height="100%" fill="white" />
+        <rect id="dr-mask-target-rect" rx="10" fill="black" />
+      </mask>
+    </defs>
+    <rect width="100%" height="100%" fill="rgba(15, 23, 42, 0.78)" mask="url(#dr-tour-mask)" />
+  `;
+
+  const box = document.createElement('div');
+  box.className = 'tour-spotlight-box';
+  box.style.zIndex = '1000000';
+  box.style.boxShadow = '0 0 0 3px #0d9488, 0 0 25px rgba(13, 148, 136, 0.85)';
+
+  const card = document.createElement('div');
+  card.className = 'tour-tooltip-card';
+  card.style.zIndex = '1000001';
+
+  overlay.appendChild(svgBackdrop);
+  overlay.appendChild(box);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  document.body.classList.add('in-tour');
+
+  function cleanup() {
+    overlay.remove();
+    document.body.classList.remove('in-tour');
+    window.removeEventListener('resize', updatePosition);
+    window.removeEventListener('scroll', updatePosition);
+    document.removeEventListener('keydown', onTourKey);
+    document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updatePosition() {
+    const s = tourSteps[stepIdx];
+    const el = document.querySelector(s.target) || (s.fallbackTarget ? document.querySelector(s.fallbackTarget) : null);
+    const maskTarget = overlay.querySelector('#dr-mask-target-rect');
+
+    if (!el) {
+      box.style.display = 'none';
+      if (maskTarget) { maskTarget.setAttribute('width', '0'); maskTarget.setAttribute('height', '0'); }
+      card.style.top = '50%';
+      card.style.left = '50%';
+      card.style.transform = 'translate(-50%, -50%)';
+      return;
+    }
+
+    box.style.display = 'block';
+    const rect = el.getBoundingClientRect();
+    const pad = 6;
+    const bTop = Math.max(0, rect.top - pad);
+    const bLeft = Math.max(0, rect.left - pad);
+    const bWidth = rect.width + pad * 2;
+    const bHeight = Math.min(rect.height + pad * 2, window.innerHeight - 20);
+
+    box.style.top = `${bTop}px`;
+    box.style.left = `${bLeft}px`;
+    box.style.width = `${bWidth}px`;
+    box.style.height = `${bHeight}px`;
+
+    if (maskTarget) {
+      maskTarget.setAttribute('x', bLeft);
+      maskTarget.setAttribute('y', bTop);
+      maskTarget.setAttribute('width', bWidth);
+      maskTarget.setAttribute('height', bHeight);
+    }
+
+    const cardWidth = Math.min(400, window.innerWidth - 32);
+    let top = 0;
+    let left = Math.max(16, Math.min(rect.left + (rect.width / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+
+    if (s.position === 'top' && rect.top > 230) {
+      top = rect.top - 210;
+    } else {
+      top = Math.min(rect.bottom + 16, window.innerHeight - 230);
+      if (top < 16) top = 16;
+    }
+
+    card.style.transform = 'none';
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
+  }
+
+  function renderStep() {
+    const s = tourSteps[stepIdx];
+    if (typeof s.beforeStep === 'function') {
+      s.beforeStep();
+    }
+
+    card.innerHTML = `
+      <div class="tour-head">
+        <span class="tour-badge">${s.badge}</span>
+        <span class="tour-step-counter">${stepIdx + 1} / ${tourSteps.length}</span>
+      </div>
+      <h4 class="tour-title">${s.title}</h4>
+      <p class="tour-body">${s.body}</p>
+      <div class="tour-actions">
+        <button type="button" class="btn small ghost" data-tour-exit>結束導覽</button>
+        <div style="display:flex; gap:6px;">
+          ${stepIdx > 0 ? `<button type="button" class="btn small ghost" data-tour-prev>上一步</button>` : ''}
+          ${stepIdx < tourSteps.length - 1
+            ? `<button type="button" class="btn small primary" data-tour-next>下一步 👉</button>`
+            : `<button type="button" class="btn small ok-btn" data-tour-finish>完成每日回報導覽 🎉</button>`}
+        </div>
+      </div>
+    `;
+
+    card.querySelector('[data-tour-exit]').onclick = cleanup;
+    card.querySelector('[data-tour-finish]')?.addEventListener('click', cleanup);
+
+    card.querySelector('[data-tour-next]')?.addEventListener('click', () => {
+      stepIdx++;
+      renderStep();
+    });
+
+    card.querySelector('[data-tour-prev]')?.addEventListener('click', () => {
+      stepIdx--;
+      renderStep();
+    });
+
+    setTimeout(() => {
+      const targetEl = document.querySelector(s.target) || (s.fallbackTarget ? document.querySelector(s.fallbackTarget) : null);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      updatePosition();
+      setTimeout(updatePosition, 180);
+      setTimeout(updatePosition, 400);
+    }, 50);
+  }
+
+  const onTourKey = e => {
+    if (e.key === 'ArrowRight') {
+      if (stepIdx < tourSteps.length - 1) {
+        stepIdx++;
+        renderStep();
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (stepIdx > 0) {
+        stepIdx--;
+        renderStep();
+      }
+    } else if (e.key === 'Escape') {
+      cleanup();
+    }
+  };
+  document.addEventListener('keydown', onTourKey);
+
+  window.addEventListener('resize', updatePosition);
+  window.addEventListener('scroll', updatePosition, { passive: true });
+
+  renderStep();
+}
+
 
 

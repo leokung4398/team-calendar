@@ -11,6 +11,7 @@ import {
 import { eventsOfUserOn } from '../schedule.js';
 import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, avatar, toast, ymd, addDays, fmtMD, weekdayZh, nowMinutes, $ } from '../utils.js';
+import { startInteractiveDailyReportSpotlightTour } from '../guideModal.js';
 
 // 各職務專屬的「常用工作快選膠囊」（通勤、等紅綠燈單手點一下即可插入）
 const ROLE_QUICK_CHIPS = {
@@ -204,6 +205,9 @@ export function mountDailyReport(root) {
               </p>
             </div>
             <div class="dr-hero-actions">
+              <button type="button" class="btn ghost guide-btn" data-open-dr-tour style="font-weight:700; color:#0f766e; background:#ccfbf1; border-color:#99f6e4;" title="啟動每日回報 6 步實景聚焦導覽">
+                🎯 每日回報導覽
+              </button>
               <button class="btn primary dr-quick-btn" data-open-quick="${esc(selectedDate)}">
                 ✍️ ${myReport?.todayTasks ? '修改我的今日回報' : '立即填寫今日回報'}
               </button>
@@ -298,7 +302,7 @@ export function mountDailyReport(root) {
       </section>
 
       <!-- 內勤 6 位組員每日回報卡片區 -->
-      <section class="dr-section">
+      <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
           <h2>🏢 內勤同仁每日工作進度（${officeMembers.length} 位）</h2>
           <span class="muted" style="font-size:13px">點擊「📋 複製個人 LINE 格式」即可單獨複製該同仁進度並貼至 LINE 群組</span>
@@ -309,7 +313,7 @@ export function mountDailyReport(root) {
       </section>
 
       <!-- 主管與外勤品管同仁區（免回報 / 自由補充） -->
-      <section class="dr-section">
+      <section class="dr-section" id="dr-exempt-section">
         <div class="dr-section-head">
           <h2>👔 主管審閱 &amp; 🚲 外勤品管同仁（預設免回報，亦可自由紀錄）</h2>
         </div>
@@ -591,7 +595,12 @@ export function mountDailyReport(root) {
       };
     }
 
-    // 頂部快速填寫彈窗按鈕
+    // 頂部快速填寫彈窗按鈕与每日回報導覽按鈕
+    const drTourBtn = root.querySelector('[data-open-dr-tour]');
+    if (drTourBtn) {
+      drTourBtn.onclick = () => startInteractiveDailyReportSpotlightTour();
+    }
+
     root.querySelectorAll('[data-open-quick]').forEach(btn => {
       btn.onclick = () => openQuickDailyReportSheet(btn.dataset.openQuick || selectedDate);
     });
