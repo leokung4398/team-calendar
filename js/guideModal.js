@@ -495,17 +495,37 @@ export function startInteractiveSpotlightTour() {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // 計算提示卡片位置
-    const cardWidth = Math.min(380, window.innerWidth - 32);
-    let top = 0;
-    let left = Math.max(16, Math.min(rect.left + (rect.width / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+    // 計算提示卡片位置（動態讀取提示卡真實高度，避免壓在目標框上）
+    const cardRect = card.getBoundingClientRect();
+    const cardWidth = cardRect.width || Math.min(380, window.innerWidth - 32);
+    const cardHeight = cardRect.height || 230;
+    const gap = 16;
 
-    if (s.position === 'top' && rect.top > 220) {
-      top = rect.top - 200;
+    let top = 0;
+    let left = Math.max(16, Math.min(bLeft + (bWidth / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+
+    const spaceAbove = bTop - gap;
+    const spaceBelow = window.innerHeight - (bTop + bHeight) - gap;
+
+    if (s.position === 'top' && spaceAbove >= cardHeight) {
+      top = bTop - cardHeight - gap;
+    } else if (spaceBelow >= cardHeight) {
+      top = bTop + bHeight + gap;
+    } else if (spaceAbove >= cardHeight) {
+      top = bTop - cardHeight - gap;
     } else {
-      top = rect.bottom + 16;
-      if (top + 220 > window.innerHeight) {
-        top = Math.max(16, rect.top - 210);
+      const spaceRight = window.innerWidth - (bLeft + bWidth) - gap;
+      const spaceLeft = bLeft - gap;
+      if (spaceRight >= cardWidth + 16) {
+        left = bLeft + bWidth + gap;
+        top = Math.max(16, Math.min(bTop, window.innerHeight - cardHeight - 16));
+      } else if (spaceLeft >= cardWidth + 16) {
+        left = bLeft - cardWidth - gap;
+        top = Math.max(16, Math.min(bTop, window.innerHeight - cardHeight - 16));
+      } else {
+        top = spaceBelow >= spaceAbove
+          ? Math.min(bTop + bHeight + gap, window.innerHeight - cardHeight - 12)
+          : Math.max(12, bTop - cardHeight - gap);
       }
     }
 
@@ -1002,15 +1022,37 @@ export function startInteractiveSimulationSpotlightTour() {
       maskTarget.setAttribute('height', bHeight);
     }
 
-    const cardWidth = Math.min(400, window.innerWidth - 32);
-    let top = 0;
-    let left = Math.max(16, Math.min(rect.left + (rect.width / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+    const cardRect = card.getBoundingClientRect();
+    const cardWidth = cardRect.width || Math.min(400, window.innerWidth - 32);
+    const cardHeight = cardRect.height || 240;
+    const gap = 16;
 
-    if (s.position === 'top' && rect.top > 230) {
-      top = rect.top - 210;
+    let top = 0;
+    let left = Math.max(16, Math.min(bLeft + (bWidth / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+
+    const spaceAbove = bTop - gap;
+    const spaceBelow = window.innerHeight - (bTop + bHeight) - gap;
+
+    if (s.position === 'top' && spaceAbove >= cardHeight) {
+      top = bTop - cardHeight - gap;
+    } else if (spaceBelow >= cardHeight) {
+      top = bTop + bHeight + gap;
+    } else if (spaceAbove >= cardHeight) {
+      top = bTop - cardHeight - gap;
     } else {
-      top = Math.min(rect.bottom + 16, window.innerHeight - 230);
-      if (top < 16) top = 16;
+      const spaceRight = window.innerWidth - (bLeft + bWidth) - gap;
+      const spaceLeft = bLeft - gap;
+      if (spaceRight >= cardWidth + 16) {
+        left = bLeft + bWidth + gap;
+        top = Math.max(16, Math.min(bTop, window.innerHeight - cardHeight - 16));
+      } else if (spaceLeft >= cardWidth + 16) {
+        left = bLeft - cardWidth - gap;
+        top = Math.max(16, Math.min(bTop, window.innerHeight - cardHeight - 16));
+      } else {
+        top = spaceBelow >= spaceAbove
+          ? Math.min(bTop + bHeight + gap, window.innerHeight - cardHeight - 12)
+          : Math.max(12, bTop - cardHeight - gap);
+      }
     }
 
     card.style.transform = 'none';
@@ -1242,15 +1284,38 @@ export function startInteractiveDailyReportSpotlightTour() {
       maskTarget.setAttribute('height', bHeight);
     }
 
-    const cardWidth = Math.min(400, window.innerWidth - 32);
-    let top = 0;
-    let left = Math.max(16, Math.min(rect.left + (rect.width / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+    const cardRect = card.getBoundingClientRect();
+    const cardWidth = cardRect.width || Math.min(400, window.innerWidth - 32);
+    const cardHeight = cardRect.height || 240;
+    const gap = 16;
 
-    if (s.position === 'top' && rect.top > 230) {
-      top = rect.top - 210;
+    let top = 0;
+    let left = Math.max(16, Math.min(bLeft + (bWidth / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
+
+    const spaceAbove = bTop - gap;
+    const spaceBelow = window.innerHeight - (bTop + bHeight) - gap;
+
+    if (s.position === 'top' && spaceAbove >= cardHeight) {
+      top = bTop - cardHeight - gap;
+    } else if (spaceBelow >= cardHeight) {
+      top = bTop + bHeight + gap;
+    } else if (spaceAbove >= cardHeight) {
+      top = bTop - cardHeight - gap;
     } else {
-      top = Math.min(rect.bottom + 16, window.innerHeight - 230);
-      if (top < 16) top = 16;
+      // 若上下空間都不夠放整張提示卡（或目標高度較高），優先放在右側或左側空白處，絕不遮擋高亮目標！
+      const spaceRight = window.innerWidth - (bLeft + bWidth) - gap;
+      const spaceLeft = bLeft - gap;
+      if (spaceRight >= cardWidth + 16) {
+        left = bLeft + bWidth + gap;
+        top = Math.max(16, Math.min(bTop, window.innerHeight - cardHeight - 16));
+      } else if (spaceLeft >= cardWidth + 16) {
+        left = bLeft - cardWidth - gap;
+        top = Math.max(16, Math.min(bTop, window.innerHeight - cardHeight - 16));
+      } else {
+        top = spaceBelow >= spaceAbove
+          ? Math.min(bTop + bHeight + gap, window.innerHeight - cardHeight - 12)
+          : Math.max(12, bTop - cardHeight - gap);
+      }
     }
 
     card.style.transform = 'none';
