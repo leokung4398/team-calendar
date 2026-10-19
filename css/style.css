@@ -2283,8 +2283,15 @@ th.has-meeting { position: relative; }
 .dr-editor-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.dr-editor-actions .btn {
+  white-space: nowrap;
+  padding: 6px 12px;
+  font-size: 13px;
 }
 
 /* 歷史檢索 */

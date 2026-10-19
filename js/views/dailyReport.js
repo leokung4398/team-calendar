@@ -711,11 +711,11 @@ export function mountDailyReport(root) {
         </label>
 
         <div class="dr-editor-actions">
-          <button type="button" class="btn" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
+          <button type="button" class="btn sm" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
           ${!isReadonlyPreview ? `
-            <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
-            <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
-              💾 儲存並複製個人 LINE 格式
+            <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
+            <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
+              📋 儲存並複製 LINE
             </button>
           ` : ''}
         </div>
@@ -763,11 +763,11 @@ export function mountDailyReport(root) {
         </label>
 
         <div class="dr-editor-actions">
-          <button type="button" class="btn" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
+          <button type="button" class="btn sm" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
           ${!isReadonlyPreview ? `
-            <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
-            <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
-              💾 儲存並複製個人 LINE 格式
+            <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
+            <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
+              📋 儲存並複製 LINE
             </button>
           ` : ''}
         </div>
@@ -1441,9 +1441,9 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
       </div>
 
       <div class="dr-sheet-foot" data-sheet-foot>
-        <button type="button" class="btn" data-sheet-save-only>💾 僅儲存</button>
+        <button type="button" class="btn" data-sheet-save-only>💾 儲存</button>
         <button type="button" class="btn primary big dr-sheet-submit" data-sheet-save-copy>
-          📋 儲存並複製個人 LINE 格式
+          📋 儲存並複製 LINE
         </button>
       </div>
     </div>
