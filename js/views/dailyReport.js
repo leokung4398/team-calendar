@@ -7,7 +7,7 @@
 // - 支援 17:30 智慧溫和下班提醒 Toast + 行動端通勤拇指熱區懸浮按鈕（FAB）與底部快填抽屜（Bottom Sheet）
 
 import {
-  state, activeUsers, myUid, isAdmin, isFieldStaff, isSupervisor, isOfficeReporter, isDailyReporter,
+  state, activeUsers, myUid, isAdmin, isFieldStaff, isSupervisor, isSystemDesigner, isOfficeReporter, isDailyReporter,
   dailyReportDocOf, saveUserDailyReport, toggleTyphoonDay, acknowledgeDailyReport, eventList,
 } from '../data.js';
 import { eventsOfUserOn } from '../schedule.js';
@@ -54,12 +54,65 @@ const ROLE_QUICK_CHIPS = {
   ],
 };
 
-// 外勤品管同仁專屬「常用縣市/行政區快選膠囊」
-const FIELD_REGION_CHIPS = {
-  north: ['台北市', '新北市', '雙北（大安/信義）', '雙北（板橋/中和）', '桃園市', '新竹市', '新竹縣', '苗栗縣', '台中市'],
-  south: ['高雄市', '高雄（左營/三民）', '高雄（鳳山/前鎮）', '台南市', '嘉義市', '嘉義縣', '屏東縣', '台東縣', '台中市'],
-  all: ['台北市', '新北市', '桃園市', '新竹市', '苗栗縣', '台中市', '嘉義市', '台南市', '高雄市', '屏東縣', '台東縣'],
+// 外勤品管同仁專屬「縣市 ➔ 行政區」二階連動資料庫（涵蓋全台 YouBike 營運縣市與雙北/南區巡檢分區）
+export const FIELD_CITY_DISTRICTS = {
+  '新北市': [
+    '板橋區', '中和區', '永和區', '新店區', '三重區', '新莊區', '蘆洲區', '土城區', '樹林區', '淡水區', '林口區',
+    '汐止區', '三峽區', '鶯歌區', '五股區', '泰山區', '八里區', '深坑區', '瑞芳區', '三芝區', '金山區', '萬里區',
+    '石門區', '石碇區', '坪林區', '烏來區', '平溪區', '雙溪區', '貢寮區',
+  ],
+  '台北市': [
+    '大安區', '信義區', '中正區', '中山區', '松山區', '萬華區', '大同區', '文山區', '內湖區', '南港區', '士林區', '北投區', '台大校區',
+  ],
+  '桃園市': [
+    '桃園區', '中壢區', '平鎮區', '八德區', '楊梅區', '蘆竹區', '龜山區', '龍潭區', '大溪區', '大園區', '觀音區', '新屋區', '復興區',
+  ],
+  '新竹市': [
+    '東區', '北區', '香山區', '新竹科學園區',
+  ],
+  '新竹縣': [
+    '竹北市', '竹東鎮', '新豐鄉', '湖口鄉', '新埔鎮', '關西鎮', '芎林鄉', '寶山鄉',
+  ],
+  '苗栗縣': [
+    '苗栗市', '頭份市', '竹南鎮', '後龍鎮', '苑裡鎮', '通霄鎮', '公館鄉', '三義鄉', '南庄鄉',
+  ],
+  '台中市': [
+    '西屯區', '北屯區', '南屯區', '西區', '北區', '中區', '東區', '南區', '豐原區', '大里區', '太平區', '烏日區',
+    '沙鹿區', '清水區', '大甲區', '潭子區', '大雅區', '神岡區', '后里區', '霧峰區', '龍井區', '梧棲區', '東勢區',
+  ],
+  '嘉義市': [
+    '東區', '西區',
+  ],
+  '嘉義縣': [
+    '太保市', '朴子市', '民雄鄉', '水上鄉', '中埔鄉', '新港鄉', '大林鎮',
+  ],
+  '台南市': [
+    '安平區', '中西區', '東區', '北區', '南區', '安南區', '永康區', '仁德區', '歸仁區', '新營區', '善化區', '新市區',
+    '麻豆區', '佳里區', '新化區', '鹽水區', '學甲區', '北門區', '七股區', '西港區', '安定區', '官田區', '六甲區', '白河區', '關廟區',
+  ],
+  '高雄市': [
+    '左營區', '三民區', '前金區', '新興區', '苓雅區', '鹽埕區', '鳳山區', '前鎮區', '鼓山區', '楠梓區', '小港區',
+    '旗津區', '仁武區', '鳥松區', '岡山區', '橋頭區', '路竹區', '大寮區', '林園區', '美濃區', '旗山區',
+  ],
+  '屏東縣': [
+    '屏東市', '潮州鎮', '東港鎮', '恆春鎮', '麟洛鄉', '竹田鄉', '林邊鄉', '車城鄉', '內埔鄉', '萬丹鄉', '枋寮鄉',
+  ],
+  '台東縣': [
+    '台東市', '卑南鄉', '成功鎮', '關山鎮', '池上鄉', '太麻里鄉', '鹿野鄉',
+  ],
 };
+
+/** 依外勤人員北區/南區屬性排序優先顯示的縣市清單 */
+function getOrderedCitiesForUser(u) {
+  const allCities = Object.keys(FIELD_CITY_DISTRICTS);
+  const name = u?.displayName || '';
+  if (name.includes('陸逸群')) {
+    const southFirst = ['高雄市', '台南市', '嘉義市', '嘉義縣', '屏東縣', '台東縣', '台中市'];
+    return [...southFirst, ...allCities.filter(c => !southFirst.includes(c))];
+  }
+  const northFirst = ['新北市', '台北市', '桃園市', '新竹市', '新竹縣', '苗栗縣', '台中市'];
+  return [...northFirst, ...allCities.filter(c => !northFirst.includes(c))];
+}
 
 function getQuickChipsForUser(u) {
   if (!u) return ROLE_QUICK_CHIPS.operations;
@@ -72,12 +125,38 @@ function getQuickChipsForUser(u) {
   return ROLE_QUICK_CHIPS.operations;
 }
 
-function getFieldRegionChipsForUser(u) {
-  if (!u) return FIELD_REGION_CHIPS.all;
-  const name = u.displayName || '';
-  if (name.includes('陸逸群')) return FIELD_REGION_CHIPS.south;
-  if (name.includes('孔令淳') || name.includes('葉爵豪')) return FIELD_REGION_CHIPS.north;
-  return FIELD_REGION_CHIPS.all;
+/** 智慧合併地區文字：將「新北市」與「板橋區」自動收納為「新北市（板橋區、中和區）」 */
+export function appendCityDistrictToRegionText(currentText, city, district) {
+  if (!city) return currentText || '';
+  const cur = String(currentText || '').trim();
+  const distClean = String(district || '').trim();
+
+  if (!distClean || distClean === '全區' || distClean === '不限行政區') {
+    if (!cur) return city;
+    if (cur.includes(city)) return cur;
+    return `${cur}、${city}`;
+  }
+
+  // 若目前已包含「縣市（...）」結構，將新行政區插入該縣市括號內
+  const escapedCity = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const bracketRegex = new RegExp(`${escapedCity}（([^）]*)）`);
+  const match = cur.match(bracketRegex);
+  if (match) {
+    const existingList = match[1].split(/[、,，\s]+/).map(s => s.trim()).filter(Boolean);
+    if (!existingList.includes(distClean)) {
+      existingList.push(distClean);
+    }
+    return cur.replace(bracketRegex, `${city}（${existingList.join('、')}）`);
+  }
+
+  // 若目前只有單純「縣市」二/三字，升級為「縣市（行政區）」
+  const plainCityRegex = new RegExp(`(^|[、,，\\s])${escapedCity}($|[、,，\\s])`);
+  if (plainCityRegex.test(cur)) {
+    return cur.replace(plainCityRegex, `$1${city}（${distClean}）$2`);
+  }
+
+  const entry = `${city}（${distClean}）`;
+  return cur ? `${cur}、${entry}` : entry;
 }
 
 /** 判斷一筆回報紀錄是否已完成填寫（支援內勤條列模式 與 外勤品管制式 3 題模式） */
@@ -91,13 +170,13 @@ export function isReportSubmitted(rep, u) {
   return !!(rep.todayTasks && String(rep.todayTasks).trim());
 }
 
-/** 判斷目前登入者是否有權限查看某位組員的回報詳細內容（嚴格限定：僅代理副理 徐嘉鴻 與 填寫者本人） */
+/** 判斷目前登入者是否有權限查看某位組員的回報詳細內容（限定：代理副理 徐嘉鴻、系統設計者 孔令淳、以及填寫者本人） */
 export function canViewReportContent(targetUid) {
   const me = state.me;
   const myId = myUid();
   if (!me || !myId) return false;
   if (targetUid === myId) return true;
-  if (isSupervisor(me)) return true;
+  if (isSupervisor(me) || isSystemDesigner(me)) return true;
   return false;
 }
 
@@ -211,7 +290,7 @@ export function evaluateMemberReportStatus(u, dateStr) {
 export function mountDailyReport(root) {
   let selectedDate = ymd();
   let viewMode = 'daily'; // 'daily' | 'history'
-  let editingUid = null;  // 僅限本人展開編輯
+  let editingUid = null;  // 本人展開編輯，或系統設計者展開唯讀預覽
   let historyFilterUid = 'all';
   let historyKeyword = '';
   let replyingUid = null;
@@ -226,6 +305,8 @@ export function mountDailyReport(root) {
     const me = state.me;
     const myId = myUid();
     const isSup = isSupervisor(me);
+    const isDesigner = isSystemDesigner(me);
+    const canViewAll = isSup || isDesigner;
     const canManage = isSup || isAdmin();
 
     // 分類組員：6 位內勤同仁、3 位外勤品管同仁、1 位代理副理
@@ -253,8 +334,8 @@ export function mountDailyReport(root) {
               <div class="dr-eyebrow">📝 DAILY PROGRESS &amp; LINE REPORT HELPER</div>
               <h1 class="dr-title">每日工作進度回報中心</h1>
               <p class="dr-subtitle">
-                <strong>內勤同仁（6位）</strong>填寫今日工作事項，<strong>外勤品管同仁（3位）</strong>制式回報「地區、稽查場站數、2.0與2.0E數量」。<br>
-                🔒 <strong>隱私與防代填保護</strong>：每個人僅能填寫自己的回報，且<strong>所有回報詳細內容僅代理副理（徐嘉鴻）與本人可見</strong>。
+                <strong>內勤同仁（6位）</strong>填寫今日工作事項，<strong>外勤品管同仁（3位）</strong>制式回報「地區（縣市 ➔ 行政區連動選單）、稽查場站數、2.0與2.0E數量」。<br>
+                🔒 <strong>隱私與防代填保護</strong>：每個人僅能填寫自己的回報，且<strong>所有回報詳細內容僅代理副理（徐嘉鴻）與本人可見</strong>${isDesigner ? ' <span class="dr-designer-pill">🛠️ 系統設計者全覽與表單預覽權限已啟用</span>' : ''}。
               </p>
             </div>
             <div class="dr-hero-actions">
@@ -278,7 +359,7 @@ export function mountDailyReport(root) {
           <div class="dr-toolbar">
             <div class="dr-view-tabs">
               <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">📅 單日全員看板</button>
-              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 ${isSup ? '全組歷史紀錄檢索' : '我的歷史回報紀錄'}</button>
+              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 ${canViewAll ? '全組歷史紀錄檢索' : '我的歷史回報紀錄'}</button>
             </div>
 
             ${viewMode === 'daily' ? `
@@ -315,17 +396,17 @@ export function mountDailyReport(root) {
 
         ${viewMode === 'daily' ? renderDailyBoard({
           selectedDate, today, doc, info, officeMembers, fieldMembers, allReporters, supervisors,
-          statuses, submittedCount, exemptCount, pendingCount, me, myId, myStatus, isSup, canManage,
-        }) : renderHistoryExplorer({ users, isSup, myId })}
+          statuses, submittedCount, exemptCount, pendingCount, me, myId, myStatus, isSup, isDesigner, canManage,
+        }) : renderHistoryExplorer({ users, canViewAll, myId })}
       </div>
     `;
 
-    bindEvents(users, doc);
+    bindEvents(users, doc, isDesigner);
   }
 
   function renderDailyBoard({
     selectedDate, doc, officeMembers, fieldMembers, allReporters, supervisors,
-    statuses, submittedCount, exemptCount, pendingCount, me, myId, isSup, canManage,
+    statuses, submittedCount, exemptCount, pendingCount, me, myId, isSup, isDesigner, canManage,
   }) {
     return `
       <!-- 當日回報進度總覽（全體 9 位：內勤 6 + 外勤 3） -->
@@ -359,10 +440,10 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
           <h2>🚲 外勤品管同仁每日稽查回報（${fieldMembers.length} 位｜制式 3 題：地區・場站數・2.0/2.0E 台數）</h2>
-          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與填寫者本人可見</span>
+          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見${isDesigner ? '（🛠️ 您具系統設計者全覽權限）' : ''}</span>
         </div>
         <div class="dr-cards-grid">
-          ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, canManage)).join('')}
+          ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
         </div>
       </section>
 
@@ -370,10 +451,10 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
           <h2>🏢 內勤同仁每日工作進度（${officeMembers.length} 位）</h2>
-          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與填寫者本人可見</span>
+          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見${isDesigner ? '（🛠️ 您具系統設計者全覽權限）' : ''}</span>
         </div>
         <div class="dr-cards-grid">
-          ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, canManage)).join('')}
+          ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
         </div>
       </section>
 
@@ -415,24 +496,26 @@ export function mountDailyReport(root) {
     `;
   }
 
-  function renderMemberCard(u, dateStr, doc, myId, isSup, canManage) {
+  function renderMemberCard(u, dateStr, doc, myId, isSup, isDesigner, canManage) {
     const st = evaluateMemberReportStatus(u, dateStr);
     const rep = st.report || {};
     const isMe = u.uid === myId;
     const isField = isFieldStaff(u);
     const hasSubmitted = isReportSubmitted(rep, u);
 
-    // 嚴格限定本人填寫（防止代填）
+    // 嚴格限定本人填寫（防止代填），但允許系統設計者展開唯讀預覽以檢視各職務設定
     const canEditThis = isMe;
-    const isEditing = editingUid === u.uid && isMe;
+    const canPreviewConfig = !isMe && isDesigner;
+    const isEditing = editingUid === u.uid && (isMe || isDesigner);
+    const isReadonlyPreview = isEditing && !isMe;
 
-    // 嚴格限定僅「代理副理（徐嘉鴻）」與「填寫者本人」可看見回報內容
+    // 僅「代理副理（徐嘉鴻）」、「系統設計者（孔令淳）」與「填寫者本人」可看見回報內容
     const canSeeDetails = canViewReportContent(u.uid);
 
     const ackList = Object.values(rep.ackBy || {});
     const myAck = !!(rep.ackBy && rep.ackBy[myId]);
     const prevEntry = isEditing ? getPreviousUserReport(u.uid, dateStr) : null;
-    const chips = isEditing ? (isField ? getFieldRegionChipsForUser(u) : getQuickChipsForUser(u)) : [];
+    const chips = isEditing && !isField ? getQuickChipsForUser(u) : [];
 
     return `
       <article class="card dr-member-card tone-${esc(st.tone)} ${isMe ? 'is-me' : ''}" id="dr-card-${esc(u.uid)}">
@@ -457,7 +540,7 @@ export function mountDailyReport(root) {
           </div>
         ` : ''}
 
-        ${isEditing ? (isField ? renderFieldInlineEditor(u, rep, prevEntry, chips) : renderOfficeInlineEditor(u, rep, prevEntry, chips)) : (
+        ${isEditing ? (isField ? renderFieldInlineEditor(u, rep, prevEntry, isReadonlyPreview) : renderOfficeInlineEditor(u, rep, prevEntry, chips, isReadonlyPreview)) : (
           hasSubmitted ? (
             canSeeDetails ? (
               isField ? renderFieldReportBody(rep) : renderOfficeReportBody(rep)
@@ -479,7 +562,7 @@ export function mountDailyReport(root) {
           `
         )}
 
-        <!-- 主管已閱與回饋區（已閱徽章公開，主管文字回饋僅本人與代理副理可見） -->
+        <!-- 主管已閱與回饋區（已閱徽章公開，主管文字回饋僅本人、代理副理與系統設計者可見） -->
         ${(ackList.length > 0 || (canSeeDetails && rep.managerReply)) ? `
           <div class="dr-ack-box">
             ${ackList.length > 0 ? `
@@ -514,6 +597,11 @@ export function mountDailyReport(root) {
                   ✍️ ${hasSubmitted ? '編輯回報' : '填寫回報'}
                 </button>
               ` : ''}
+              ${canPreviewConfig ? `
+                <button class="btn sm dr-preview-cfg-btn" data-start-edit="${esc(u.uid)}" title="系統設計者專屬：檢視此組員的回報表單與快選設定（唯讀防代填）">
+                  🔍 預覽表單設定
+                </button>
+              ` : ''}
               ${(hasSubmitted && canSeeDetails) ? `
                 <button class="btn sm" data-copy-personal="${esc(u.uid)}" title="複製個人 LINE 回報格式">
                   📋 複製 LINE 格式
@@ -542,13 +630,23 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 外勤品管同仁專屬：制式化 3 題行內編輯器 */
-  function renderFieldInlineEditor(u, rep, prevEntry, regionChips) {
+  /** 外勤品管同仁專屬：制式化 3 題行內編輯器（含「縣市 ➔ 行政區」連動下拉選單） */
+  function renderFieldInlineEditor(u, rep, prevEntry, isReadonlyPreview = false) {
     const v20 = rep.fieldV20 !== undefined ? rep.fieldV20 : '';
     const v20e = rep.fieldV20E !== undefined ? rep.fieldV20E : '';
     const total = (Number(v20) || 0) + (Number(v20e) || 0);
+    const cities = getOrderedCitiesForUser(u);
+    const defaultCity = cities[0] || '新北市';
+    const defaultDistricts = FIELD_CITY_DISTRICTS[defaultCity] || [];
+
     return `
-      <div class="dr-inline-editor field-mode" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
+      <div class="dr-inline-editor field-mode ${isReadonlyPreview ? 'is-designer-preview' : ''}" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
+        ${isReadonlyPreview ? `
+          <div class="dr-designer-preview-banner">
+            🛠️ <strong>系統設計者預覽模式</strong>：正在檢視 <strong>${esc(u.displayName)}（外勤品管）</strong> 的連動下拉選單與制式回報設定（防代填保護已鎖定儲存）
+          </div>
+        ` : ''}
+
         <div class="dr-editor-top-tools">
           <span class="dr-field-mode-tag">🚲 外勤品管制式回報（3 項必填）</span>
           ${prevEntry ? `
@@ -558,14 +656,34 @@ export function mountDailyReport(root) {
           ` : ''}
         </div>
 
-        <div class="dr-chip-bar">
-          <span class="dr-chip-label">📍 點擊快選地區：</span>
-          ${regionChips.map(c => `<button type="button" class="dr-phrase-chip" data-insert-region="${esc(c)}" data-target-uid="${esc(u.uid)}">＋ ${esc(c)}</button>`).join('')}
+        <!-- 縣市 ➔ 行政區 二階連動下拉選單 -->
+        <div class="dr-cascade-box">
+          <div class="dr-cascade-title">📍 縣市与行政區連動選擇器 <small class="muted">（選擇縣市後自動切換對應行政區，點選即可自動加入下方地區欄，支援同日多區）</small></div>
+          <div class="dr-cascade-row">
+            <label class="dr-cascade-col">
+              <span>① 選擇縣市</span>
+              <select data-cascade-city="${esc(u.uid)}">
+                ${cities.map(c => `<option value="${esc(c)}" ${c === defaultCity ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+              </select>
+            </label>
+            <label class="dr-cascade-col">
+              <span>② 選擇行政區（自動帶入）</span>
+              <select data-cascade-dist="${esc(u.uid)}">
+                <option value="">-- 請選擇 ${esc(defaultCity)} 行政區 --</option>
+                <option value="全區">📌 ${esc(defaultCity)}（不限行政區 / 全區）</option>
+                ${defaultDistricts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+              </select>
+            </label>
+            <div class="dr-cascade-actions">
+              <button type="button" class="btn sm primary" data-cascade-add="${esc(u.uid)}">＋ 加入地區</button>
+              <button type="button" class="btn sm ghost" data-cascade-clear="${esc(u.uid)}" title="清空地區欄">清空</button>
+            </div>
+          </div>
         </div>
 
         <label class="dr-field">
-          <span>1️⃣ 地區 <small class="muted">（必填，可點選上方縣市或手動輸入行政區）</small></span>
-          <input type="text" data-f-region="${esc(u.uid)}" placeholder="例如：新北市（板橋、中和）、高雄市（左營）..." value="${esc(rep.fieldRegion || '')}">
+          <span>1️⃣ 地區 <small class="muted">（必填，由上方連動選單自動帶入，亦可直接手動補充微調）</small></span>
+          <input type="text" data-f-region="${esc(u.uid)}" placeholder="例如：新北市（板橋區、中和區）..." value="${esc(rep.fieldRegion || '')}">
         </label>
 
         <div class="dr-field-row3">
@@ -593,20 +711,28 @@ export function mountDailyReport(root) {
         </label>
 
         <div class="dr-editor-actions">
-          <button type="button" class="btn" data-cancel-edit>取消</button>
-          <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
-          <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
-            💾 儲存並複製個人 LINE 格式
-          </button>
+          <button type="button" class="btn" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
+          ${!isReadonlyPreview ? `
+            <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
+            <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
+              💾 儲存並複製個人 LINE 格式
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
   }
 
   /** 內勤同仁專屬：條列式工作進度行內編輯器 */
-  function renderOfficeInlineEditor(u, rep, prevEntry, chips) {
+  function renderOfficeInlineEditor(u, rep, prevEntry, chips, isReadonlyPreview = false) {
     return `
-      <div class="dr-inline-editor" data-editor-for="${esc(u.uid)}" data-editor-mode="office">
+      <div class="dr-inline-editor ${isReadonlyPreview ? 'is-designer-preview' : ''}" data-editor-for="${esc(u.uid)}" data-editor-mode="office">
+        ${isReadonlyPreview ? `
+          <div class="dr-designer-preview-banner">
+            🛠️ <strong>系統設計者預覽模式</strong>：正在檢視 <strong>${esc(u.displayName)}（${esc(u.title || '內勤')}）</strong> 的專屬職務快選詞彙與回報欄位設定（防代填保護已鎖定儲存）
+          </div>
+        ` : ''}
+
         <div class="dr-editor-top-tools">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
@@ -617,7 +743,7 @@ export function mountDailyReport(root) {
         </div>
 
         <div class="dr-chip-bar">
-          <span class="dr-chip-label">⚡ 點擊快速插入：</span>
+          <span class="dr-chip-label">⚡ ${esc(u.displayName)} 職務專屬快選詞彙：</span>
           ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-insert-chip="${esc(c)}" data-target-uid="${esc(u.uid)}">＋ ${esc(c)}</button>`).join('')}
         </div>
 
@@ -637,17 +763,19 @@ export function mountDailyReport(root) {
         </label>
 
         <div class="dr-editor-actions">
-          <button type="button" class="btn" data-cancel-edit>取消</button>
-          <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
-          <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
-            💾 儲存並複製個人 LINE 格式
-          </button>
+          <button type="button" class="btn" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
+          ${!isReadonlyPreview ? `
+            <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
+            <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
+              💾 儲存並複製個人 LINE 格式
+            </button>
+          ` : ''}
         </div>
       </div>
     `;
   }
 
-  /** 外勤品管已填寫內容顯示區（僅本人與代理副理可見） */
+  /** 外勤品管已填寫內容顯示區（僅本人、代理副理與系統設計者可見） */
   function renderFieldReportBody(rep) {
     const v20 = Number(rep.fieldV20) || 0;
     const v20e = Number(rep.fieldV20E) || 0;
@@ -678,7 +806,7 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 內勤已填寫內容顯示區（僅本人與代理副理可見） */
+  /** 內勤已填寫內容顯示區（僅本人、代理副理與系統設計者可見） */
   function renderOfficeReportBody(rep) {
     return `
       <div class="dr-report-body">
@@ -702,18 +830,18 @@ export function mountDailyReport(root) {
     `;
   }
 
-  function renderHistoryExplorer({ users, isSup, myId }) {
-    // 蒐集歷史回報紀錄（嚴格遵守隱私：若非代理副理，僅能檢索自己本人的歷史紀錄！）
+  function renderHistoryExplorer({ users, canViewAll, myId }) {
+    // 蒐集歷史回報紀錄（若非代理副理或系統設計者，僅能檢索自己本人的歷史紀錄！）
     const entries = [];
     const sortedDates = [...state.dailyReports.keys()].sort((a, b) => b.localeCompare(a));
     for (const d of sortedDates) {
       const doc = state.dailyReports.get(d);
       const reps = doc?.reports || {};
       for (const [uid, rep] of Object.entries(reps)) {
-        if (!canViewReportContent(uid)) continue; // 隱私過濾：一般組員只看得到自己，代理副理看得到全組
+        if (!canViewReportContent(uid)) continue;
         const u = state.users.get(uid);
         if (!isReportSubmitted(rep, u)) continue;
-        if (isSup && historyFilterUid !== 'all' && uid !== historyFilterUid) continue;
+        if (canViewAll && historyFilterUid !== 'all' && uid !== historyFilterUid) continue;
         const textBlob = `${u?.displayName || ''} ${rep.todayTasks || ''} ${rep.tomorrowTasks || ''} ${rep.fieldRegion || ''} ${rep.notes || ''} ${rep.managerReply || ''}`.toLowerCase();
         if (historyKeyword.trim() && !textBlob.includes(historyKeyword.trim().toLowerCase())) continue;
         entries.push({ date: d, uid, user: u, report: rep });
@@ -723,7 +851,7 @@ export function mountDailyReport(root) {
     return `
       <section class="card pad dr-history-section">
         <div class="dr-history-filters">
-          ${isSup ? `
+          ${canViewAll ? `
             <label class="dr-filter-item">
               <span>👤 篩選組員：</span>
               <select data-history-uid>
@@ -781,7 +909,7 @@ export function mountDailyReport(root) {
     `;
   }
 
-  function bindEvents(users, doc) {
+  function bindEvents(users, doc, isDesigner) {
     // 切換單日看板 / 歷史檢索
     root.querySelectorAll('[data-view-mode]').forEach(btn => {
       btn.onclick = () => {
@@ -841,11 +969,11 @@ export function mountDailyReport(root) {
       btn.onclick = () => openQuickDailyReportSheet(btn.dataset.openQuick || selectedDate);
     });
 
-    // 展開行內編輯（嚴格限定僅能展開自己的回報卡）
+    // 展開行內編輯（本人填寫，或系統設計者展開預覽設定）
     root.querySelectorAll('[data-start-edit]').forEach(btn => {
       btn.onclick = () => {
         const targetId = btn.dataset.startEdit;
-        if (targetId !== myUid()) {
+        if (targetId !== myUid() && !isDesigner) {
           toast('每日回報僅限本人親自填寫，無法代填喔！', 'error');
           return;
         }
@@ -893,20 +1021,56 @@ export function mountDailyReport(root) {
       };
     });
 
-    // 外勤品管：點擊地區快選膠囊
-    root.querySelectorAll('[data-insert-region]').forEach(chip => {
-      chip.onclick = () => {
-        const uid = chip.dataset.targetUid;
-        const reg = chip.dataset.insertRegion;
+    // 外勤品管：縣市 ➔ 行政區 二階連動下拉選單事件
+    root.querySelectorAll('[data-cascade-city]').forEach(citySel => {
+      citySel.onchange = () => {
+        const uid = citySel.dataset.cascadeCity;
+        const city = citySel.value;
+        const distSel = root.querySelector(`[data-cascade-dist="${uid}"]`);
+        if (!distSel) return;
+        const districts = FIELD_CITY_DISTRICTS[city] || [];
+        distSel.innerHTML = `
+          <option value="">-- 請選擇 ${esc(city)} 行政區 --</option>
+          <option value="全區">📌 ${esc(city)}（不限行政區 / 全區）</option>
+          ${districts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+        `;
+      };
+    });
+
+    // 選擇第二層行政區時，自動合併帶入下方「1️⃣ 地區」欄位
+    root.querySelectorAll('[data-cascade-dist]').forEach(distSel => {
+      distSel.onchange = () => {
+        const uid = distSel.dataset.cascadeDist;
+        const dist = distSel.value;
+        if (!dist) return;
+        const citySel = root.querySelector(`[data-cascade-city="${uid}"]`);
         const regIn = root.querySelector(`[data-f-region="${uid}"]`);
-        if (!regIn) return;
-        const cur = regIn.value.trim();
-        if (!cur) {
-          regIn.value = reg;
-        } else if (!cur.includes(reg)) {
-          regIn.value = `${cur}、${reg}`;
-        }
+        if (!citySel || !regIn) return;
+        regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, dist);
+      };
+    });
+
+    // 點擊「＋加入地區」按鈕（若未選行政區則直接加入該縣市，已選則加入縣市＋行政區）
+    root.querySelectorAll('[data-cascade-add]').forEach(addBtn => {
+      addBtn.onclick = () => {
+        const uid = addBtn.dataset.cascadeAdd;
+        const citySel = root.querySelector(`[data-cascade-city="${uid}"]`);
+        const distSel = root.querySelector(`[data-cascade-dist="${uid}"]`);
+        const regIn = root.querySelector(`[data-f-region="${uid}"]`);
+        if (!citySel || !regIn) return;
+        regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, distSel?.value || '');
         regIn.focus();
+      };
+    });
+
+    root.querySelectorAll('[data-cascade-clear]').forEach(clrBtn => {
+      clrBtn.onclick = () => {
+        const uid = clrBtn.dataset.cascadeClear;
+        const regIn = root.querySelector(`[data-f-region="${uid}"]`);
+        if (regIn) {
+          regIn.value = '';
+          regIn.focus();
+        }
       };
     });
 
@@ -972,7 +1136,7 @@ export function mountDailyReport(root) {
         const fieldV20E = Number(v20eIn?.value) || 0;
 
         if (!fieldRegion) {
-          toast('請填寫或點選「1️⃣ 地區」', 'error');
+          toast('請透過上方連動選單選擇或填寫「1️⃣ 地區」', 'error');
           regIn?.focus();
           return;
         }
@@ -1159,7 +1323,10 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
   const doc = dailyReportDocOf(dateStr);
   const rep = doc.reports?.[uid] || {};
   const prevEntry = getPreviousUserReport(uid, dateStr);
-  const chips = isField ? getFieldRegionChipsForUser(me) : getQuickChipsForUser(me);
+  const chips = !isField ? getQuickChipsForUser(me) : [];
+  const cities = isField ? getOrderedCitiesForUser(me) : [];
+  const defaultCity = cities[0] || '新北市';
+  const defaultDistricts = FIELD_CITY_DISTRICTS[defaultCity] || [];
   const initV20 = rep.fieldV20 !== undefined ? rep.fieldV20 : '';
   const initV20E = rep.fieldV20E !== undefined ? rep.fieldV20E : '';
   const initTotal = (Number(initV20) || 0) + (Number(initV20E) || 0);
@@ -1190,16 +1357,33 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
         </div>
 
         ${isField ? `
-          <div class="dr-sheet-chips">
-            <div class="dr-chip-label">📍 點擊下方常用地區直接帶入（可多選或手動補充）：</div>
-            <div class="dr-chip-scroll">
-              ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-sheet-region-chip="${esc(c)}">＋ ${esc(c)}</button>`).join('')}
+          <div class="dr-cascade-box">
+            <div class="dr-cascade-title">📍 縣市與行政區連動選擇器（選擇即自動加入下方地區欄，支援多區）</div>
+            <div class="dr-cascade-row">
+              <label class="dr-cascade-col">
+                <span>① 選擇縣市</span>
+                <select data-sheet-cascade-city>
+                  ${cities.map(c => `<option value="${esc(c)}" ${c === defaultCity ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+                </select>
+              </label>
+              <label class="dr-cascade-col">
+                <span>② 選擇行政區（自動帶入）</span>
+                <select data-sheet-cascade-dist>
+                  <option value="">-- 請選擇 ${esc(defaultCity)} 行政區 --</option>
+                  <option value="全區">📌 ${esc(defaultCity)}（不限行政區 / 全區）</option>
+                  ${defaultDistricts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+                </select>
+              </label>
+              <div class="dr-cascade-actions">
+                <button type="button" class="btn sm primary" data-sheet-cascade-add>＋ 加入地區</button>
+                <button type="button" class="btn sm ghost" data-sheet-cascade-clear>清空</button>
+              </div>
             </div>
           </div>
 
           <label class="dr-sheet-field">
-            <span>1️⃣ 地區（必填）</span>
-            <input type="text" data-sheet-region placeholder="例如：新北市（板橋、中和）..." value="${esc(rep.fieldRegion || '')}">
+            <span>1️⃣ 地區（必填，由上方選單自動帶入，亦可直接手動補充微調）</span>
+            <input type="text" data-sheet-region placeholder="例如：新北市（板橋區、中和區）..." value="${esc(rep.fieldRegion || '')}">
           </label>
 
           <div class="dr-field-row3">
@@ -1284,6 +1468,39 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
     const v20In = backdrop.querySelector('[data-sheet-v20]');
     const v20eIn = backdrop.querySelector('[data-sheet-v20e]');
     const sumEl = backdrop.querySelector('[data-sheet-bike-sum]');
+    const citySel = backdrop.querySelector('[data-sheet-cascade-city]');
+    const distSel = backdrop.querySelector('[data-sheet-cascade-dist]');
+    const addBtn = backdrop.querySelector('[data-sheet-cascade-add]');
+    const clrBtn = backdrop.querySelector('[data-sheet-cascade-clear]');
+
+    if (citySel && distSel) {
+      citySel.onchange = () => {
+        const city = citySel.value;
+        const dists = FIELD_CITY_DISTRICTS[city] || [];
+        distSel.innerHTML = `
+          <option value="">-- 請選擇 ${esc(city)} 行政區 --</option>
+          <option value="全區">📌 ${esc(city)}（不限行政區 / 全區）</option>
+          ${dists.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
+        `;
+      };
+      distSel.onchange = () => {
+        if (!distSel.value) return;
+        regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, distSel.value);
+      };
+    }
+
+    if (addBtn && citySel) {
+      addBtn.onclick = () => {
+        regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, distSel?.value || '');
+      };
+    }
+
+    if (clrBtn) {
+      clrBtn.onclick = () => {
+        regIn.value = '';
+        regIn.focus();
+      };
+    }
 
     const updateSheetSum = () => {
       const a = Number(v20In?.value) || 0;
@@ -1294,15 +1511,6 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
     };
     v20In?.addEventListener('input', updateSheetSum);
     v20eIn?.addEventListener('input', updateSheetSum);
-
-    backdrop.querySelectorAll('[data-sheet-region-chip]').forEach(chip => {
-      chip.onclick = () => {
-        const reg = chip.dataset.sheetRegionChip;
-        const cur = regIn.value.trim();
-        if (!cur) regIn.value = reg;
-        else if (!cur.includes(reg)) regIn.value = `${cur}、${reg}`;
-      };
-    });
 
     const prevBtn = backdrop.querySelector('[data-sheet-import-prev]');
     if (prevBtn && prevEntry) {

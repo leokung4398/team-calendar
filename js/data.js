@@ -93,6 +93,14 @@ export function isSupervisor(u) {
   return name.includes('徐嘉鴻') || (u.title || '').includes('副理');
 }
 
+/** 判斷組員是否為系統設計者（孔令淳 Leo / 管理員）— 可檢視全員回報內容與預覽他人回報表單設定 */
+export function isSystemDesigner(u) {
+  if (!u) return false;
+  const name = u.displayName || '';
+  const email = (u.email || '').toLowerCase();
+  return name.includes('孔令淳') || email.startsWith('gb4398@') || u.role === 'admin';
+}
+
 /** 判斷組員是否為需每日下班回報之內勤組員（排除 3 位外勤品管與代理副理） */
 export function isOfficeReporter(u) {
   if (!u || !u.active) return false;
