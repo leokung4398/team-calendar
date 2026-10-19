@@ -84,6 +84,7 @@ export function isFieldStaff(u) {
   const name = u.displayName || '';
   return ['孔令淳', '葉爵豪', '陸逸群'].some(n => name.includes(n));
 }
+export const isFieldUser = isFieldStaff;
 
 /** 判斷組員是否為代理副理/主管（徐嘉鴻） */
 export function isSupervisor(u) {
