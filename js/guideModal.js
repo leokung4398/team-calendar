@@ -1137,6 +1137,17 @@ export function startInteractiveDailyReportSpotlightTour() {
     location.hash = '#/dailyReport';
   }
 
+  const me = state.me;
+  const myId = me?.uid || '';
+  const myName = me?.displayName || '您';
+  const myTitle = me?.title || '專屬職務';
+  const myCardSelector = myId ? `#dr-card-${CSS.escape(myId)}` : '.dr-member-card.is-me';
+
+  // 若先前在步驟 4 自動打開了行內編輯器，切換到其他步驟或結束導覽時自動收合
+  function closeInlineEditorIfOpen() {
+    document.querySelector('.dr-inline-editor [data-cancel-edit]')?.click();
+  }
+
   const tourSteps = [
     {
       target: '.dr-hero-actions',
@@ -1146,6 +1157,7 @@ export function startInteractiveDailyReportSpotlightTour() {
       body: '內勤同仁下班前點擊<b>「✍️ 立即填寫今日回報」</b>即可喚起極速快填抽屜！儲存後系統會自動將您的工作項目整理為 <code>1. 2. 3.</code> 條列編號並<b>自動複製個人專屬 LINE 回報格式</b>，直接去 LINE 群組貼上即可向代理副理回報！',
       position: 'bottom',
       beforeStep: () => {
+        closeInlineEditorIfOpen();
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
       }
     },
@@ -1157,6 +1169,7 @@ export function startInteractiveDailyReportSpotlightTour() {
       body: '上方支援<b>「‹ 前一天 / 後一天 ›」</b>隨時回頭查閱或補登過往進度；若遇颱風停班停課，主管或管理員只需點一下右側<b>「🌀 設為颱風天免回報」</b>，全體內勤同仁當日即自動轉為颱風假免回報，並自動暫停 17:30 下班提醒！',
       position: 'bottom',
       beforeStep: () => {
+        closeInlineEditorIfOpen();
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
       }
     },
@@ -1168,18 +1181,26 @@ export function startInteractiveDailyReportSpotlightTour() {
       body: '即時統計 <b>6 位內勤同仁</b>的「✅ 已完成回報」與「⏳ 待回報」名單！若同仁當天在行事曆有登記<b>「公休/請假」</b>或遇國定例假日，系統會自動標示為<b>「🏖️ 今日休假免回報」</b>，絕不誤催。',
       position: 'bottom',
       beforeStep: () => {
+        closeInlineEditorIfOpen();
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
       }
     },
     {
-      target: '#dr-office-section .dr-member-card',
-      fallbackTarget: '#dr-office-section',
+      target: myCardSelector,
+      fallbackTarget: '.dr-member-card.is-me, #dr-office-section .dr-member-card',
       badge: '步驟 4 / 6',
-      title: '🏢 內勤同仁回報卡（帶入昨日項目 ＆ 職務快選膠囊）',
-      body: '展開編輯時，支援<b>「📥 一鍵帶入前次項目」</b>與依職務量身打造的<b>「⚡ 常用工作快選膠囊」</b>（採購、倉管、勞安、在庫、企劃專屬詞彙），點一下即可插入；代理副理（徐嘉鴻）還能在卡片下方一鍵點選<b>「👍 已閱」</b>或留下<b>「💬 主管回饋」</b>！',
+      title: `✍️ ${myName} 的專屬回報卡（已為您展開實景填寫區）`,
+      body: `已自動為 <b>${myName}（${myTitle}）</b> 點開填寫面板！您可以看到上方支援<b>「📥 一鍵帶入前次項目」</b>、<b>「🔢 自動整理編號」</b>，以及專為您職務量身打造的<b>「⚡ 點擊快速插入常用詞彙膠囊」</b>；填完點擊右下角<b>「💾 儲存並複製個人 LINE 格式」</b>即可一氣呵成！`,
       position: 'top',
       beforeStep: () => {
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
+        // 自動點開「目前登入使用者自己」的填寫回報按鈕（若找不到則點開第一張可編輯卡片）
+        const myEditBtn = (myId && document.querySelector(`[data-start-edit="${CSS.escape(myId)}"]`))
+          || document.querySelector('.dr-member-card.is-me [data-start-edit]')
+          || document.querySelector('[data-start-edit]');
+        if (myEditBtn) {
+          myEditBtn.click();
+        }
       }
     },
     {
@@ -1187,9 +1208,10 @@ export function startInteractiveDailyReportSpotlightTour() {
       fallbackTarget: '.daily-report-page',
       badge: '步驟 5 / 6',
       title: '👔 代理副理審閱 ＆ 🚲 外勤品管同仁免回報',
-      body: '完美貼合團隊實際運作！<b>3 位外勤品管同仁（孔令淳、葉爵豪、陸逸群）</b>預設標示為<b>「🚲 外勤品管（免回報）」</b>，不列入未交名單也無 17:30 提醒打擾，但仍可隨時透明檢視全組進度或自由補充紀錄。',
+      body: '完美貼合團隊實際運作！<b>代理副理（徐嘉鴻）</b>可對組員回報點選<b>「👍 已閱」</b>或留下<b>「💬 主管回饋」</b>；而 <b>3 位外勤品管同仁（孔令淳、葉爵豪、陸逸群）</b>預設標示為<b>「🚲 外勤品管（免回報）」</b>，不列入未交名單也無 17:30 提醒打擾，但仍可自由補充紀錄。',
       position: 'top',
       beforeStep: () => {
+        closeInlineEditorIfOpen();
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
       }
     },
@@ -1201,6 +1223,7 @@ export function startInteractiveDailyReportSpotlightTour() {
       body: '切換至<b>「🔍 歷史紀錄檢索」</b>分頁，即可依特定組員或輸入關鍵字（如：採購、倉管、勞安、車柱）跨日期秒速搜尋過往所有的工作進度，月底寫月報或追蹤專案超輕鬆！',
       position: 'top',
       beforeStep: () => {
+        closeInlineEditorIfOpen();
         document.querySelector('.dr-tab-btn[data-view-mode="history"]')?.click();
       }
     }
@@ -1246,6 +1269,7 @@ export function startInteractiveDailyReportSpotlightTour() {
     window.removeEventListener('resize', updatePosition);
     window.removeEventListener('scroll', updatePosition);
     document.removeEventListener('keydown', onTourKey);
+    closeInlineEditorIfOpen();
     document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
