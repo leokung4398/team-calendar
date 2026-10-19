@@ -328,8 +328,9 @@ export function mountDailyReport(root) {
     const st = evaluateMemberReportStatus(u, dateStr);
     const rep = st.report || {};
     const isMe = u.uid === myId;
-    const canEditThis = isMe || isAdmin();
-    const isEditing = editingUid === u.uid;
+    // 嚴格限定本人填寫（防止代填，即便是管理員也僅能填寫自己的回報）
+    const canEditThis = isMe;
+    const isEditing = editingUid === u.uid && isMe;
     const ackList = Object.values(rep.ackBy || {});
     const myAck = !!(rep.ackBy && rep.ackBy[myId]);
     const prevEntry = isEditing ? getPreviousUserReport(u.uid, dateStr) : null;
@@ -605,10 +606,15 @@ export function mountDailyReport(root) {
       btn.onclick = () => openQuickDailyReportSheet(btn.dataset.openQuick || selectedDate);
     });
 
-    // 展開行內編輯
+    // 展開行內編輯（嚴格限定僅能展開自己的回報卡）
     root.querySelectorAll('[data-start-edit]').forEach(btn => {
       btn.onclick = () => {
-        editingUid = btn.dataset.startEdit;
+        const targetId = btn.dataset.startEdit;
+        if (targetId !== myUid()) {
+          toast('每日回報僅限本人親自填寫，無法代填喔！', 'error');
+          return;
+        }
+        editingUid = targetId;
         render();
         const ta = root.querySelector(`[data-f-today="${editingUid}"]`);
         if (ta) ta.focus();
@@ -666,6 +672,10 @@ export function mountDailyReport(root) {
 
     // 儲存（僅儲存 或 儲存並複製 LINE 格式）
     async function handleSaveInline(uid, copyToLine = false) {
+      if (uid !== myUid()) {
+        toast('每日回報僅限本人親自填寫，無法代填！', 'error');
+        return;
+      }
       const todayTa = root.querySelector(`[data-f-today="${uid}"]`);
       const tomorrowTa = root.querySelector(`[data-f-tomorrow="${uid}"]`);
       const notesIn = root.querySelector(`[data-f-notes="${uid}"]`);

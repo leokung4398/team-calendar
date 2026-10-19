@@ -1194,10 +1194,9 @@ export function startInteractiveDailyReportSpotlightTour() {
       position: 'top',
       beforeStep: () => {
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
-        // 自動點開「目前登入使用者自己」的填寫回報按鈕（若找不到則點開第一張可編輯卡片）
+        // 自動點開「目前登入使用者自己」的填寫回報按鈕（嚴格僅點開本人的卡片）
         const myEditBtn = (myId && document.querySelector(`[data-start-edit="${CSS.escape(myId)}"]`))
-          || document.querySelector('.dr-member-card.is-me [data-start-edit]')
-          || document.querySelector('[data-start-edit]');
+          || document.querySelector('.dr-member-card.is-me [data-start-edit]');
         if (myEditBtn) {
           myEditBtn.click();
         }

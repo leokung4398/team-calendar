@@ -716,9 +716,12 @@ export function dailyReportDocOf(dateStr) {
   return state.dailyReports.get(dateStr) || { id: dateStr, isTyphoonDay: false, typhoonNote: '', reports: {} };
 }
 
-/** 儲存單一組員在特定日期的每日工作進度回報 */
+/** 儲存單一組員在特定日期的每日工作進度回報（嚴格限定僅能儲存本人回報，防止他人代填） */
 export async function saveUserDailyReport(dateStr, targetUid, reportPayload) {
   const me = myUid();
+  if (!me || targetUid !== me) {
+    throw new Error('每日工作回報僅限本人親自填寫，無法代他人填寫');
+  }
   const existingDoc = dailyReportDocOf(dateStr);
   const prevReport = existingDoc.reports?.[targetUid] || {};
   const nextReport = {
