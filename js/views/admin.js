@@ -106,7 +106,7 @@ export function mountAdmin(el) {
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📝</span>
-            <b>每日回報</b>：<span class="muted">內勤下班工作進度回報、一鍵複製 LINE 格式、颱風假切換與主管審閱</span>
+            <b>每日回報</b>：<span class="muted">全組 9 人內外勤每日回報（外勤縣市➔行政區連動選單三問、內勤快選）、防代填與僅代理副理可見保護</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📢</span>
