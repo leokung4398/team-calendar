@@ -85,24 +85,31 @@ input[type=color] { padding: 2px; width: 44px; height: 34px; }
   background: var(--yb-ink) repeating-linear-gradient(90deg, var(--yb) 0 22px, transparent 22px 34px) 0 50% / 100% 2px no-repeat;
 }
 .topbar-in {
-  max-width: var(--maxw); margin: 0 auto; height: 56px; padding: 0 20px;
-  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  max-width: var(--maxw); margin: 0 auto; height: 58px; padding: 0 20px;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px;
 }
-.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; white-space: nowrap; justify-self: start; color: var(--ink); text-decoration: none; }
-.brand-mark { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--yb); }
+.brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15.5px; white-space: nowrap; justify-self: start; color: var(--ink); text-decoration: none; }
+.brand-mark { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--yb); flex-shrink: 0; }
 .brand-mark .yb-bike { --yb: #fff; }
 .brand:hover .brand-mark .yb-wheel { animation: yb-spin .8s linear infinite; }
 .tabs {
   display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
   background: #f1f1ec; padding: 3px; border-radius: 10px; justify-self: center; max-width: 100%;
 }
+.tabs::-webkit-scrollbar { display: none; }
 .tabs a {
-  text-decoration: none; color: var(--muted); padding: 6px 13px; border-radius: 8px; white-space: nowrap;
-  font-weight: 500; font-size: 14px; transition: background .15s, color .15s;
+  text-decoration: none; color: var(--muted); padding: 6px 11px; border-radius: 8px; white-space: nowrap;
+  font-weight: 500; font-size: 13.5px; transition: background .15s, color .15s;
 }
 .tabs a:hover { color: var(--ink); }
-.tabs a.active { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(15, 23, 42, .12), inset 0 -3px 0 var(--yb); }
-.top-actions { display: flex; align-items: center; gap: 8px; justify-self: end; }
+.tabs a.active { background: #fff; color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(15, 23, 42, .12), inset 0 -3px 0 var(--yb); }
+.top-actions { display: flex; align-items: center; gap: 7px; justify-self: end; flex-shrink: 0; }
+@media (max-width: 1260px) {
+  .topbar-in { padding: 0 12px; gap: 8px; }
+  .brand { font-size: 14.5px; gap: 7px; }
+  .tabs a { padding: 5px 9px; font-size: 13px; }
+  .top-actions .btn { padding: 6px 10px; font-size: 13px; }
+}
 .bell-wrap, .user-wrap { position: relative; }
 .badge {
   position: absolute; top: -2px; right: -4px; background: var(--danger); color: #fff;
@@ -2021,7 +2028,13 @@ th.has-meeting { position: relative; }
   flex-direction: column;
   gap: 12px;
   border-top: 3px solid #cbd5e1;
-  transition: box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.dr-member-card.is-editing {
+  grid-column: 1 / -1;
+  border-top: 4px solid #0d9488;
+  box-shadow: 0 8px 28px rgba(13, 148, 136, 0.14), 0 0 0 2px rgba(13, 148, 136, 0.25);
 }
 
 .dr-member-card.tone-ok { border-top-color: #10b981; }
@@ -2731,15 +2744,17 @@ th.has-meeting { position: relative; }
 .dr-cascade-col select {
   width: 100%;
   min-width: 0;
-  padding: 7px 8px;
+  height: 38px;
+  padding: 0 10px;
   border: 1.5px solid #7dd3fc;
-  border-radius: 7px;
+  border-radius: 8px;
   background: #ffffff;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 600;
   color: #0f172a;
   font-family: inherit;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .dr-cascade-col select:focus {
@@ -2750,8 +2765,17 @@ th.has-meeting { position: relative; }
 
 .dr-cascade-actions {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   align-items: center;
+}
+
+.dr-cascade-actions .btn {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
 
 /* 系統設計者專屬標籤與表單設定預覽橫幅 */

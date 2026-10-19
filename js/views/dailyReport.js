@@ -527,7 +527,7 @@ export function mountDailyReport(root) {
     const chips = isEditing && !isField ? getQuickChipsForUser(u) : [];
 
     return `
-      <article class="card dr-member-card tone-${esc(st.tone)} ${isMe ? 'is-me' : ''}" id="dr-card-${esc(u.uid)}">
+      <article class="card dr-member-card tone-${esc(st.tone)} ${isMe ? 'is-me' : ''} ${isEditing ? 'is-editing' : ''}" id="dr-card-${esc(u.uid)}">
         <div class="dr-card-head">
           <div class="dr-user-info">
             ${avatar(u, 38)}

@@ -102,11 +102,11 @@ export function mountAdmin(el) {
         <div class="perm-legend-box" style="margin: 14px 0; display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">🚲</span>
-            <b>模擬體驗</b>：<span class="muted">YouBike 2.0 車機借還車、調度、電輔車模擬測試功能</span>
+            <b>模擬體驗</b>：<span class="muted">YouBike 2.0 / 2.0E 各縣市配額矩陣、北南區每日品管巡檢與年度總表</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📝</span>
-            <b>每日回報</b>：<span class="muted">全組 9 人內外勤每日回報（外勤縣市➔行政區連動選單三問、內勤快選）、防代填與僅代理副理可見保護</span>
+            <b>每日回報</b>：<span class="muted">全組 9 人內外勤回報（內勤工作進度全組公開共享；外勤三問回報僅代理副理 徐嘉鴻、代理人 包于巧 與本人可見）</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📢</span>
@@ -450,23 +450,26 @@ export function mountAdmin(el) {
       <thead>
         <tr>
           <th style="min-width:180px;">組員姓名 / 職稱</th>
-          <th style="min-width:140px;">系統角色</th>
-          <th style="text-align:center; min-width:120px;">
-            <div style="display:inline-flex; align-items:center; gap:4px;">
+          <th style="min-width:120px;">系統角色</th>
+          <th style="text-align:center; min-width:130px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
               <span>🚲 模擬體驗</span>
+              <button type="button" class="btn small ghost" data-batch-mod="simulation" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
-          <th style="text-align:center; min-width:120px;">
-            <div style="display:inline-flex; align-items:center; gap:4px;">
+          <th style="text-align:center; min-width:130px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
               <span>📝 每日回報</span>
+              <button type="button" class="btn small ghost" data-batch-mod="dailyReport" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
-          <th style="text-align:center; min-width:120px;">
-            <div style="display:inline-flex; align-items:center; gap:4px;">
+          <th style="text-align:center; min-width:130px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
               <span>📢 採購佈告欄</span>
+              <button type="button" class="btn small ghost" data-batch-mod="bulletin" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
-          <th style="min-width:200px;">權限說明狀態</th>
+          <th style="min-width:190px;">權限說明狀態</th>
         </tr>
       </thead>
       <tbody>
@@ -558,6 +561,20 @@ export function mountAdmin(el) {
   });
 
 
+
+  // 監聽矩陣批次開通按鈕
+  q('[data-perm-table]')?.addEventListener('click', async e => {
+    const batchBtn = e.target.closest('[data-batch-mod]');
+    if (!batchBtn) return;
+    const mod = batchBtn.dataset.batchMod;
+    try {
+      await batchUpdateModulePermission(mod, true);
+      toast('已為全體組員開通該業務模組權限', 'success');
+      renderPermMatrix();
+    } catch (err) {
+      toast('批次更新失敗：' + (err.code || err.message), 'error');
+    }
+  });
 
   render();
   return {
