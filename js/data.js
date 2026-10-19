@@ -31,7 +31,8 @@ export const state = {
   notifications: [],
   eventsFrom: null,
   dailyInspections: new Map(),
-  loaded: { users: false, types: false, events: false, meetings: false, simulationDuties: false, dailyInspections: false, permissions: false },
+  dailyReports: new Map(), // date (YYYY-MM-DD) -> { id, isTyphoonDay, typhoonNote, reports: { [uid]: {...} } }
+  loaded: { users: false, types: false, events: false, meetings: false, simulationDuties: false, dailyInspections: false, dailyReports: false, permissions: false },
 };
 
 const listeners = new Set();
@@ -84,11 +85,24 @@ export function isFieldStaff(u) {
   return ['孔令淳', '葉爵豪', '陸逸群'].some(n => name.includes(n));
 }
 
+/** 判斷組員是否為代理副理/主管（徐嘉鴻） */
+export function isSupervisor(u) {
+  if (!u) return false;
+  const name = u.displayName || '';
+  return name.includes('徐嘉鴻') || (u.title || '').includes('副理');
+}
+
+/** 判斷組員是否為需每日下班回報之內勤組員（排除 3 位外勤品管與代理副理） */
+export function isOfficeReporter(u) {
+  if (!u || !u.active) return false;
+  if (isFieldStaff(u) || isSupervisor(u)) return false;
+  return true;
+}
+
 /** 判斷組員是否免輪值會議紀錄人（主管：徐嘉鴻；外勤：孔令淳、葉爵豪、陸逸群） */
 export function isExcludedFromRecorder(u) {
   if (!u) return false;
-  const name = u.displayName || '';
-  return name.includes('徐嘉鴻') || isFieldStaff(u);
+  return isSupervisor(u) || isFieldStaff(u);
 }
 
 export const canEdit = ev => !!ev && (ev.ownerUid === myUid() || isAdmin());
@@ -252,6 +266,12 @@ export function startSync(fatalHandler) {
     state.loaded.dailyInspections = true;
     emit();
   }, fail('dailyInspections')));
+
+  unsubs.push(onSnapshot(groupCol('dailyReports'), s => {
+    state.dailyReports = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data() }]));
+    state.loaded.dailyReports = true;
+    emit();
+  }, fail('dailyReports')));
 }
 
 /** 確保已同步「結束日 >= from」的所有行程（往前翻月份時會擴大範圍） */
@@ -685,6 +705,123 @@ export async function saveDailyInspectionPlan(zone, planData) {
   await setDoc(ref, {
     ...planData,
     id: zone,
+    updatedBy: me,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+
+// ---------------- 每日工作進度回報模組 ----------------
+/** 取得特定日期的每日回報紀錄文件（YYYY-MM-DD） */
+export function dailyReportDocOf(dateStr) {
+  return state.dailyReports.get(dateStr) || { id: dateStr, isTyphoonDay: false, typhoonNote: '', reports: {} };
+}
+
+/** 儲存單一組員在特定日期的每日工作進度回報 */
+export async function saveUserDailyReport(dateStr, targetUid, reportPayload) {
+  const me = myUid();
+  const existingDoc = dailyReportDocOf(dateStr);
+  const prevReport = existingDoc.reports?.[targetUid] || {};
+  const nextReport = {
+    ...prevReport,
+    ...reportPayload,
+    uid: targetUid,
+    updatedBy: me,
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (demo) {
+    const updatedDoc = {
+      ...existingDoc,
+      id: dateStr,
+      reports: {
+        ...(existingDoc.reports || {}),
+        [targetUid]: nextReport,
+      },
+    };
+    state.dailyReports = new Map(state.dailyReports).set(dateStr, updatedDoc);
+    emit();
+    return nextReport;
+  }
+
+  const ref = groupDoc('dailyReports', dateStr);
+  await setDoc(ref, {
+    id: dateStr,
+    reports: {
+      [targetUid]: nextReport,
+    },
+    updatedBy: me,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+  return nextReport;
+}
+
+/** 切換特定日期是否為「🌀 颱風天停班停課（全員免回報）」 */
+export async function toggleTyphoonDay(dateStr, isTyphoonDay, typhoonNote = '🌀 颱風停班停課（全員免回報）') {
+  const me = myUid();
+  const existingDoc = dailyReportDocOf(dateStr);
+
+  if (demo) {
+    const updatedDoc = {
+      ...existingDoc,
+      id: dateStr,
+      isTyphoonDay: !!isTyphoonDay,
+      typhoonNote: isTyphoonDay ? typhoonNote : '',
+    };
+    state.dailyReports = new Map(state.dailyReports).set(dateStr, updatedDoc);
+    emit();
+    return;
+  }
+
+  const ref = groupDoc('dailyReports', dateStr);
+  await setDoc(ref, {
+    id: dateStr,
+    isTyphoonDay: !!isTyphoonDay,
+    typhoonNote: isTyphoonDay ? typhoonNote : '',
+    updatedBy: me,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+
+/** 主管（代理副理 徐嘉鴻 或 管理員）對組員當日回報點選「👍 已閱」或留下主管回饋 */
+export async function acknowledgeDailyReport(dateStr, targetUid, { ack = true, managerReply = undefined } = {}) {
+  const me = myUid();
+  const meName = state.me?.displayName || '主管';
+  const existingDoc = dailyReportDocOf(dateStr);
+  const prevReport = existingDoc.reports?.[targetUid] || { uid: targetUid };
+  const prevAck = prevReport.ackBy || {};
+  const nextAck = { ...prevAck };
+  if (ack) {
+    nextAck[me] = { uid: me, name: meName, at: new Date().toISOString() };
+  } else {
+    delete nextAck[me];
+  }
+
+  const nextReport = {
+    ...prevReport,
+    ackBy: nextAck,
+    ...(managerReply !== undefined ? { managerReply, managerReplyBy: meName, managerReplyAt: new Date().toISOString() } : {}),
+  };
+
+  if (demo) {
+    const updatedDoc = {
+      ...existingDoc,
+      id: dateStr,
+      reports: {
+        ...(existingDoc.reports || {}),
+        [targetUid]: nextReport,
+      },
+    };
+    state.dailyReports = new Map(state.dailyReports).set(dateStr, updatedDoc);
+    emit();
+    return;
+  }
+
+  const ref = groupDoc('dailyReports', dateStr);
+  await setDoc(ref, {
+    id: dateStr,
+    reports: {
+      [targetUid]: nextReport,
+    },
     updatedBy: me,
     updatedAt: serverTimestamp(),
   }, { merge: true });

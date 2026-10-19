@@ -179,6 +179,13 @@ service cloud.firestore {
         allow create, update: if isMember(gid);
         allow delete: if isAdmin(gid);
       }
+
+      // ---------- 每日工作進度回報模組 ----------
+      match /dailyReports/{dateId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isAdmin(gid);
+      }
     }
   }
 }

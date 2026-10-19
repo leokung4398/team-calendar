@@ -51,6 +51,18 @@ export function openGuideModal() {
       ]
     },
     {
+      title: '📝 每日回報 (Daily Report)',
+      badge: '下班進度與 LINE 快貼',
+      color: '#0d9488',
+      desc: '內勤同仁每日下班工作進度回報、一鍵複製個人 LINE 格式與主管已閱簽核。',
+      items: [
+        { label: '一鍵帶入昨日項目 & 職務快選膠囊', detail: '自動帶入前一日工作項目，並依採購、倉管、勞安、營運提供專屬常用詞彙，點一下即可插入。' },
+        { label: '複製個人 LINE 回報格式', detail: '儲存後自動排版個人進度並複製，點擊「💬 開啟 LINE」即可直接貼到群組向代理副理回報。' },
+        { label: '颱風天切換、休假連動 & 17:30 溫和提醒', detail: '自動連動行事曆請假與國定假日；遇颱風假可一鍵設為全員免回報，平日 17:30 則提供不打擾的溫和下班提醒。' },
+        { label: '行動端通勤極速快填鈕 (FAB)', detail: '手機右下角常駐「✍️ 今日回報」大按鈕，方便趕車或等紅綠燈空檔單手 15 秒完成填寫與複製。' }
+      ]
+    },
+    {
       title: '📢 採購佈告欄 (Bulletin)',
       badge: '電子週報與管理',
       color: '#e11d48',
@@ -73,6 +85,7 @@ export function openGuideModal() {
     }
   ].filter(s => {
     if (s.title.includes('模擬體驗') && !hasModulePermission(state.me, 'simulation')) return false;
+    if (s.title.includes('每日回報') && !hasModulePermission(state.me, 'dailyReport')) return false;
     if (s.title.includes('採購佈告欄') && !hasModulePermission(state.me, 'bulletin')) return false;
     return true;
   });

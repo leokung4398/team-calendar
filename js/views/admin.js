@@ -105,6 +105,10 @@ export function mountAdmin(el) {
             <b>模擬體驗</b>：<span class="muted">YouBike 2.0 車機借還車、調度、電輔車模擬測試功能</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:14px;">📝</span>
+            <b>每日回報</b>：<span class="muted">內勤下班工作進度回報、一鍵複製 LINE 格式、颱風假切換與主管審閱</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📢</span>
             <b>採購佈告欄</b>：<span class="muted">採購 Team 專案管理、公告資訊、文件清單與業務後台</span>
           </div>
@@ -447,12 +451,17 @@ export function mountAdmin(el) {
         <tr>
           <th style="min-width:180px;">組員姓名 / 職稱</th>
           <th style="min-width:140px;">系統角色</th>
-          <th style="text-align:center; min-width:130px;">
+          <th style="text-align:center; min-width:120px;">
             <div style="display:inline-flex; align-items:center; gap:4px;">
               <span>🚲 模擬體驗</span>
             </div>
           </th>
-          <th style="text-align:center; min-width:130px;">
+          <th style="text-align:center; min-width:120px;">
+            <div style="display:inline-flex; align-items:center; gap:4px;">
+              <span>📝 每日回報</span>
+            </div>
+          </th>
+          <th style="text-align:center; min-width:120px;">
             <div style="display:inline-flex; align-items:center; gap:4px;">
               <span>📢 採購佈告欄</span>
             </div>
@@ -464,8 +473,10 @@ export function mountAdmin(el) {
         ${activeList.map(u => {
           const isUserAdmin = u.role === 'admin';
           const canSim = hasModulePermission(u, 'simulation');
+          const canDaily = hasModulePermission(u, 'dailyReport');
           const canBulletin = hasModulePermission(u, 'bulletin');
           const isSelf = u.uid === me;
+          const activeModCount = [canSim, canDaily, canBulletin].filter(Boolean).length;
 
           return `
             <tr data-perm-uid="${esc(u.uid)}">
@@ -497,6 +508,14 @@ export function mountAdmin(el) {
               </td>
               <td style="text-align:center;">
                 <label class="perm-check-wrap ${isUserAdmin ? 'disabled' : ''}">
+                  <input type="checkbox" data-perm-mod="dailyReport"
+                    ${canDaily ? 'checked' : ''}
+                    ${isUserAdmin ? 'disabled title="管理員預設擁有全模組權限"' : ''}>
+                  <span class="perm-check-custom"></span>
+                </label>
+              </td>
+              <td style="text-align:center;">
+                <label class="perm-check-wrap ${isUserAdmin ? 'disabled' : ''}">
                   <input type="checkbox" data-perm-mod="bulletin"
                     ${canBulletin ? 'checked' : ''}
                     ${isUserAdmin ? 'disabled title="管理員預設擁有全模組權限"' : ''}>
@@ -506,8 +525,8 @@ export function mountAdmin(el) {
               <td>
                 ${isUserAdmin ?
                   '<span class="perm-status-note note-admin">全通權限（管理員最高權限）</span>' :
-                  `<span class="perm-status-note ${canSim && canBulletin ? 'note-all' : (canSim || canBulletin ? 'note-partial' : 'note-none')}">
-                    ${canSim && canBulletin ? '全業務模組已開通' : (canSim ? '僅開放模擬體驗' : (canBulletin ? '僅開放採購佈告欄' : '未開通業務模組'))}
+                  `<span class="perm-status-note ${activeModCount === 3 ? 'note-all' : (activeModCount > 0 ? 'note-partial' : 'note-none')}">
+                    ${activeModCount === 3 ? '全業務模組已開通' : (activeModCount > 0 ? `已開通 ${activeModCount} 項業務模組` : '未開通業務模組')}
                   </span>`
                 }
               </td>

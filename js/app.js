@@ -106,11 +106,13 @@ async function boot() {
     const { mountMeeting } = await import('./views/meeting.js');
     const { mountSimulation } = await import('./views/simulation.js');
     const { mountBulletin } = await import('./views/bulletin.js');
+    const { mountDailyReport, initDailyReportFloatingWidget } = await import('./views/dailyReport.js');
     const routes = {
       today: { label: '今日動態', icon: '🧭', mount: mountToday },
       schedule: { label: '行事曆', icon: '🗓️', mount: mountSchedule },
       meeting: { label: '月會', icon: '💼', mount: mountMeeting },
       simulation: { label: '模擬體驗', icon: '🚲', mount: mountSimulation, permission: 'simulation' },
+      dailyReport: { label: '📝 每日回報', icon: '📝', mount: mountDailyReport, permission: 'dailyReport' },
       bulletin: { label: '採購佈告欄', icon: '📢', mount: mountBulletin, permission: 'bulletin' },
       admin: { label: '管理', icon: '⚙️', mount: mountAdmin, admin: true },
     };
@@ -147,6 +149,7 @@ async function boot() {
     const main = $('[data-main]');
     let current = null;
     let currentRoute = '';
+    let hasPendingDailyReport = false;
 
     function renderTabs() {
       $('[data-tabs]').innerHTML = Object.entries(routes)
@@ -155,7 +158,10 @@ async function boot() {
           if (r.permission && !d.hasModulePermission(d.state.me, r.permission)) return false;
           return true;
         })
-        .map(([k, r]) => `<a href="#/${k}" class="${k === currentRoute ? 'active' : ''}">${r.label}</a>`).join('');
+        .map(([k, r]) => {
+          const showDot = k === 'dailyReport' && hasPendingDailyReport;
+          return `<a href="#/${k}" class="${k === currentRoute ? 'active' : ''}">${r.label}${showDot ? '<span class="dr-tab-dot" title="今日尚未填寫每日回報"></span>' : ''}</a>`;
+        }).join('');
     }
 
     function route() {
@@ -288,10 +294,18 @@ async function boot() {
       document.title = `${n ? `(${n}) ` : ''}經營 Team 營運協同平台`;
     }
 
+    const drWidget = initDailyReportFloatingWidget(isPending => {
+      if (hasPendingDailyReport !== isPending) {
+        hasPendingDailyReport = isPending;
+        renderTabs();
+      }
+    });
+
     offChange?.();
     let purgeChecked = false;
     offChange = onChange(() => {
       renderBadge();
+      drWidget?.refresh?.();
       renderTabs();
       // 若使用者目前的模組權限被管理員即時移除，自動導回今日動態
       const curTarget = routes[currentRoute];
@@ -333,6 +347,7 @@ async function boot() {
       window.removeEventListener('hashchange', route);
       document.removeEventListener('click', onDocClick);
       clearInterval(meetInterval);
+      drWidget?.destroy?.();
       offChange?.();
       current?.destroy?.();
     };
