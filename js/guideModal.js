@@ -1,6 +1,6 @@
 // 功能操作導覽指引（含遊戲式全螢幕聚焦高亮導覽 Tour）
 import { openModal } from './utils.js';
-import { state, hasModulePermission, isFieldUser, isSupervisor } from './data.js';
+import { state, hasModulePermission, isFieldStaff, isSupervisor } from './data.js';
 
 export function openGuideModal() {
   const steps = [
@@ -1141,7 +1141,7 @@ export function startInteractiveDailyReportSpotlightTour() {
   const myId = me?.uid || '';
   const myName = me?.displayName || '您';
   const myTitle = me?.title || '專屬職務';
-  const isMeField = isFieldUser(me);
+  const isMeField = isFieldStaff(me);
   const isMeSup = isSupervisor(me);
   const myCardSelector = myId ? `#dr-card-${CSS.escape(myId)}` : '.dr-member-card.is-me';
 
