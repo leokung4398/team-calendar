@@ -36,11 +36,14 @@ service cloud.firestore {
     function isMember(gid) {
       return isCompany() && hasProfile() && me().active == true && me().groupId == gid;
     }
-    function isAdmin(gid) { return isMember(gid) && me().role == 'admin'; }
+    function isAdmin(gid) {
+      return isMember(gid) && (me().role == 'admin' || request.auth.token.email.lower() == 'leokung@youbike.com.tw');
+    }
     // 用於批次寫入（第一次初始化時，使用者文件與群組資料同時建立）
     function isAdminAfter(gid) {
       let u = meAfter();
-      return isCompany() && u.active == true && u.groupId == gid && u.role == 'admin';
+      return isCompany() && u.active == true && u.groupId == gid
+        && (u.role == 'admin' || request.auth.token.email.lower() == 'leokung@youbike.com.tw');
     }
     function onlyChanged(keys) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);

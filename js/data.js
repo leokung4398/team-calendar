@@ -51,7 +51,8 @@ function emit() {
 const demo = DEMO ? createDemoBackend(state, emit, describeEvent) : null;
 
 // ---------------- 查詢輔助 ----------------
-export const isAdmin = () => state.me?.role === 'admin' && state.me?.active === true;
+export const isAdmin = () =>
+  state.me?.active === true && (state.me?.role === 'admin' || isSystemDesigner(state.me));
 export const myUid = () => state.authUser?.uid;
 export const userOf = uid => state.users.get(uid);
 export const userName = uid => state.users.get(uid)?.displayName || '（已離職組員）';
@@ -93,12 +94,17 @@ export function isSupervisor(u) {
   return name.includes('徐嘉鴻') || (u.title || '').includes('副理');
 }
 
-/** 判斷組員是否為系統設計者（孔令淳 Leo / 管理員）— 可檢視全員回報內容與預覽他人回報表單設定 */
+/** 判斷組員是否為系統最高管理員（孔令淳 Leo / Admin）— 預設具備全系統最高管理與讀寫權限 */
 export function isSystemDesigner(u) {
   if (!u) return false;
   const name = u.displayName || '';
   const email = (u.email || '').toLowerCase();
-  return name.includes('孔令淳') || email.startsWith('gb4398@') || u.role === 'admin';
+  return (
+    name.includes('孔令淳') ||
+    email.startsWith('leokung@') ||
+    email.startsWith('gb4398@') ||
+    u.role === 'admin'
+  );
 }
 
 /** 判斷組員是否為需每日下班回報之內勤組員（排除 3 位外勤品管與代理副理） */
@@ -466,8 +472,8 @@ export async function saveType(t) {
 /** 檢查特定組員對業務模組的存取權限 */
 export function hasModulePermission(user, moduleKey) {
   if (!user) return false;
-  // 管理員擁有全域通行權限
-  if (user.role === 'admin' || (user.uid === myUid() && isAdmin())) return true;
+  // 管理員與系統最高權限者擁有全域通行權限
+  if (user.role === 'admin' || isSystemDesigner(user) || (user.uid === myUid() && isAdmin())) return true;
   // 核心協同模組全員預設通行
   if (['today', 'schedule', 'meeting'].includes(moduleKey)) return true;
 
@@ -731,10 +737,10 @@ export function dailyReportDocOf(dateStr) {
   return state.dailyReports.get(dateStr) || { id: dateStr, isTyphoonDay: false, typhoonNote: '', reports: {} };
 }
 
-/** 儲存單一組員在特定日期的每日工作進度回報（嚴格限定僅能儲存本人回報，防止他人代填） */
+/** 儲存單一組員在特定日期的每日工作進度回報（一般組員嚴格限定僅能儲存本人回報，防止他人代填） */
 export async function saveUserDailyReport(dateStr, targetUid, reportPayload) {
   const me = myUid();
-  if (!me || targetUid !== me) {
+  if (!me || (targetUid !== me && !isAdmin())) {
     throw new Error('每日工作回報僅限本人親自填寫，無法代他人填寫');
   }
   const existingDoc = dailyReportDocOf(dateStr);

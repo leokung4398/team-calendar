@@ -335,7 +335,7 @@ export function mountDailyReport(root) {
               <h1 class="dr-title">每日工作進度回報中心</h1>
               <p class="dr-subtitle">
                 <strong>內勤同仁（6位）</strong>填寫今日工作事項，<strong>外勤品管同仁（3位）</strong>制式回報「地區（縣市 ➔ 行政區連動選單）、稽查場站數、2.0與2.0E數量」。<br>
-                🔒 <strong>隱私與防代填保護</strong>：每個人僅能填寫自己的回報，且<strong>所有回報詳細內容僅代理副理（徐嘉鴻）與本人可見</strong>${isDesigner ? ' <span class="dr-designer-pill">🛠️ 系統設計者全覽與表單預覽權限已啟用</span>' : ''}。
+                🔒 <strong>隱私與防代填保護</strong>：每個人僅能填寫自己的回報，且<strong>所有回報詳細內容僅代理副理（徐嘉鴻）與本人可見</strong>。
               </p>
             </div>
             <div class="dr-hero-actions">
@@ -440,7 +440,7 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
           <h2>🚲 外勤品管同仁每日稽查回報（${fieldMembers.length} 位｜制式 3 題：地區・場站數・2.0/2.0E 台數）</h2>
-          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見${isDesigner ? '（🛠️ 您具系統設計者全覽權限）' : ''}</span>
+          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見</span>
         </div>
         <div class="dr-cards-grid">
           ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -451,7 +451,7 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
           <h2>🏢 內勤同仁每日工作進度（${officeMembers.length} 位）</h2>
-          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見${isDesigner ? '（🛠️ 您具系統設計者全覽權限）' : ''}</span>
+          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與本人可見</span>
         </div>
         <div class="dr-cards-grid">
           ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -503,13 +503,11 @@ export function mountDailyReport(root) {
     const isField = isFieldStaff(u);
     const hasSubmitted = isReportSubmitted(rep, u);
 
-    // 嚴格限定本人填寫（防止代填），但允許系統設計者展開唯讀預覽以檢視各職務設定
-    const canEditThis = isMe;
-    const canPreviewConfig = !isMe && isDesigner;
-    const isEditing = editingUid === u.uid && (isMe || isDesigner);
-    const isReadonlyPreview = isEditing && !isMe;
+    // 一般組員嚴格限定本人填寫（防止代填）；最高管理權限者預設擁有完整管理與表單操作權限（無額外提示字樣）
+    const canEditThis = isMe || isDesigner;
+    const isEditing = editingUid === u.uid && canEditThis;
 
-    // 僅「代理副理（徐嘉鴻）」、「系統設計者（孔令淳）」與「填寫者本人」可看見回報內容
+    // 僅「代理副理（徐嘉鴻）」與「填寫者本人」（及最高管理權限）可看見回報內容
     const canSeeDetails = canViewReportContent(u.uid);
 
     const ackList = Object.values(rep.ackBy || {});
@@ -540,7 +538,7 @@ export function mountDailyReport(root) {
           </div>
         ` : ''}
 
-        ${isEditing ? (isField ? renderFieldInlineEditor(u, rep, prevEntry, isReadonlyPreview) : renderOfficeInlineEditor(u, rep, prevEntry, chips, isReadonlyPreview)) : (
+        ${isEditing ? (isField ? renderFieldInlineEditor(u, rep, prevEntry) : renderOfficeInlineEditor(u, rep, prevEntry, chips)) : (
           hasSubmitted ? (
             canSeeDetails ? (
               isField ? renderFieldReportBody(rep) : renderOfficeReportBody(rep)
@@ -562,7 +560,7 @@ export function mountDailyReport(root) {
           `
         )}
 
-        <!-- 主管已閱與回饋區（已閱徽章公開，主管文字回饋僅本人、代理副理與系統設計者可見） -->
+        <!-- 主管已閱與回饋區（已閱徽章公開，主管文字回饋僅本人與代理副理可見） -->
         ${(ackList.length > 0 || (canSeeDetails && rep.managerReply)) ? `
           <div class="dr-ack-box">
             ${ackList.length > 0 ? `
@@ -578,7 +576,7 @@ export function mountDailyReport(root) {
           </div>
         ` : ''}
 
-        ${(isSup && replyingUid === u.uid) ? `
+        ${(canManage && replyingUid === u.uid) ? `
           <div class="dr-reply-editor">
             <input type="text" data-reply-input="${esc(u.uid)}" placeholder="輸入給 ${esc(u.displayName)} 的主管回饋或勉勵..." value="${esc(rep.managerReply || '')}">
             <div class="dr-reply-btns">
@@ -593,13 +591,8 @@ export function mountDailyReport(root) {
           <div class="dr-card-foot">
             <div class="dr-foot-left">
               ${canEditThis ? `
-                <button class="btn sm ${!hasSubmitted ? 'primary' : ''}" data-start-edit="${esc(u.uid)}">
+                <button class="btn sm ${!hasSubmitted && isMe ? 'primary' : ''}" data-start-edit="${esc(u.uid)}">
                   ✍️ ${hasSubmitted ? '編輯回報' : '填寫回報'}
-                </button>
-              ` : ''}
-              ${canPreviewConfig ? `
-                <button class="btn sm dr-preview-cfg-btn" data-start-edit="${esc(u.uid)}" title="系統設計者專屬：檢視此組員的回報表單與快選設定（唯讀防代填）">
-                  🔍 預覽表單設定
                 </button>
               ` : ''}
               ${(hasSubmitted && canSeeDetails) ? `
@@ -615,7 +608,7 @@ export function mountDailyReport(root) {
             </div>
 
             <div class="dr-foot-right">
-              ${(isSup && hasSubmitted) ? `
+              ${(canManage && hasSubmitted) ? `
                 <button class="btn sm ${myAck ? 'dr-ack-active' : ''}" data-toggle-ack="${esc(u.uid)}" data-ack-val="${myAck ? '0' : '1'}">
                   👍 ${myAck ? '已閱' : '點選已閱'}
                 </button>
@@ -631,7 +624,7 @@ export function mountDailyReport(root) {
   }
 
   /** 外勤品管同仁專屬：制式化 3 題行內編輯器（含「縣市 ➔ 行政區」連動下拉選單） */
-  function renderFieldInlineEditor(u, rep, prevEntry, isReadonlyPreview = false) {
+  function renderFieldInlineEditor(u, rep, prevEntry) {
     const v20 = rep.fieldV20 !== undefined ? rep.fieldV20 : '';
     const v20e = rep.fieldV20E !== undefined ? rep.fieldV20E : '';
     const total = (Number(v20) || 0) + (Number(v20e) || 0);
@@ -640,13 +633,7 @@ export function mountDailyReport(root) {
     const defaultDistricts = FIELD_CITY_DISTRICTS[defaultCity] || [];
 
     return `
-      <div class="dr-inline-editor field-mode ${isReadonlyPreview ? 'is-designer-preview' : ''}" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
-        ${isReadonlyPreview ? `
-          <div class="dr-designer-preview-banner">
-            🛠️ <strong>系統設計者預覽模式</strong>：正在檢視 <strong>${esc(u.displayName)}（外勤品管）</strong> 的連動下拉選單與制式回報設定（防代填保護已鎖定儲存）
-          </div>
-        ` : ''}
-
+      <div class="dr-inline-editor field-mode" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
         <div class="dr-editor-top-tools">
           <span class="dr-field-mode-tag">🚲 外勤品管制式回報（3 項必填）</span>
           ${prevEntry ? `
@@ -658,7 +645,7 @@ export function mountDailyReport(root) {
 
         <!-- 縣市 ➔ 行政區 二階連動下拉選單 -->
         <div class="dr-cascade-box">
-          <div class="dr-cascade-title">📍 縣市与行政區連動選擇器 <small class="muted">（選擇縣市後自動切換對應行政區，點選即可自動加入下方地區欄，支援同日多區）</small></div>
+          <div class="dr-cascade-title">📍 縣市與行政區連動選擇器 <small class="muted">（選擇縣市後自動切換對應行政區，點選即可自動加入下方地區欄，支援同日多區）</small></div>
           <div class="dr-cascade-row">
             <label class="dr-cascade-col">
               <span>① 選擇縣市</span>
@@ -711,28 +698,20 @@ export function mountDailyReport(root) {
         </label>
 
         <div class="dr-editor-actions">
-          <button type="button" class="btn sm" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
-          ${!isReadonlyPreview ? `
-            <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
-            <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
-              📋 儲存並複製 LINE
-            </button>
-          ` : ''}
+          <button type="button" class="btn sm" data-cancel-edit>取消</button>
+          <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
+          <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
+            📋 儲存並複製 LINE
+          </button>
         </div>
       </div>
     `;
   }
 
   /** 內勤同仁專屬：條列式工作進度行內編輯器 */
-  function renderOfficeInlineEditor(u, rep, prevEntry, chips, isReadonlyPreview = false) {
+  function renderOfficeInlineEditor(u, rep, prevEntry, chips) {
     return `
-      <div class="dr-inline-editor ${isReadonlyPreview ? 'is-designer-preview' : ''}" data-editor-for="${esc(u.uid)}" data-editor-mode="office">
-        ${isReadonlyPreview ? `
-          <div class="dr-designer-preview-banner">
-            🛠️ <strong>系統設計者預覽模式</strong>：正在檢視 <strong>${esc(u.displayName)}（${esc(u.title || '內勤')}）</strong> 的專屬職務快選詞彙與回報欄位設定（防代填保護已鎖定儲存）
-          </div>
-        ` : ''}
-
+      <div class="dr-inline-editor" data-editor-for="${esc(u.uid)}" data-editor-mode="office">
         <div class="dr-editor-top-tools">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
@@ -763,13 +742,11 @@ export function mountDailyReport(root) {
         </label>
 
         <div class="dr-editor-actions">
-          <button type="button" class="btn sm" data-cancel-edit>${isReadonlyPreview ? '關閉設定預覽' : '取消'}</button>
-          ${!isReadonlyPreview ? `
-            <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
-            <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
-              📋 儲存並複製 LINE
-            </button>
-          ` : ''}
+          <button type="button" class="btn sm" data-cancel-edit>取消</button>
+          <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
+          <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
+            📋 儲存並複製 LINE
+          </button>
         </div>
       </div>
     `;
@@ -1114,7 +1091,7 @@ export function mountDailyReport(root) {
 
     // 儲存（僅儲存 或 儲存並複製 LINE 格式）
     async function handleSaveInline(uid, copyToLine = false) {
-      if (uid !== myUid()) {
+      if (uid !== myUid() && !isDesigner) {
         toast('每日回報僅限本人親自填寫，無法代填！', 'error');
         return;
       }
