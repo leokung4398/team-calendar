@@ -2628,6 +2628,116 @@ th.has-meeting { position: relative; }
   font-weight: 800;
 }
 
+/* 外勤品管三問制式回報 & 角色膠囊 & 隱私遮罩 */
+.dr-role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+.dr-role-pill.field {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.dr-role-pill.office {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.dr-field-mode-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0369a1;
+  background: #e0f2fe;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #bae6fd;
+}
+
+.dr-field-row3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.dr-bike-sum-bar {
+  padding: 8px 12px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #0f766e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dr-bike-sum-bar strong {
+  font-size: 15px;
+  color: #0d9488;
+}
+
+.dr-field-metrics {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr 1.5fr;
+  gap: 8px;
+}
+
+.dr-f-metric {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dr-fm-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.dr-fm-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.dr-fm-total {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #0f766e;
+  background: #f0fdfa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  width: fit-content;
+}
+
+.dr-private-mask {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+
+.dr-lock-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
 @media (max-width: 768px) {
   .dr-cards-grid {
     grid-template-columns: 1fr;
@@ -2635,10 +2745,12 @@ th.has-meeting { position: relative; }
   .dr-history-row {
     grid-template-columns: 1fr;
   }
+  .dr-field-row3,
+  .dr-field-metrics {
+    grid-template-columns: 1fr;
+  }
   .dr-commuter-fab {
     padding: 14px 22px;
     font-size: 15.5px;
   }
 }
-
-

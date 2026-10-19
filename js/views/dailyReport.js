@@ -1,19 +1,21 @@
 // 每日工作進度回報模組（#/dailyReport）
-// - 內勤 6 位同仁每日下班回報工作進度，支援一鍵複製個人 LINE 回報格式、帶入昨日項目、常用快選詞彙
-// - 外勤 3 位同仁預設標示「🚲 外勤品管（免回報）」；代理副理 徐嘉鴻 預設為「👔 主管檢視 / 已閱簽核」
+// - 內勤 6 位同仁：每日下班回報工作進度（1. 今日完成事項 2. 明日預計待辦 3. 備註）
+// - 外勤品管 3 位同仁（孔令淳、葉爵豪、陸逸群）：每日下班制式化回報 3 項（地區、稽查場站數、2.0 與 2.0E 數量）
+// - 隱私保護機制：所有人可見「✅ 已回報 / ⏳ 待回報」狀態標籤，但具體回報內容嚴格限定僅「代理副理（徐嘉鴻）」與「填寫者本人」可見
+// - 防代填保護：嚴格鎖定僅本人可填寫或編輯自己的回報
 // - 支援「🌀 颱風停班停課（全員免回報）」彈性切換、休假與例假日自動連動
 // - 支援 17:30 智慧溫和下班提醒 Toast + 行動端通勤拇指熱區懸浮按鈕（FAB）與底部快填抽屜（Bottom Sheet）
 
 import {
-  state, activeUsers, myUid, isAdmin, isFieldStaff, isSupervisor, isOfficeReporter,
+  state, activeUsers, myUid, isAdmin, isFieldStaff, isSupervisor, isOfficeReporter, isDailyReporter,
   dailyReportDocOf, saveUserDailyReport, toggleTyphoonDay, acknowledgeDailyReport, eventList,
 } from '../data.js';
 import { eventsOfUserOn } from '../schedule.js';
 import { dayInfo, ensureRange } from '../holidays.js';
-import { esc, avatar, toast, ymd, addDays, fmtMD, weekdayZh, nowMinutes, $ } from '../utils.js';
+import { esc, avatar, toast, ymd, addDays, fmtMD, weekdayZh, nowMinutes } from '../utils.js';
 import { startInteractiveDailyReportSpotlightTour } from '../guideModal.js';
 
-// 各職務專屬的「常用工作快選膠囊」（通勤、等紅綠燈單手點一下即可插入）
+// 內勤各職務專屬的「常用工作快選膠囊」
 const ROLE_QUICK_CHIPS = {
   warehouse: [
     '總倉車柱零組件入庫清點與儲位整理',
@@ -50,11 +52,13 @@ const ROLE_QUICK_CHIPS = {
     '月會專案進度彙整與決議事項追蹤',
     '年度營運企劃專案執行進度檢討',
   ],
-  field: [
-    '站點與自行車品管抽檢及異常回報',
-    '模擬體驗發現事項複查與改善追蹤',
-    '跨區站點車柱清潔與電裝妥善率巡檢',
-  ],
+};
+
+// 外勤品管同仁專屬「常用縣市/行政區快選膠囊」
+const FIELD_REGION_CHIPS = {
+  north: ['台北市', '新北市', '雙北（大安/信義）', '雙北（板橋/中和）', '桃園市', '新竹市', '新竹縣', '苗栗縣', '台中市'],
+  south: ['高雄市', '高雄（左營/三民）', '高雄（鳳山/前鎮）', '台南市', '嘉義市', '嘉義縣', '屏東縣', '台東縣', '台中市'],
+  all: ['台北市', '新北市', '桃園市', '新竹市', '苗栗縣', '台中市', '嘉義市', '台南市', '高雄市', '屏東縣', '台東縣'],
 };
 
 function getQuickChipsForUser(u) {
@@ -65,8 +69,36 @@ function getQuickChipsForUser(u) {
   if (name.includes('賴宜平') || title.includes('勞安')) return ROLE_QUICK_CHIPS.safety;
   if (name.includes('包于巧')) return ROLE_QUICK_CHIPS.inventory;
   if (name.includes('陳麒任') || name.includes('丁美云') || title.includes('採購')) return ROLE_QUICK_CHIPS.procurement;
-  if (isFieldStaff(u)) return ROLE_QUICK_CHIPS.field;
   return ROLE_QUICK_CHIPS.operations;
+}
+
+function getFieldRegionChipsForUser(u) {
+  if (!u) return FIELD_REGION_CHIPS.all;
+  const name = u.displayName || '';
+  if (name.includes('陸逸群')) return FIELD_REGION_CHIPS.south;
+  if (name.includes('孔令淳') || name.includes('葉爵豪')) return FIELD_REGION_CHIPS.north;
+  return FIELD_REGION_CHIPS.all;
+}
+
+/** 判斷一筆回報紀錄是否已完成填寫（支援內勤條列模式 與 外勤品管制式 3 題模式） */
+export function isReportSubmitted(rep, u) {
+  if (!rep) return false;
+  if (isFieldStaff(u) || rep.reportType === 'field') {
+    const hasRegion = !!(rep.fieldRegion && String(rep.fieldRegion).trim());
+    const hasStations = rep.fieldStations !== undefined && rep.fieldStations !== '' && Number(rep.fieldStations) >= 0;
+    return hasRegion && hasStations;
+  }
+  return !!(rep.todayTasks && String(rep.todayTasks).trim());
+}
+
+/** 判斷目前登入者是否有權限查看某位組員的回報詳細內容（嚴格限定：僅代理副理 徐嘉鴻 與 填寫者本人） */
+export function canViewReportContent(targetUid) {
+  const me = state.me;
+  const myId = myUid();
+  if (!me || !myId) return false;
+  if (targetUid === myId) return true;
+  if (isSupervisor(me)) return true;
+  return false;
 }
 
 /** 檢查某組員在指定日期是否有請假行程（typeId === 'leave'） */
@@ -78,24 +110,44 @@ export function getUserLeaveOnDate(uid, dateStr) {
 
 /** 取得某組員在指定日期之前的最近一筆歷史回報（供「一鍵帶入昨日項目」使用） */
 export function getPreviousUserReport(uid, beforeDateStr) {
+  const u = state.users.get(uid);
   const sortedDates = [...state.dailyReports.keys()]
     .filter(d => d < beforeDateStr)
     .sort((a, b) => b.localeCompare(a));
   for (const d of sortedDates) {
     const doc = state.dailyReports.get(d);
     const rep = doc?.reports?.[uid];
-    if (rep && (rep.todayTasks?.trim() || rep.tomorrowTasks?.trim())) {
+    if (rep && isReportSubmitted(rep, u)) {
       return { date: d, report: rep };
     }
   }
   return null;
 }
 
-/** 產生個人專屬的 LINE 群組回報文字格式（僅複製個人進度，方便貼到 LINE 群組向代理副理回報） */
+/** 產生個人專屬的 LINE 群組回報文字格式（自動區分外勤制式 3 題 與 內勤工作進度） */
 export function formatPersonalLineReport(u, dateStr, report) {
   const name = u?.displayName || '組員';
   const md = fmtMD(dateStr);
   const wd = weekdayZh(dateStr);
+
+  if (isFieldStaff(u) || report?.reportType === 'field') {
+    const region = (report?.fieldRegion || '').trim() || '（未填）';
+    const stations = Number(report?.fieldStations) || 0;
+    const v20 = Number(report?.fieldV20) || 0;
+    const v20e = Number(report?.fieldV20E) || 0;
+    const totalBikes = v20 + v20e;
+    const lines = [
+      `【${md} (${wd}) 外勤品管每日回報 - ${name}】`,
+      `地區：${region}`,
+      `稽查場站數：${stations} 站`,
+      `2.0與2.0E的數量：2.0 共 ${v20} 台 / 2.0E 共 ${v20e} 台（合計 ${totalBikes} 台）`,
+    ];
+    if (report?.notes && report.notes.trim()) {
+      lines.push(`備註事項：${report.notes.trim()}`);
+    }
+    return lines.join('\n');
+  }
+
   const todayTasks = (report?.todayTasks || '').trim() || '（無）';
   const tomorrowTasks = (report?.tomorrowTasks || '').trim();
   const notes = (report?.notes || '').trim();
@@ -133,16 +185,13 @@ export function evaluateMemberReportStatus(u, dateStr) {
   const rep = doc.reports?.[u.uid];
   const info = dayInfo(dateStr);
   const leaveEv = getUserLeaveOnDate(u.uid, dateStr);
-  const hasSubmitted = !!(rep && rep.todayTasks && rep.todayTasks.trim());
+  const hasSubmitted = isReportSubmitted(rep, u);
 
   if (hasSubmitted) {
     return { code: 'submitted', label: '✅ 已回報', tone: 'ok', report: rep, leaveEv };
   }
   if (isSupervisor(u)) {
     return { code: 'supervisor', label: '👔 代理副理（審閱）', tone: 'supervisor', report: rep, leaveEv };
-  }
-  if (isFieldStaff(u)) {
-    return { code: 'field_exempt', label: '🚲 外勤品管（免回報）', tone: 'exempt', report: rep, leaveEv };
   }
   if (doc.isTyphoonDay) {
     return { code: 'typhoon_exempt', label: '🌀 颱風假（免回報）', tone: 'typhoon', report: rep, leaveEv };
@@ -162,7 +211,7 @@ export function evaluateMemberReportStatus(u, dateStr) {
 export function mountDailyReport(root) {
   let selectedDate = ymd();
   let viewMode = 'daily'; // 'daily' | 'history'
-  let editingUid = null;  // 若正在頁面上直接展開編輯某人
+  let editingUid = null;  // 僅限本人展開編輯
   let historyFilterUid = 'all';
   let historyKeyword = '';
   let replyingUid = null;
@@ -176,20 +225,23 @@ export function mountDailyReport(root) {
     const users = activeUsers();
     const me = state.me;
     const myId = myUid();
-    const canManage = isAdmin() || isSupervisor(me);
+    const isSup = isSupervisor(me);
+    const canManage = isSup || isAdmin();
 
-    // 分類組員：6 位內勤應回報組員、1 位代理副理、3 位外勤品管
+    // 分類組員：6 位內勤同仁、3 位外勤品管同仁、1 位代理副理
     const officeMembers = users.filter(u => isOfficeReporter(u));
     const fieldMembers = users.filter(u => isFieldStaff(u));
+    const allReporters = users.filter(u => isDailyReporter(u)); // 共 9 位應回報同仁（6 內勤 + 3 外勤）
     const supervisors = users.filter(u => isSupervisor(u));
 
-    // 計算當日內勤組員回報統計
-    const statuses = officeMembers.map(u => ({ user: u, st: evaluateMemberReportStatus(u, selectedDate) }));
+    // 計算當日全體 9 位應回報同仁進度統計
+    const statuses = allReporters.map(u => ({ user: u, st: evaluateMemberReportStatus(u, selectedDate) }));
     const submittedCount = statuses.filter(x => x.st.code === 'submitted').length;
     const exemptCount = statuses.filter(x => ['typhoon_exempt', 'leave_exempt', 'holiday_exempt'].includes(x.st.code)).length;
     const pendingCount = statuses.filter(x => x.st.code === 'pending').length;
 
     const myReport = doc.reports?.[myId];
+    const mySubmitted = isReportSubmitted(myReport, me);
     const myStatus = me ? evaluateMemberReportStatus(me, selectedDate) : null;
 
     root.innerHTML = `
@@ -201,17 +253,20 @@ export function mountDailyReport(root) {
               <div class="dr-eyebrow">📝 DAILY PROGRESS &amp; LINE REPORT HELPER</div>
               <h1 class="dr-title">每日工作進度回報中心</h1>
               <p class="dr-subtitle">
-                內勤同仁每日下班前填寫工作進度，支援<strong>「一鍵帶入昨日項目」</strong>與<strong>「複製個人 LINE 回報格式」</strong>直接貼上群組向代理副理回報；外勤品管同仁預設免回報。
+                <strong>內勤同仁（6位）</strong>填寫今日工作事項，<strong>外勤品管同仁（3位）</strong>制式回報「地區、稽查場站數、2.0與2.0E數量」。<br>
+                🔒 <strong>隱私與防代填保護</strong>：每個人僅能填寫自己的回報，且<strong>所有回報詳細內容僅代理副理（徐嘉鴻）與本人可見</strong>。
               </p>
             </div>
             <div class="dr-hero-actions">
               <button type="button" class="btn ghost guide-btn" data-open-dr-tour style="font-weight:700; color:#0f766e; background:#ccfbf1; border-color:#99f6e4;" title="啟動每日回報 6 步實景聚焦導覽">
                 🎯 每日回報導覽
               </button>
-              <button class="btn primary dr-quick-btn" data-open-quick="${esc(selectedDate)}">
-                ✍️ ${myReport?.todayTasks ? '修改我的今日回報' : '立即填寫今日回報'}
-              </button>
-              ${myReport?.todayTasks ? `
+              ${!isSup ? `
+                <button class="btn primary dr-quick-btn" data-open-quick="${esc(selectedDate)}">
+                  ✍️ ${mySubmitted ? '修改我的今日回報' : '立即填寫今日回報'}
+                </button>
+              ` : ''}
+              ${mySubmitted ? `
                 <button class="btn dr-copy-mine-btn" data-copy-personal="${esc(myId)}">
                   📋 複製我的 LINE 回報
                 </button>
@@ -223,7 +278,7 @@ export function mountDailyReport(root) {
           <div class="dr-toolbar">
             <div class="dr-view-tabs">
               <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">📅 單日全員看板</button>
-              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 歷史紀錄檢索</button>
+              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 ${isSup ? '全組歷史紀錄檢索' : '我的歷史回報紀錄'}</button>
             </div>
 
             ${viewMode === 'daily' ? `
@@ -251,17 +306,17 @@ export function mountDailyReport(root) {
             <div class="dr-typhoon-banner">
               <span class="dr-typhoon-icon">🌀</span>
               <div>
-                <strong>${esc(doc.typhoonNote || '今日為颱風停班停課日 — 全體內勤同仁今日免回報')}</strong>
-                <div class="muted" style="font-size:12.5px">系統已自動暫停今日 17:30 下班回報提醒；若有居家辦公進度仍可自由填寫紀錄。</div>
+                <strong>${esc(doc.typhoonNote || '今日為颱風停班停課日 — 全體內外勤同仁今日免回報')}</strong>
+                <div class="muted" style="font-size:12.5px">系統已自動暫停今日 17:30 下班回報提醒；若有居家辦公或緊急出勤進度仍可自由填寫紀錄。</div>
               </div>
             </div>
           ` : ''}
         </section>
 
         ${viewMode === 'daily' ? renderDailyBoard({
-          selectedDate, today, doc, info, officeMembers, fieldMembers, supervisors,
-          statuses, submittedCount, exemptCount, pendingCount, me, myId, myStatus, canManage,
-        }) : renderHistoryExplorer({ users })}
+          selectedDate, today, doc, info, officeMembers, fieldMembers, allReporters, supervisors,
+          statuses, submittedCount, exemptCount, pendingCount, me, myId, myStatus, isSup, canManage,
+        }) : renderHistoryExplorer({ users, isSup, myId })}
       </div>
     `;
 
@@ -269,15 +324,15 @@ export function mountDailyReport(root) {
   }
 
   function renderDailyBoard({
-    selectedDate, doc, officeMembers, fieldMembers, supervisors,
-    statuses, submittedCount, exemptCount, pendingCount, me, myId, canManage,
+    selectedDate, doc, officeMembers, fieldMembers, allReporters, supervisors,
+    statuses, submittedCount, exemptCount, pendingCount, me, myId, isSup, canManage,
   }) {
     return `
-      <!-- 當日回報進度總覽 -->
+      <!-- 當日回報進度總覽（全體 9 位：內勤 6 + 外勤 3） -->
       <section class="dr-stats-grid">
         <div class="card dr-stat-card ok">
-          <div class="dr-stat-num">${submittedCount} <span class="dr-stat-unit">/ ${officeMembers.length} 人</span></div>
-          <div class="dr-stat-label">✅ 內勤已完成回報</div>
+          <div class="dr-stat-num">${submittedCount} <span class="dr-stat-unit">/ ${allReporters.length} 人</span></div>
+          <div class="dr-stat-label">✅ 今日已完成回報（內勤＋外勤）</div>
           <div class="dr-stat-pills">
             ${statuses.filter(x => x.st.code === 'submitted').map(x => `<span class="dr-mini-pill ok">${esc(x.user.displayName)}</span>`).join('') || '<span class="muted">尚無回報</span>'}
           </div>
@@ -285,19 +340,29 @@ export function mountDailyReport(root) {
 
         <div class="card dr-stat-card ${pendingCount > 0 ? 'warn' : 'ok'}">
           <div class="dr-stat-num">${pendingCount} <span class="dr-stat-unit">人</span></div>
-          <div class="dr-stat-label">⏳ 內勤待回報</div>
+          <div class="dr-stat-label">⏳ 今日待回報</div>
           <div class="dr-stat-pills">
-            ${statuses.filter(x => x.st.code === 'pending').map(x => `<span class="dr-mini-pill pending">${esc(x.user.displayName)}</span>`).join('') || '<span class="dr-mini-pill ok">🎉 今日應回報同仁已全數完成！</span>'}
+            ${statuses.filter(x => x.st.code === 'pending').map(x => `<span class="dr-mini-pill pending">${esc(x.user.displayName)}</span>`).join('') || '<span class="dr-mini-pill ok">🎉 今日全組應回報同仁已全數完成！</span>'}
           </div>
         </div>
 
         <div class="card dr-stat-card neutral">
-          <div class="dr-stat-num">${exemptCount + fieldMembers.length} <span class="dr-stat-unit">人</span></div>
-          <div class="dr-stat-label">🏖️ 休假 / 颱風 / 🚲 外勤免回報</div>
+          <div class="dr-stat-num">${exemptCount} <span class="dr-stat-unit">人</span></div>
+          <div class="dr-stat-label">🏖️ 休假 / 🌀 颱風 / 🎉 例假日免回報</div>
           <div class="dr-stat-pills">
-            ${statuses.filter(x => ['typhoon_exempt', 'leave_exempt', 'holiday_exempt'].includes(x.st.code)).map(x => `<span class="dr-mini-pill leave">${esc(x.user.displayName)}（${esc(x.st.label.replace(/（.*）/, ''))}）</span>`).join('')}
-            ${fieldMembers.map(u => `<span class="dr-mini-pill exempt">🚲 ${esc(u.displayName)}</span>`).join('')}
+            ${statuses.filter(x => ['typhoon_exempt', 'leave_exempt', 'holiday_exempt'].includes(x.st.code)).map(x => `<span class="dr-mini-pill leave">${esc(x.user.displayName)}（${esc(x.st.label.replace(/（.*）/, ''))}）</span>`).join('') || '<span class="muted">今日全員正常出勤</span>'}
           </div>
+        </div>
+      </section>
+
+      <!-- 外勤品管 3 位同仁制式回報區 -->
+      <section class="dr-section" id="dr-field-section">
+        <div class="dr-section-head">
+          <h2>🚲 外勤品管同仁每日稽查回報（${fieldMembers.length} 位｜制式 3 題：地區・場站數・2.0/2.0E 台數）</h2>
+          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與填寫者本人可見</span>
+        </div>
+        <div class="dr-cards-grid">
+          ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, canManage)).join('')}
         </div>
       </section>
 
@@ -305,39 +370,31 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
           <h2>🏢 內勤同仁每日工作進度（${officeMembers.length} 位）</h2>
-          <span class="muted" style="font-size:13px">點擊「📋 複製個人 LINE 格式」即可單獨複製該同仁進度並貼至 LINE 群組</span>
+          <span class="muted" style="font-size:13px">🔒 詳細回報內容僅代理副理（徐嘉鴻）與填寫者本人可見</span>
         </div>
         <div class="dr-cards-grid">
-          ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, canManage)).join('')}
+          ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, canManage)).join('')}
         </div>
       </section>
 
-      <!-- 主管與外勤品管同仁區（免回報 / 自由補充） -->
-      <section class="dr-section" id="dr-exempt-section">
-        <div class="dr-section-head">
-          <h2>👔 主管審閱 &amp; 🚲 外勤品管同仁（預設免回報，亦可自由紀錄）</h2>
-        </div>
-        <div class="dr-cards-grid compact">
-          ${[...supervisors, ...fieldMembers].map(u => renderMemberCard(u, selectedDate, doc, myId, canManage, true)).join('')}
-        </div>
-      </section>
+      <!-- 代理副理審閱狀態區 -->
+      ${supervisors.length ? `
+        <section class="dr-section" id="dr-exempt-section">
+          <div class="dr-section-head">
+            <h2>👔 代理副理審閱專區</h2>
+          </div>
+          <div class="dr-cards-grid compact">
+            ${supervisors.map(u => renderSupervisorCard(u)).join('')}
+          </div>
+        </section>
+      ` : ''}
     `;
   }
 
-  function renderMemberCard(u, dateStr, doc, myId, canManage, isCompact = false) {
-    const st = evaluateMemberReportStatus(u, dateStr);
-    const rep = st.report || {};
-    const isMe = u.uid === myId;
-    // 嚴格限定本人填寫（防止代填，即便是管理員也僅能填寫自己的回報）
-    const canEditThis = isMe;
-    const isEditing = editingUid === u.uid && isMe;
-    const ackList = Object.values(rep.ackBy || {});
-    const myAck = !!(rep.ackBy && rep.ackBy[myId]);
-    const prevEntry = isEditing ? getPreviousUserReport(u.uid, dateStr) : null;
-    const chips = isEditing ? getQuickChipsForUser(u) : [];
-
+  function renderSupervisorCard(u) {
+    const isMe = u.uid === myUid();
     return `
-      <article class="card dr-member-card tone-${esc(st.tone)} ${isMe ? 'is-me' : ''} ${isCompact ? 'compact' : ''}" id="dr-card-${esc(u.uid)}">
+      <article class="card dr-member-card tone-supervisor ${isMe ? 'is-me' : ''} compact" id="dr-card-${esc(u.uid)}">
         <div class="dr-card-head">
           <div class="dr-user-info">
             ${avatar(u, 38)}
@@ -345,6 +402,48 @@ export function mountDailyReport(root) {
               <div class="dr-user-name">
                 ${esc(u.displayName)}
                 ${isMe ? '<span class="dr-me-tag">我</span>' : ''}
+              </div>
+              <div class="dr-user-title">${esc(u.title || '經營Team代理副理')}</div>
+            </div>
+          </div>
+          <span class="dr-status-badge tone-supervisor">👔 代理副理（全組內容審閱權限）</span>
+        </div>
+        <div class="dr-empty-body">
+          <span class="muted">🔑 擁有全組 9 位內外勤同仁每日回報內容之完整查閱、「👍 已閱」簽核與「💬 主管回饋」權限。</span>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderMemberCard(u, dateStr, doc, myId, isSup, canManage) {
+    const st = evaluateMemberReportStatus(u, dateStr);
+    const rep = st.report || {};
+    const isMe = u.uid === myId;
+    const isField = isFieldStaff(u);
+    const hasSubmitted = isReportSubmitted(rep, u);
+
+    // 嚴格限定本人填寫（防止代填）
+    const canEditThis = isMe;
+    const isEditing = editingUid === u.uid && isMe;
+
+    // 嚴格限定僅「代理副理（徐嘉鴻）」與「填寫者本人」可看見回報內容
+    const canSeeDetails = canViewReportContent(u.uid);
+
+    const ackList = Object.values(rep.ackBy || {});
+    const myAck = !!(rep.ackBy && rep.ackBy[myId]);
+    const prevEntry = isEditing ? getPreviousUserReport(u.uid, dateStr) : null;
+    const chips = isEditing ? (isField ? getFieldRegionChipsForUser(u) : getQuickChipsForUser(u)) : [];
+
+    return `
+      <article class="card dr-member-card tone-${esc(st.tone)} ${isMe ? 'is-me' : ''}" id="dr-card-${esc(u.uid)}">
+        <div class="dr-card-head">
+          <div class="dr-user-info">
+            ${avatar(u, 38)}
+            <div>
+              <div class="dr-user-name">
+                ${esc(u.displayName)}
+                ${isMe ? '<span class="dr-me-tag">我</span>' : ''}
+                ${isField ? '<span class="dr-role-pill field">🚲 外勤品管</span>' : '<span class="dr-role-pill office">🏢 內勤</span>'}
               </div>
               <div class="dr-user-title">${esc(u.title || '經營 Team 組員')}</div>
             </div>
@@ -358,89 +457,45 @@ export function mountDailyReport(root) {
           </div>
         ` : ''}
 
-        ${isEditing ? `
-          <div class="dr-inline-editor" data-editor-for="${esc(u.uid)}">
-            <div class="dr-editor-top-tools">
-              ${prevEntry ? `
-                <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
-                  📥 一鍵帶入前次項目（${esc(fmtMD(prevEntry.date))}）
-                </button>
-              ` : `<span class="muted" style="font-size:12px">💡 可點選下方常用詞彙快速帶入</span>`}
-              <button type="button" class="btn sm" data-auto-number="${esc(u.uid)}">🔢 自動整理編號</button>
-            </div>
-
-            <div class="dr-chip-bar">
-              <span class="dr-chip-label">⚡ 點擊快速插入：</span>
-              ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-insert-chip="${esc(c)}" data-target-uid="${esc(u.uid)}">＋ ${esc(c)}</button>`).join('')}
-            </div>
-
-            <label class="dr-field">
-              <span>✅ 今日完成事項 / 工作進度 <small class="muted">（必填，每行一項）</small></span>
-              <textarea rows="4" data-f-today="${esc(u.uid)}" placeholder="1. 完成...&#10;2. 追蹤...">${esc(rep.todayTasks || '')}</textarea>
-            </label>
-
-            <label class="dr-field">
-              <span>📅 明日預計工作 / 後續待辦 <small class="muted">（選填）</small></span>
-              <textarea rows="2" data-f-tomorrow="${esc(u.uid)}" placeholder="1. 預計處理...">${esc(rep.tomorrowTasks || '')}</textarea>
-            </label>
-
-            <label class="dr-field">
-              <span>💡 需主管協助 / 備註事項 <small class="muted">（選填）</small></span>
-              <input type="text" data-f-notes="${esc(u.uid)}" placeholder="例如：合約待核章、需跨部門協調事項..." value="${esc(rep.notes || '')}">
-            </label>
-
-            <div class="dr-editor-actions">
-              <button type="button" class="btn" data-cancel-edit>取消</button>
-              <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
-              <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
-                💾 儲存並複製個人 LINE 格式
-              </button>
-            </div>
-          </div>
-        ` : (rep.todayTasks ? `
-          <div class="dr-report-body">
-            <div class="dr-block">
-              <div class="dr-block-title">✅ 今日完成事項</div>
-              <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
-            </div>
-            ${rep.tomorrowTasks ? `
-              <div class="dr-block">
-                <div class="dr-block-title">📅 明日預計 / 待辦</div>
-                <div class="dr-block-text">${esc(rep.tomorrowTasks).replace(/\n/g, '<br>')}</div>
+        ${isEditing ? (isField ? renderFieldInlineEditor(u, rep, prevEntry, chips) : renderOfficeInlineEditor(u, rep, prevEntry, chips)) : (
+          hasSubmitted ? (
+            canSeeDetails ? (
+              isField ? renderFieldReportBody(rep) : renderOfficeReportBody(rep)
+            ) : `
+              <div class="dr-private-mask">
+                <span class="dr-lock-icon">🔒</span>
+                <div>
+                  <strong>${esc(u.displayName)} 已完成今日回報</strong>
+                  <div class="muted" style="font-size:12px">回報詳細內容僅代理副理（徐嘉鴻）與本人可見</div>
+                </div>
               </div>
-            ` : ''}
-            ${rep.notes ? `
-              <div class="dr-block note">
-                <div class="dr-block-title">💡 備註 / 需協助事項</div>
-                <div class="dr-block-text">${esc(rep.notes)}</div>
-              </div>
-            ` : ''}
-          </div>
-        ` : `
-          <div class="dr-empty-body">
-            ${st.code === 'pending'
-              ? '<span class="muted">今日尚未填寫工作進度回報</span>'
-              : `<span class="muted">${esc(st.label)}，如需補充工作紀錄可點擊下方填寫</span>`}
-          </div>
-        `)}
+            `
+          ) : `
+            <div class="dr-empty-body">
+              ${st.code === 'pending'
+                ? '<span class="muted">今日尚未填寫工作進度回報</span>'
+                : `<span class="muted">${esc(st.label)}，如需補充紀錄可由本人點擊填寫</span>`}
+            </div>
+          `
+        )}
 
-        <!-- 主管已閱與回饋區 -->
-        ${(ackList.length > 0 || rep.managerReply) ? `
+        <!-- 主管已閱與回饋區（已閱徽章公開，主管文字回饋僅本人與代理副理可見） -->
+        ${(ackList.length > 0 || (canSeeDetails && rep.managerReply)) ? `
           <div class="dr-ack-box">
             ${ackList.length > 0 ? `
               <div class="dr-ack-badges">
                 ${ackList.map(a => `<span class="dr-ack-pill">👍 ${esc(a.name)} 已閱</span>`).join('')}
               </div>
             ` : ''}
-            ${rep.managerReply ? `
+            ${(canSeeDetails && rep.managerReply) ? `
               <div class="dr-manager-reply">
-                <strong>💬 ${esc(rep.managerReplyBy || '主管')} 回饋：</strong>${esc(rep.managerReply)}
+                <strong>💬 ${esc(rep.managerReplyBy || '代理副理')} 回饋：</strong>${esc(rep.managerReply)}
               </div>
             ` : ''}
           </div>
         ` : ''}
 
-        ${replyingUid === u.uid ? `
+        ${(isSup && replyingUid === u.uid) ? `
           <div class="dr-reply-editor">
             <input type="text" data-reply-input="${esc(u.uid)}" placeholder="輸入給 ${esc(u.displayName)} 的主管回饋或勉勵..." value="${esc(rep.managerReply || '')}">
             <div class="dr-reply-btns">
@@ -455,22 +510,24 @@ export function mountDailyReport(root) {
           <div class="dr-card-foot">
             <div class="dr-foot-left">
               ${canEditThis ? `
-                <button class="btn sm ${isMe && !rep.todayTasks ? 'primary' : ''}" data-start-edit="${esc(u.uid)}">
-                  ✍️ ${rep.todayTasks ? '編輯回報' : '填寫回報'}
+                <button class="btn sm ${!hasSubmitted ? 'primary' : ''}" data-start-edit="${esc(u.uid)}">
+                  ✍️ ${hasSubmitted ? '編輯回報' : '填寫回報'}
                 </button>
               ` : ''}
-              ${rep.todayTasks ? `
-                <button class="btn sm" data-copy-personal="${esc(u.uid)}" title="僅複製此人的 LINE 回報文字">
+              ${(hasSubmitted && canSeeDetails) ? `
+                <button class="btn sm" data-copy-personal="${esc(u.uid)}" title="複製個人 LINE 回報格式">
                   📋 複製 LINE 格式
                 </button>
-                <a class="btn sm dr-line-link" href="https://line.me/R/" target="_blank" rel="noopener" title="開啟 LINE App 貼上">
-                  💬 開啟 LINE
-                </a>
+                ${isMe ? `
+                  <a class="btn sm dr-line-link" href="https://line.me/R/" target="_blank" rel="noopener" title="開啟 LINE App 貼上">
+                    💬 開啟 LINE
+                  </a>
+                ` : ''}
               ` : ''}
             </div>
 
             <div class="dr-foot-right">
-              ${(canManage && rep.todayTasks) ? `
+              ${(isSup && hasSubmitted) ? `
                 <button class="btn sm ${myAck ? 'dr-ack-active' : ''}" data-toggle-ack="${esc(u.uid)}" data-ack-val="${myAck ? '0' : '1'}">
                   👍 ${myAck ? '已閱' : '點選已閱'}
                 </button>
@@ -485,18 +542,179 @@ export function mountDailyReport(root) {
     `;
   }
 
-  function renderHistoryExplorer({ users }) {
-    // 蒐集所有歷史回報紀錄
+  /** 外勤品管同仁專屬：制式化 3 題行內編輯器 */
+  function renderFieldInlineEditor(u, rep, prevEntry, regionChips) {
+    const v20 = rep.fieldV20 !== undefined ? rep.fieldV20 : '';
+    const v20e = rep.fieldV20E !== undefined ? rep.fieldV20E : '';
+    const total = (Number(v20) || 0) + (Number(v20e) || 0);
+    return `
+      <div class="dr-inline-editor field-mode" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
+        <div class="dr-editor-top-tools">
+          <span class="dr-field-mode-tag">🚲 外勤品管制式回報（3 項必填）</span>
+          ${prevEntry ? `
+            <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
+              📥 帶入前次地區與數據（${esc(fmtMD(prevEntry.date))}）
+            </button>
+          ` : ''}
+        </div>
+
+        <div class="dr-chip-bar">
+          <span class="dr-chip-label">📍 點擊快選地區：</span>
+          ${regionChips.map(c => `<button type="button" class="dr-phrase-chip" data-insert-region="${esc(c)}" data-target-uid="${esc(u.uid)}">＋ ${esc(c)}</button>`).join('')}
+        </div>
+
+        <label class="dr-field">
+          <span>1️⃣ 地區 <small class="muted">（必填，可點選上方縣市或手動輸入行政區）</small></span>
+          <input type="text" data-f-region="${esc(u.uid)}" placeholder="例如：新北市（板橋、中和）、高雄市（左營）..." value="${esc(rep.fieldRegion || '')}">
+        </label>
+
+        <div class="dr-field-row3">
+          <label class="dr-field">
+            <span>2️⃣ 稽查場站數 <small class="muted">（站）</small></span>
+            <input type="number" min="0" step="1" inputmode="numeric" data-f-stations="${esc(u.uid)}" placeholder="0" value="${esc(rep.fieldStations ?? '')}">
+          </label>
+          <label class="dr-field">
+            <span>3️⃣ YouBike 2.0 數量 <small class="muted">（台）</small></span>
+            <input type="number" min="0" step="1" inputmode="numeric" data-f-v20="${esc(u.uid)}" placeholder="0" value="${esc(v20)}">
+          </label>
+          <label class="dr-field">
+            <span>⚡ YouBike 2.0E 數量 <small class="muted">（台）</small></span>
+            <input type="number" min="0" step="1" inputmode="numeric" data-f-v20e="${esc(u.uid)}" placeholder="0" value="${esc(v20e)}">
+          </label>
+        </div>
+
+        <div class="dr-bike-sum-bar" data-bike-sum="${esc(u.uid)}">
+          🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${total} 台</strong>（2.0：${Number(v20) || 0} 台 ＋ 2.0E：${Number(v20e) || 0} 台）
+        </div>
+
+        <label class="dr-field">
+          <span>💡 補充備註事項 <small class="muted">（選填）</small></span>
+          <input type="text" data-f-notes="${esc(u.uid)}" placeholder="例如：特殊異常回報、跨區支援說明..." value="${esc(rep.notes || '')}">
+        </label>
+
+        <div class="dr-editor-actions">
+          <button type="button" class="btn" data-cancel-edit>取消</button>
+          <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
+          <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
+            💾 儲存並複製個人 LINE 格式
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  /** 內勤同仁專屬：條列式工作進度行內編輯器 */
+  function renderOfficeInlineEditor(u, rep, prevEntry, chips) {
+    return `
+      <div class="dr-inline-editor" data-editor-for="${esc(u.uid)}" data-editor-mode="office">
+        <div class="dr-editor-top-tools">
+          ${prevEntry ? `
+            <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
+              📥 一鍵帶入前次項目（${esc(fmtMD(prevEntry.date))}）
+            </button>
+          ` : `<span class="muted" style="font-size:12px">💡 可點選下方常用詞彙快速帶入</span>`}
+          <button type="button" class="btn sm" data-auto-number="${esc(u.uid)}">🔢 自動整理編號</button>
+        </div>
+
+        <div class="dr-chip-bar">
+          <span class="dr-chip-label">⚡ 點擊快速插入：</span>
+          ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-insert-chip="${esc(c)}" data-target-uid="${esc(u.uid)}">＋ ${esc(c)}</button>`).join('')}
+        </div>
+
+        <label class="dr-field">
+          <span>✅ 今日完成事項 / 工作進度 <small class="muted">（必填，每行一項）</small></span>
+          <textarea rows="4" data-f-today="${esc(u.uid)}" placeholder="1. 完成...&#10;2. 追蹤...">${esc(rep.todayTasks || '')}</textarea>
+        </label>
+
+        <label class="dr-field">
+          <span>📅 明日預計工作 / 後續待辦 <small class="muted">（選填）</small></span>
+          <textarea rows="2" data-f-tomorrow="${esc(u.uid)}" placeholder="1. 預計處理...">${esc(rep.tomorrowTasks || '')}</textarea>
+        </label>
+
+        <label class="dr-field">
+          <span>💡 需主管協助 / 備註事項 <small class="muted">（選填）</small></span>
+          <input type="text" data-f-notes="${esc(u.uid)}" placeholder="例如：合約待核章、需跨部門協調事項..." value="${esc(rep.notes || '')}">
+        </label>
+
+        <div class="dr-editor-actions">
+          <button type="button" class="btn" data-cancel-edit>取消</button>
+          <button type="button" class="btn" data-save-only="${esc(u.uid)}">💾 僅儲存</button>
+          <button type="button" class="btn primary" data-save-and-copy="${esc(u.uid)}">
+            💾 儲存並複製個人 LINE 格式
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  /** 外勤品管已填寫內容顯示區（僅本人與代理副理可見） */
+  function renderFieldReportBody(rep) {
+    const v20 = Number(rep.fieldV20) || 0;
+    const v20e = Number(rep.fieldV20E) || 0;
+    const total = v20 + v20e;
+    return `
+      <div class="dr-report-body field-summary">
+        <div class="dr-field-metrics">
+          <div class="dr-f-metric">
+            <span class="dr-fm-label">📍 地區</span>
+            <strong class="dr-fm-val">${esc(rep.fieldRegion || '—')}</strong>
+          </div>
+          <div class="dr-f-metric">
+            <span class="dr-fm-label">🚏 稽查場站數</span>
+            <strong class="dr-fm-val">${esc(String(rep.fieldStations ?? 0))} 站</strong>
+          </div>
+          <div class="dr-f-metric wide">
+            <span class="dr-fm-label">🚲 2.0 與 2.0E 的數量</span>
+            <strong class="dr-fm-val">2.0：${v20} 台 ／ 2.0E：${v20e} 台 <span class="dr-fm-total">（合計 ${total} 台）</span></strong>
+          </div>
+        </div>
+        ${rep.notes ? `
+          <div class="dr-block note" style="margin-top:6px">
+            <div class="dr-block-title">💡 備註事項</div>
+            <div class="dr-block-text">${esc(rep.notes)}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  /** 內勤已填寫內容顯示區（僅本人與代理副理可見） */
+  function renderOfficeReportBody(rep) {
+    return `
+      <div class="dr-report-body">
+        <div class="dr-block">
+          <div class="dr-block-title">✅ 今日完成事項</div>
+          <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
+        </div>
+        ${rep.tomorrowTasks ? `
+          <div class="dr-block">
+            <div class="dr-block-title">📅 明日預計 / 待辦</div>
+            <div class="dr-block-text">${esc(rep.tomorrowTasks).replace(/\n/g, '<br>')}</div>
+          </div>
+        ` : ''}
+        ${rep.notes ? `
+          <div class="dr-block note">
+            <div class="dr-block-title">💡 備註 / 需協助事項</div>
+            <div class="dr-block-text">${esc(rep.notes)}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  function renderHistoryExplorer({ users, isSup, myId }) {
+    // 蒐集歷史回報紀錄（嚴格遵守隱私：若非代理副理，僅能檢索自己本人的歷史紀錄！）
     const entries = [];
     const sortedDates = [...state.dailyReports.keys()].sort((a, b) => b.localeCompare(a));
     for (const d of sortedDates) {
       const doc = state.dailyReports.get(d);
       const reps = doc?.reports || {};
       for (const [uid, rep] of Object.entries(reps)) {
-        if (!rep?.todayTasks?.trim()) continue;
-        if (historyFilterUid !== 'all' && uid !== historyFilterUid) continue;
+        if (!canViewReportContent(uid)) continue; // 隱私過濾：一般組員只看得到自己，代理副理看得到全組
         const u = state.users.get(uid);
-        const textBlob = `${u?.displayName || ''} ${rep.todayTasks || ''} ${rep.tomorrowTasks || ''} ${rep.notes || ''} ${rep.managerReply || ''}`.toLowerCase();
+        if (!isReportSubmitted(rep, u)) continue;
+        if (isSup && historyFilterUid !== 'all' && uid !== historyFilterUid) continue;
+        const textBlob = `${u?.displayName || ''} ${rep.todayTasks || ''} ${rep.tomorrowTasks || ''} ${rep.fieldRegion || ''} ${rep.notes || ''} ${rep.managerReply || ''}`.toLowerCase();
         if (historyKeyword.trim() && !textBlob.includes(historyKeyword.trim().toLowerCase())) continue;
         entries.push({ date: d, uid, user: u, report: rep });
       }
@@ -505,42 +723,59 @@ export function mountDailyReport(root) {
     return `
       <section class="card pad dr-history-section">
         <div class="dr-history-filters">
-          <label class="dr-filter-item">
-            <span>👤 篩選組員：</span>
-            <select data-history-uid>
-              <option value="all" ${historyFilterUid === 'all' ? 'selected' : ''}>全部組員（${users.length} 人）</option>
-              ${users.map(u => `<option value="${esc(u.uid)}" ${historyFilterUid === u.uid ? 'selected' : ''}>${esc(u.displayName)}（${esc(u.title || '')}）</option>`).join('')}
-            </select>
-          </label>
+          ${isSup ? `
+            <label class="dr-filter-item">
+              <span>👤 篩選組員：</span>
+              <select data-history-uid>
+                <option value="all" ${historyFilterUid === 'all' ? 'selected' : ''}>全部組員（${users.length} 人）</option>
+                ${users.map(u => `<option value="${esc(u.uid)}" ${historyFilterUid === u.uid ? 'selected' : ''}>${esc(u.displayName)}（${esc(u.title || '')}）</option>`).join('')}
+              </select>
+            </label>
+          ` : `
+            <div class="dr-filter-item">
+              <span>🔒 <strong>個人歷史回報紀錄</strong>（基於隱私保護，僅顯示您本人的過往回報）</span>
+            </div>
+          `}
           <label class="dr-filter-item grow">
             <span>🔍 關鍵字搜尋：</span>
-            <input type="search" data-history-kw placeholder="搜尋工作內容、採購、倉管、勞安、車柱..." value="${esc(historyKeyword)}">
+            <input type="search" data-history-kw placeholder="搜尋地區、工作內容、採購、倉管、勞安..." value="${esc(historyKeyword)}">
           </label>
         </div>
 
         <div class="dr-history-list">
-          ${entries.length ? entries.map(item => `
-            <div class="dr-history-row">
-              <div class="dr-history-meta">
-                <button class="dr-history-date-btn" data-jump-date="${esc(item.date)}">
-                  📅 ${esc(item.date)}（週${esc(weekdayZh(item.date))}）
-                </button>
-                <div class="dr-history-user">
-                  ${avatar(item.user, 28)}
-                  <strong>${esc(item.user?.displayName || item.uid)}</strong>
-                  <span class="muted">${esc(item.user?.title || '')}</span>
+          ${entries.length ? entries.map(item => {
+            const isField = isFieldStaff(item.user) || item.report.reportType === 'field';
+            const v20 = Number(item.report.fieldV20) || 0;
+            const v20e = Number(item.report.fieldV20E) || 0;
+            return `
+              <div class="dr-history-row">
+                <div class="dr-history-meta">
+                  <button class="dr-history-date-btn" data-jump-date="${esc(item.date)}">
+                    📅 ${esc(item.date)}（週${esc(weekdayZh(item.date))}）
+                  </button>
+                  <div class="dr-history-user">
+                    ${avatar(item.user, 28)}
+                    <strong>${esc(item.user?.displayName || item.uid)}</strong>
+                    <span class="muted">${esc(item.user?.title || '')}</span>
+                  </div>
+                </div>
+                <div class="dr-history-content">
+                  ${isField ? `
+                    <div><strong>📍 地區：</strong>${esc(item.report.fieldRegion || '—')}</div>
+                    <div><strong>🚏 稽查場站數：</strong>${esc(String(item.report.fieldStations ?? 0))} 站</div>
+                    <div><strong>🚲 2.0與2.0E的數量：</strong>2.0 共 ${v20} 台 / 2.0E 共 ${v20e} 台（合計 ${v20 + v20e} 台）</div>
+                  ` : `
+                    <div><strong>✅ 今日完成：</strong><br>${esc(item.report.todayTasks).replace(/\n/g, '<br>')}</div>
+                    ${item.report.tomorrowTasks ? `<div style="margin-top:6px"><strong>📅 明日預計：</strong><br>${esc(item.report.tomorrowTasks).replace(/\n/g, '<br>')}</div>` : ''}
+                  `}
+                  ${item.report.notes ? `<div style="margin-top:6px"><strong>💡 備註：</strong>${esc(item.report.notes)}</div>` : ''}
+                </div>
+                <div class="dr-history-actions">
+                  <button class="btn sm" data-copy-history="${esc(item.date)}" data-copy-uid="${esc(item.uid)}">📋 複製 LINE 格式</button>
                 </div>
               </div>
-              <div class="dr-history-content">
-                <div><strong>✅ 今日完成：</strong><br>${esc(item.report.todayTasks).replace(/\n/g, '<br>')}</div>
-                ${item.report.tomorrowTasks ? `<div style="margin-top:6px"><strong>📅 明日預計：</strong><br>${esc(item.report.tomorrowTasks).replace(/\n/g, '<br>')}</div>` : ''}
-                ${item.report.notes ? `<div style="margin-top:6px"><strong>💡 備註：</strong>${esc(item.report.notes)}</div>` : ''}
-              </div>
-              <div class="dr-history-actions">
-                <button class="btn sm" data-copy-history="${esc(item.date)}" data-copy-uid="${esc(item.uid)}">📋 複製 LINE 格式</button>
-              </div>
-            </div>
-          `).join('') : `<p class="muted" style="text-align:center;padding:32px 0">查無符合條件的歷史回報紀錄</p>`}
+            `;
+          }).join('') : `<p class="muted" style="text-align:center;padding:32px 0">查無符合條件的歷史回報紀錄</p>`}
         </div>
       </section>
     `;
@@ -590,13 +825,13 @@ export function mountDailyReport(root) {
     if (typhoonBtn) {
       typhoonBtn.onclick = async () => {
         const nextVal = !doc.isTyphoonDay;
-        await toggleTyphoonDay(selectedDate, nextVal, '🌀 颱風停班停課（全體內勤免回報）');
+        await toggleTyphoonDay(selectedDate, nextVal, '🌀 颱風停班停課（全體同仁免回報）');
         toast(nextVal ? `🌀 已將 ${fmtMD(selectedDate)} 設為颱風天免回報` : `已恢復 ${fmtMD(selectedDate)} 為一般工作日回報`);
         render();
       };
     }
 
-    // 頂部快速填寫彈窗按鈕与每日回報導覽按鈕
+    // 頂部快速填寫彈窗按鈕與每日回報導覽按鈕
     const drTourBtn = root.querySelector('[data-open-dr-tour]');
     if (drTourBtn) {
       drTourBtn.onclick = () => startInteractiveDailyReportSpotlightTour();
@@ -616,8 +851,8 @@ export function mountDailyReport(root) {
         }
         editingUid = targetId;
         render();
-        const ta = root.querySelector(`[data-f-today="${editingUid}"]`);
-        if (ta) ta.focus();
+        const firstInput = root.querySelector(`[data-f-region="${editingUid}"], [data-f-today="${editingUid}"]`);
+        if (firstInput) firstInput.focus();
       };
     });
 
@@ -629,23 +864,66 @@ export function mountDailyReport(root) {
       };
     }
 
-    // 一鍵帶入前次項目
+    // 一鍵帶入前次項目（同時支援內勤與外勤品管）
     root.querySelectorAll('[data-import-prev]').forEach(btn => {
       btn.onclick = () => {
         const uid = btn.dataset.importPrev;
         const prev = getPreviousUserReport(uid, selectedDate);
         if (!prev) return toast('查無前次歷史回報紀錄');
-        const todayTa = root.querySelector(`[data-f-today="${uid}"]`);
-        const tomorrowTa = root.querySelector(`[data-f-tomorrow="${uid}"]`);
-        // 若前次有填「明日預計工作」，優先帶入作為今日完成事項；否則帶入前次的今日完成事項
-        const seedToday = (prev.report.tomorrowTasks || '').trim() || (prev.report.todayTasks || '').trim();
-        if (todayTa) todayTa.value = normalizeNumberedLines(seedToday);
-        if (tomorrowTa && !tomorrowTa.value.trim()) tomorrowTa.value = prev.report.tomorrowTasks || '';
-        toast(`📥 已帶入 ${fmtMD(prev.date)} 的回報項目，請直接微調！`);
+        const u = state.users.get(uid);
+        if (isFieldStaff(u)) {
+          const regIn = root.querySelector(`[data-f-region="${uid}"]`);
+          const stIn = root.querySelector(`[data-f-stations="${uid}"]`);
+          const v20In = root.querySelector(`[data-f-v20="${uid}"]`);
+          const v20eIn = root.querySelector(`[data-f-v20e="${uid}"]`);
+          if (regIn) regIn.value = prev.report.fieldRegion || '';
+          if (stIn) stIn.value = prev.report.fieldStations ?? '';
+          if (v20In) v20In.value = prev.report.fieldV20 ?? '';
+          if (v20eIn) v20eIn.value = prev.report.fieldV20E ?? '';
+          updateFieldBikeSum(uid);
+          toast(`📥 已帶入 ${fmtMD(prev.date)} 的外勤稽查數據，請直接微調！`);
+        } else {
+          const todayTa = root.querySelector(`[data-f-today="${uid}"]`);
+          const tomorrowTa = root.querySelector(`[data-f-tomorrow="${uid}"]`);
+          const seedToday = (prev.report.tomorrowTasks || '').trim() || (prev.report.todayTasks || '').trim();
+          if (todayTa) todayTa.value = normalizeNumberedLines(seedToday);
+          if (tomorrowTa && !tomorrowTa.value.trim()) tomorrowTa.value = prev.report.tomorrowTasks || '';
+          toast(`📥 已帶入 ${fmtMD(prev.date)} 的回報項目，請直接微調！`);
+        }
       };
     });
 
-    // 自動整理 1. 2. 3. 編號
+    // 外勤品管：點擊地區快選膠囊
+    root.querySelectorAll('[data-insert-region]').forEach(chip => {
+      chip.onclick = () => {
+        const uid = chip.dataset.targetUid;
+        const reg = chip.dataset.insertRegion;
+        const regIn = root.querySelector(`[data-f-region="${uid}"]`);
+        if (!regIn) return;
+        const cur = regIn.value.trim();
+        if (!cur) {
+          regIn.value = reg;
+        } else if (!cur.includes(reg)) {
+          regIn.value = `${cur}、${reg}`;
+        }
+        regIn.focus();
+      };
+    });
+
+    // 外勤品管：即時計算 2.0 + 2.0E 總台數
+    function updateFieldBikeSum(uid) {
+      const v20 = Number(root.querySelector(`[data-f-v20="${uid}"]`)?.value) || 0;
+      const v20e = Number(root.querySelector(`[data-f-v20e="${uid}"]`)?.value) || 0;
+      const sumEl = root.querySelector(`[data-bike-sum="${uid}"]`);
+      if (sumEl) {
+        sumEl.innerHTML = `🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${v20 + v20e} 台</strong>（2.0：${v20} 台 ＋ 2.0E：${v20e} 台）`;
+      }
+    }
+    root.querySelectorAll('[data-f-v20], [data-f-v20e]').forEach(inp => {
+      inp.oninput = () => updateFieldBikeSum(inp.dataset.fV20 || inp.dataset.fV20e);
+    });
+
+    // 內勤：自動整理 1. 2. 3. 編號
     root.querySelectorAll('[data-auto-number]').forEach(btn => {
       btn.onclick = () => {
         const uid = btn.dataset.autoNumber;
@@ -656,7 +934,7 @@ export function mountDailyReport(root) {
       };
     });
 
-    // 點擊常用工作快選膠囊
+    // 內勤：點擊常用工作快選膠囊
     root.querySelectorAll('[data-insert-chip]').forEach(chip => {
       chip.onclick = () => {
         const uid = chip.dataset.targetUid;
@@ -676,29 +954,68 @@ export function mountDailyReport(root) {
         toast('每日回報僅限本人親自填寫，無法代填！', 'error');
         return;
       }
-      const todayTa = root.querySelector(`[data-f-today="${uid}"]`);
-      const tomorrowTa = root.querySelector(`[data-f-tomorrow="${uid}"]`);
+      const targetUser = state.users.get(uid);
+      const isField = isFieldStaff(targetUser);
       const notesIn = root.querySelector(`[data-f-notes="${uid}"]`);
-      const todayTasks = normalizeNumberedLines(todayTa?.value || '');
-      const tomorrowTasks = normalizeNumberedLines(tomorrowTa?.value || '');
       const notes = (notesIn?.value || '').trim();
 
-      if (!todayTasks) {
-        toast('請填寫「今日完成事項 / 工作進度」', 'error');
-        todayTa?.focus();
-        return;
+      let payload;
+      if (isField) {
+        const regIn = root.querySelector(`[data-f-region="${uid}"]`);
+        const stIn = root.querySelector(`[data-f-stations="${uid}"]`);
+        const v20In = root.querySelector(`[data-f-v20="${uid}"]`);
+        const v20eIn = root.querySelector(`[data-f-v20e="${uid}"]`);
+
+        const fieldRegion = (regIn?.value || '').trim();
+        const fieldStationsRaw = stIn?.value ?? '';
+        const fieldV20 = Number(v20In?.value) || 0;
+        const fieldV20E = Number(v20eIn?.value) || 0;
+
+        if (!fieldRegion) {
+          toast('請填寫或點選「1️⃣ 地區」', 'error');
+          regIn?.focus();
+          return;
+        }
+        if (fieldStationsRaw === '' || Number(fieldStationsRaw) < 0) {
+          toast('請填寫「2️⃣ 稽查場站數」', 'error');
+          stIn?.focus();
+          return;
+        }
+        const fieldStations = Number(fieldStationsRaw) || 0;
+        payload = {
+          reportType: 'field',
+          fieldRegion,
+          fieldStations,
+          fieldV20,
+          fieldV20E,
+          todayTasks: `地區：${fieldRegion}\n稽查場站數：${fieldStations} 站\n2.0與2.0E的數量：2.0 共 ${fieldV20} 台 / 2.0E 共 ${fieldV20E} 台（合計 ${fieldV20 + fieldV20E} 台）`,
+          notes,
+          status: 'submitted',
+        };
+      } else {
+        const todayTa = root.querySelector(`[data-f-today="${uid}"]`);
+        const tomorrowTa = root.querySelector(`[data-f-tomorrow="${uid}"]`);
+        const todayTasks = normalizeNumberedLines(todayTa?.value || '');
+        const tomorrowTasks = normalizeNumberedLines(tomorrowTa?.value || '');
+
+        if (!todayTasks) {
+          toast('請填寫「今日完成事項 / 工作進度」', 'error');
+          todayTa?.focus();
+          return;
+        }
+        payload = {
+          reportType: 'office',
+          todayTasks,
+          tomorrowTasks,
+          notes,
+          status: 'submitted',
+        };
       }
 
-      const saved = await saveUserDailyReport(selectedDate, uid, {
-        todayTasks,
-        tomorrowTasks,
-        notes,
-        status: 'submitted',
-      });
+      const saved = await saveUserDailyReport(selectedDate, uid, payload);
       editingUid = null;
 
       if (copyToLine) {
-        const targetUser = state.users.get(uid);
         const text = formatPersonalLineReport(targetUser, selectedDate, saved);
         try {
           await navigator.clipboard.writeText(text);
@@ -719,13 +1036,16 @@ export function mountDailyReport(root) {
       btn.onclick = () => handleSaveInline(btn.dataset.saveAndCopy, true);
     });
 
-    // 複製個人 LINE 回報格式
+    // 複製個人 LINE 回報格式（嚴格檢查查看權限）
     root.querySelectorAll('[data-copy-personal]').forEach(btn => {
       btn.onclick = async () => {
         const uid = btn.dataset.copyPersonal;
+        if (!canViewReportContent(uid)) {
+          return toast('回報內容僅代理副理與本人可複製', 'error');
+        }
         const targetUser = state.users.get(uid);
         const rep = doc.reports?.[uid];
-        if (!rep?.todayTasks) return toast('尚未填寫今日回報內容', 'error');
+        if (!isReportSubmitted(rep, targetUser)) return toast('尚未填寫今日回報內容', 'error');
         const text = formatPersonalLineReport(targetUser, selectedDate, rep);
         try {
           await navigator.clipboard.writeText(text);
@@ -736,7 +1056,7 @@ export function mountDailyReport(root) {
       };
     });
 
-    // 主管點選「👍 已閱」
+    // 代理副理點選「👍 已閱」
     root.querySelectorAll('[data-toggle-ack]').forEach(btn => {
       btn.onclick = async () => {
         const uid = btn.dataset.toggleAck;
@@ -747,7 +1067,7 @@ export function mountDailyReport(root) {
       };
     });
 
-    // 主管展開回饋輸入框
+    // 代理副理展開回饋輸入框
     root.querySelectorAll('[data-open-reply]').forEach(btn => {
       btn.onclick = () => {
         replyingUid = btn.dataset.openReply;
@@ -803,6 +1123,7 @@ export function mountDailyReport(root) {
       btn.onclick = async () => {
         const d = btn.dataset.copyHistory;
         const uid = btn.dataset.copyUid;
+        if (!canViewReportContent(uid)) return;
         const targetUser = state.users.get(uid);
         const rep = dailyReportDocOf(d).reports?.[uid];
         if (!rep) return;
@@ -824,7 +1145,7 @@ export function mountDailyReport(root) {
 
 // ============================================================
 // 行動端通勤極速快填抽屜（Bottom Sheet / Modal）
-// 專為等紅綠燈、搭捷運公車單手 15 秒完成填寫與 LINE 複製設計
+// 自動識別登入者為「🚲 外勤品管（制式 3 題）」或「🏢 內勤（工作進度）」
 // ============================================================
 export function openQuickDailyReportSheet(dateStr = ymd()) {
   const existingModal = document.getElementById('dr-quick-sheet-backdrop');
@@ -834,10 +1155,14 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
   const uid = myUid();
   if (!me || !uid) return;
 
+  const isField = isFieldStaff(me);
   const doc = dailyReportDocOf(dateStr);
   const rep = doc.reports?.[uid] || {};
   const prevEntry = getPreviousUserReport(uid, dateStr);
-  const chips = getQuickChipsForUser(me);
+  const chips = isField ? getFieldRegionChipsForUser(me) : getQuickChipsForUser(me);
+  const initV20 = rep.fieldV20 !== undefined ? rep.fieldV20 : '';
+  const initV20E = rep.fieldV20E !== undefined ? rep.fieldV20E : '';
+  const initTotal = (Number(initV20) || 0) + (Number(initV20E) || 0);
 
   const backdrop = document.createElement('div');
   backdrop.id = 'dr-quick-sheet-backdrop';
@@ -848,8 +1173,8 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
       <div class="dr-sheet-handle"></div>
       <div class="dr-sheet-head">
         <div>
-          <div class="dr-sheet-badge">⚡ 通勤極速快填・自動排版</div>
-          <h3>📝 ${esc(fmtMD(dateStr))}（週${esc(weekdayZh(dateStr))}）工作回報</h3>
+          <div class="dr-sheet-badge">${isField ? '🚲 外勤品管制式快填・僅代理副理可見' : '⚡ 通勤極速快填・僅代理副理可見'}</div>
+          <h3>📝 ${esc(fmtMD(dateStr))}（週${esc(weekdayZh(dateStr))}）${esc(me.displayName)} 回報</h3>
         </div>
         <button type="button" class="icon-btn" data-close-sheet aria-label="關閉">✕</button>
       </div>
@@ -858,31 +1183,64 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
         <div class="dr-sheet-quickbar">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-sheet-prev-btn" data-sheet-import-prev>
-              📥 一鍵帶入前次項目（${esc(fmtMD(prevEntry.date))}）
+              📥 一鍵帶入前次資料（${esc(fmtMD(prevEntry.date))}）
             </button>
           ` : ''}
-          <button type="button" class="btn sm" data-sheet-renumber>🔢 自動整理 1.2.3.</button>
+          ${!isField ? `<button type="button" class="btn sm" data-sheet-renumber>🔢 自動整理 1.2.3.</button>` : ''}
         </div>
 
-        <div class="dr-sheet-chips">
-          <div class="dr-chip-label">👆 點擊下方常用詞彙直接加入今日進度（免打字）：</div>
-          <div class="dr-chip-scroll">
-            ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-sheet-chip="${esc(c)}">＋ ${esc(c)}</button>`).join('')}
+        ${isField ? `
+          <div class="dr-sheet-chips">
+            <div class="dr-chip-label">📍 點擊下方常用地區直接帶入（可多選或手動補充）：</div>
+            <div class="dr-chip-scroll">
+              ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-sheet-region-chip="${esc(c)}">＋ ${esc(c)}</button>`).join('')}
+            </div>
           </div>
-        </div>
+
+          <label class="dr-sheet-field">
+            <span>1️⃣ 地區（必填）</span>
+            <input type="text" data-sheet-region placeholder="例如：新北市（板橋、中和）..." value="${esc(rep.fieldRegion || '')}">
+          </label>
+
+          <div class="dr-field-row3">
+            <label class="dr-sheet-field">
+              <span>2️⃣ 稽查場站數（站）</span>
+              <input type="number" min="0" step="1" inputmode="numeric" data-sheet-stations placeholder="0" value="${esc(rep.fieldStations ?? '')}">
+            </label>
+            <label class="dr-sheet-field">
+              <span>3️⃣ 2.0 數量（台）</span>
+              <input type="number" min="0" step="1" inputmode="numeric" data-sheet-v20 placeholder="0" value="${esc(initV20)}">
+            </label>
+            <label class="dr-sheet-field">
+              <span>⚡ 2.0E 數量（台）</span>
+              <input type="number" min="0" step="1" inputmode="numeric" data-sheet-v20e placeholder="0" value="${esc(initV20E)}">
+            </label>
+          </div>
+
+          <div class="dr-bike-sum-bar" data-sheet-bike-sum>
+            🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${initTotal} 台</strong>（2.0：${Number(initV20) || 0} 台 ＋ 2.0E：${Number(initV20E) || 0} 台）
+          </div>
+        ` : `
+          <div class="dr-sheet-chips">
+            <div class="dr-chip-label">👆 點擊下方常用詞彙直接加入今日進度（免打字）：</div>
+            <div class="dr-chip-scroll">
+              ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-sheet-chip="${esc(c)}">＋ ${esc(c)}</button>`).join('')}
+            </div>
+          </div>
+
+          <label class="dr-sheet-field">
+            <span>✅ 今日完成事項 / 工作進度</span>
+            <textarea rows="4" data-sheet-today placeholder="1. 點擊上方詞彙或輸入今日工作進度...">${esc(rep.todayTasks || '')}</textarea>
+          </label>
+
+          <label class="dr-sheet-field">
+            <span>📅 明日預計工作 / 後續待辦（選填）</span>
+            <textarea rows="2" data-sheet-tomorrow placeholder="1. 明日預計待辦...">${esc(rep.tomorrowTasks || '')}</textarea>
+          </label>
+        `}
 
         <label class="dr-sheet-field">
-          <span>✅ 今日完成事項 / 工作進度</span>
-          <textarea rows="4" data-sheet-today placeholder="1. 點擊上方詞彙或輸入今日工作進度...">${esc(rep.todayTasks || '')}</textarea>
-        </label>
-
-        <label class="dr-sheet-field">
-          <span>📅 明日預計工作 / 後續待辦（選填）</span>
-          <textarea rows="2" data-sheet-tomorrow placeholder="1. 明日預計待辦...">${esc(rep.tomorrowTasks || '')}</textarea>
-        </label>
-
-        <label class="dr-sheet-field">
-          <span>💡 需主管協助 / 備註事項（選填）</span>
+          <span>💡 備註事項（選填）</span>
           <input type="text" data-sheet-notes placeholder="選填備註..." value="${esc(rep.notes || '')}">
         </label>
 
@@ -909,8 +1267,6 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
 
   document.body.appendChild(backdrop);
 
-  const todayTa = backdrop.querySelector('[data-sheet-today]');
-  const tomorrowTa = backdrop.querySelector('[data-sheet-tomorrow]');
   const notesIn = backdrop.querySelector('[data-sheet-notes]');
   const successBox = backdrop.querySelector('[data-sheet-success]');
   const previewPre = backdrop.querySelector('[data-sheet-preview]');
@@ -922,49 +1278,131 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
   });
   backdrop.querySelectorAll('[data-close-sheet]').forEach(b => { b.onclick = close; });
 
-  const prevBtn = backdrop.querySelector('[data-sheet-import-prev]');
-  if (prevBtn && prevEntry) {
-    prevBtn.onclick = () => {
-      const seed = (prevEntry.report.tomorrowTasks || '').trim() || (prevEntry.report.todayTasks || '').trim();
-      todayTa.value = normalizeNumberedLines(seed);
-      if (!tomorrowTa.value.trim()) tomorrowTa.value = prevEntry.report.tomorrowTasks || '';
-      toast(`📥 已帶入 ${fmtMD(prevEntry.date)} 的項目`);
+  if (isField) {
+    const regIn = backdrop.querySelector('[data-sheet-region]');
+    const stIn = backdrop.querySelector('[data-sheet-stations]');
+    const v20In = backdrop.querySelector('[data-sheet-v20]');
+    const v20eIn = backdrop.querySelector('[data-sheet-v20e]');
+    const sumEl = backdrop.querySelector('[data-sheet-bike-sum]');
+
+    const updateSheetSum = () => {
+      const a = Number(v20In?.value) || 0;
+      const b = Number(v20eIn?.value) || 0;
+      if (sumEl) {
+        sumEl.innerHTML = `🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${a + b} 台</strong>（2.0：${a} 台 ＋ 2.0E：${b} 台）`;
+      }
     };
-  }
+    v20In?.addEventListener('input', updateSheetSum);
+    v20eIn?.addEventListener('input', updateSheetSum);
 
-  const renumBtn = backdrop.querySelector('[data-sheet-renumber]');
-  if (renumBtn) {
-    renumBtn.onclick = () => {
-      if (todayTa.value.trim()) todayTa.value = normalizeNumberedLines(todayTa.value);
-      if (tomorrowTa.value.trim()) tomorrowTa.value = normalizeNumberedLines(tomorrowTa.value);
-    };
-  }
+    backdrop.querySelectorAll('[data-sheet-region-chip]').forEach(chip => {
+      chip.onclick = () => {
+        const reg = chip.dataset.sheetRegionChip;
+        const cur = regIn.value.trim();
+        if (!cur) regIn.value = reg;
+        else if (!cur.includes(reg)) regIn.value = `${cur}、${reg}`;
+      };
+    });
 
-  backdrop.querySelectorAll('[data-sheet-chip]').forEach(chip => {
-    chip.onclick = () => {
-      const phrase = chip.dataset.sheetChip;
-      const cur = todayTa.value.trim();
-      todayTa.value = normalizeNumberedLines(cur ? `${cur}\n${phrase}` : phrase);
-    };
-  });
+    const prevBtn = backdrop.querySelector('[data-sheet-import-prev]');
+    if (prevBtn && prevEntry) {
+      prevBtn.onclick = () => {
+        regIn.value = prevEntry.report.fieldRegion || '';
+        stIn.value = prevEntry.report.fieldStations ?? '';
+        v20In.value = prevEntry.report.fieldV20 ?? '';
+        v20eIn.value = prevEntry.report.fieldV20E ?? '';
+        updateSheetSum();
+        toast(`📥 已帶入 ${fmtMD(prevEntry.date)} 的稽查資料`);
+      };
+    }
+  } else {
+    const todayTa = backdrop.querySelector('[data-sheet-today]');
+    const tomorrowTa = backdrop.querySelector('[data-sheet-tomorrow]');
 
-  async function submitSheet(copyLine = true) {
-    const todayTasks = normalizeNumberedLines(todayTa.value);
-    const tomorrowTasks = normalizeNumberedLines(tomorrowTa.value);
-    const notes = notesIn.value.trim();
-
-    if (!todayTasks) {
-      toast('請先輸入或點選至少一項「今日完成事項」', 'error');
-      todayTa.focus();
-      return;
+    const prevBtn = backdrop.querySelector('[data-sheet-import-prev]');
+    if (prevBtn && prevEntry) {
+      prevBtn.onclick = () => {
+        const seed = (prevEntry.report.tomorrowTasks || '').trim() || (prevEntry.report.todayTasks || '').trim();
+        todayTa.value = normalizeNumberedLines(seed);
+        if (!tomorrowTa.value.trim()) tomorrowTa.value = prevEntry.report.tomorrowTasks || '';
+        toast(`📥 已帶入 ${fmtMD(prevEntry.date)} 的項目`);
+      };
     }
 
-    const saved = await saveUserDailyReport(dateStr, uid, {
-      todayTasks,
-      tomorrowTasks,
-      notes,
-      status: 'submitted',
+    const renumBtn = backdrop.querySelector('[data-sheet-renumber]');
+    if (renumBtn) {
+      renumBtn.onclick = () => {
+        if (todayTa.value.trim()) todayTa.value = normalizeNumberedLines(todayTa.value);
+        if (tomorrowTa.value.trim()) tomorrowTa.value = normalizeNumberedLines(tomorrowTa.value);
+      };
+    }
+
+    backdrop.querySelectorAll('[data-sheet-chip]').forEach(chip => {
+      chip.onclick = () => {
+        const phrase = chip.dataset.sheetChip;
+        const cur = todayTa.value.trim();
+        todayTa.value = normalizeNumberedLines(cur ? `${cur}\n${phrase}` : phrase);
+      };
     });
+  }
+
+  async function submitSheet(copyLine = true) {
+    const notes = notesIn.value.trim();
+    let payload;
+
+    if (isField) {
+      const regIn = backdrop.querySelector('[data-sheet-region]');
+      const stIn = backdrop.querySelector('[data-sheet-stations]');
+      const v20In = backdrop.querySelector('[data-sheet-v20]');
+      const v20eIn = backdrop.querySelector('[data-sheet-v20e]');
+
+      const fieldRegion = (regIn?.value || '').trim();
+      const fieldStationsRaw = stIn?.value ?? '';
+      const fieldV20 = Number(v20In?.value) || 0;
+      const fieldV20E = Number(v20eIn?.value) || 0;
+
+      if (!fieldRegion) {
+        toast('請先點選或輸入「1️⃣ 地區」', 'error');
+        regIn?.focus();
+        return;
+      }
+      if (fieldStationsRaw === '' || Number(fieldStationsRaw) < 0) {
+        toast('請輸入「2️⃣ 稽查場站數」', 'error');
+        stIn?.focus();
+        return;
+      }
+      const fieldStations = Number(fieldStationsRaw) || 0;
+      payload = {
+        reportType: 'field',
+        fieldRegion,
+        fieldStations,
+        fieldV20,
+        fieldV20E,
+        todayTasks: `地區：${fieldRegion}\n稽查場站數：${fieldStations} 站\n2.0與2.0E的數量：2.0 共 ${fieldV20} 台 / 2.0E 共 ${fieldV20E} 台（合計 ${fieldV20 + fieldV20E} 台）`,
+        notes,
+        status: 'submitted',
+      };
+    } else {
+      const todayTa = backdrop.querySelector('[data-sheet-today]');
+      const tomorrowTa = backdrop.querySelector('[data-sheet-tomorrow]');
+      const todayTasks = normalizeNumberedLines(todayTa.value);
+      const tomorrowTasks = normalizeNumberedLines(tomorrowTa.value);
+
+      if (!todayTasks) {
+        toast('請先輸入或點選至少一項「今日完成事項」', 'error');
+        todayTa.focus();
+        return;
+      }
+      payload = {
+        reportType: 'office',
+        todayTasks,
+        tomorrowTasks,
+        notes,
+        status: 'submitted',
+      };
+    }
+
+    const saved = await saveUserDailyReport(dateStr, uid, payload);
 
     if (copyLine) {
       const lineText = formatPersonalLineReport(me, dateStr, saved);
@@ -978,7 +1416,7 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
       successBox.hidden = false;
       footBox.hidden = true;
     } else {
-      toast('✅ 已儲存今日工作進度回報');
+      toast('✅ 已儲存今日回報');
       close();
     }
   }
@@ -989,7 +1427,7 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
 
 // ============================================================
 // 全域懸浮輔助器：
-// 1. 行動端拇指熱區「✍️ 今日回報 / 📋 複製今日回報」獨立懸浮大按鈕（FAB）
+// 1. 行動端拇指熱區「✍️ 今日回報 / 📋 複製今日回報」獨立懸浮大按鈕（全體 9 位內外勤同仁適用）
 // 2. 每日 17:30 智慧溫和下班提醒卡片（不鎖死畫面、4 層智慧過濾）
 // ============================================================
 export function initDailyReportFloatingWidget(onUpdateTabBadge) {
@@ -1015,10 +1453,10 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
     const today = ymd();
     const doc = dailyReportDocOf(today);
     const mySt = evaluateMemberReportStatus(me, today);
-    const isOffice = isOfficeReporter(me);
-    const isPendingToday = isOffice && mySt.code === 'pending';
+    const isReporter = isDailyReporter(me); // 6 位內勤 ＋ 3 位外勤品管皆適用
+    const isPendingToday = isReporter && mySt.code === 'pending';
 
-    // 更新導覽列「📝 每日回報」頁籤上的小紅點提示
+    // 更新導覽列「每日回報」頁籤上的小紅點提示
     if (typeof onUpdateTabBadge === 'function') {
       onUpdateTabBadge(isPendingToday);
     }
@@ -1029,8 +1467,6 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
     const dismissedToday = localStorage.getItem(dismissKey(today)) === '1';
     const showGentleReminder = isPendingToday && isAfter1730 && !dismissedToday;
 
-    // 行動端 / 通勤快速懸浮按鈕：
-    // 對 6 位內勤同仁顯示在右下角拇指熱區（若在 #/dailyReport 頁面內則收斂為迷你按鈕避免遮擋）
     const onDailyReportPage = location.hash.startsWith('#/dailyReport');
     const hasSubmittedToday = mySt.code === 'submitted';
 
@@ -1043,7 +1479,7 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
             <button type="button" class="dr-toast-close" data-dismiss-1730 title="今日不再提醒">✕</button>
           </div>
           <p class="dr-toast-desc">
-            別忘了花 15 秒填寫今日工作進度，並一鍵複製貼到 LINE 群組向代理副理回報喔！
+            別忘了花 15 秒填寫今日回報，並一鍵複製貼到 LINE 群組向代理副理回報喔！
           </p>
           <div class="dr-toast-actions">
             <button type="button" class="btn primary sm" data-toast-fill>✍️ 立即快填</button>
@@ -1052,7 +1488,7 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
         </aside>
       ` : ''}
 
-      ${(isOffice && !onDailyReportPage) ? `
+      ${(isReporter && !onDailyReportPage) ? `
         <div class="dr-commuter-fab-wrap">
           ${hasSubmittedToday ? `
             <button type="button" class="dr-commuter-fab done" data-fab-copy title="一鍵複製今日個人 LINE 回報格式">
@@ -1095,7 +1531,7 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
     if (fabCopyBtn) {
       fabCopyBtn.onclick = async () => {
         const rep = doc.reports?.[uid];
-        if (!rep?.todayTasks) return openQuickDailyReportSheet(today);
+        if (!isReportSubmitted(rep, me)) return openQuickDailyReportSheet(today);
         const text = formatPersonalLineReport(me, today, rep);
         try {
           await navigator.clipboard.writeText(text);

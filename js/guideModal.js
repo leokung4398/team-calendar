@@ -1,6 +1,6 @@
 // 功能操作導覽指引（含遊戲式全螢幕聚焦高亮導覽 Tour）
 import { openModal } from './utils.js';
-import { state, hasModulePermission } from './data.js';
+import { state, hasModulePermission, isFieldUser, isSupervisor } from './data.js';
 
 export function openGuideModal() {
   const steps = [
@@ -52,14 +52,14 @@ export function openGuideModal() {
     },
     {
       title: '📝 每日回報 (Daily Report)',
-      badge: '下班進度與 LINE 快貼',
+      badge: '內外勤專屬制式與主管私密審閱',
       color: '#0d9488',
-      desc: '內勤同仁每日下班工作進度回報、一鍵複製個人 LINE 格式與主管已閱簽核。',
+      desc: '全組 9 位內外勤同仁每日工作回報（外勤制式三問、內勤條列進度）、嚴格防代填與僅代理副理可見內容保護。',
       items: [
-        { label: '一鍵帶入昨日項目 & 職務快選膠囊', detail: '自動帶入前一日工作項目，並依採購、倉管、勞安、營運提供專屬常用詞彙，點一下即可插入。' },
-        { label: '複製個人 LINE 回報格式', detail: '儲存後自動排版個人進度並複製，點擊「💬 開啟 LINE」即可直接貼到群組向代理副理回報。' },
-        { label: '颱風天切換、休假連動 & 17:30 溫和提醒', detail: '自動連動行事曆請假與國定假日；遇颱風假可一鍵設為全員免回報，平日 17:30 則提供不打擾的溫和下班提醒。' },
-        { label: '行動端通勤極速快填鈕 (FAB)', detail: '手機右下角常駐「✍️ 今日回報」大按鈕，方便趕車或等紅綠燈空檔單手 15 秒完成填寫與複製。' }
+        { label: '外勤品管制式三問 & 內勤職務快選', detail: '外勤品管同仁採用「地區、稽查場站數、2.0 與 2.0E 數量」三問制式回報並自動加總台數；內勤同仁支援一鍵帶入昨日項目與職務快選詞彙。' },
+        { label: '嚴格防代填 & 僅代理副理可見內容', detail: '每人僅能填寫自己的回報（防代填）；看板公開顯示完成狀態，但詳細回報內容僅「代理副理（徐嘉鴻）」與「填寫本人」可見！' },
+        { label: '複製個人 LINE 格式 & 颱風天免回報', detail: '儲存後自動依外勤/內勤格式排版並複製個人 LINE 訊息；遇颱風假可一鍵設為全員免回報，平日 17:30 則提供溫和下班提醒。' },
+        { label: '行動端通勤極速快填鈕 (FAB)', detail: '手機右下角常駐「✍️ 今日回報」大按鈕，方便外勤收工或搭車等紅綠燈空檔單手 15 秒完成填寫與複製。' }
       ]
     },
     {
@@ -342,7 +342,7 @@ export function startInteractiveSpotlightTour() {
       route: '#/dailyReport',
       badge: '下班進度',
       title: '📝 每日工作進度回報中心',
-      body: '內勤同仁下班前一鍵帶入昨日項目、點選職務常用詞彙，儲存即自動複製個人 LINE 回報格式！支援颱風假全員免回報、主管已閱簽核與手機右下角通勤快填鈕。',
+      body: '全組 9 位同仁專屬回報（外勤品管制式三問：地區／場站數／2.0與2.0E台數、內勤條列工作項目），嚴格防代填且回報內容<b>僅代理副理（徐嘉鴻）與本人可見</b>！',
       position: 'bottom',
     },
     {
@@ -1141,6 +1141,8 @@ export function startInteractiveDailyReportSpotlightTour() {
   const myId = me?.uid || '';
   const myName = me?.displayName || '您';
   const myTitle = me?.title || '專屬職務';
+  const isMeField = isFieldUser(me);
+  const isMeSup = isSupervisor(me);
   const myCardSelector = myId ? `#dr-card-${CSS.escape(myId)}` : '.dr-member-card.is-me';
 
   // 若先前在步驟 4 自動打開了行內編輯器，切換到其他步驟或結束導覽時自動收合
@@ -1148,13 +1150,19 @@ export function startInteractiveDailyReportSpotlightTour() {
     document.querySelector('.dr-inline-editor [data-cancel-edit]')?.click();
   }
 
+  const step4Body = isMeSup
+    ? `您目前以<b>代理副理（${myName}）</b>身份登入！全組 9 位同仁的回報內容<b>僅您與填寫本人可見</b>，您可以在任一同仁已完成的卡片下方點選<b>「👍 點擊已閱」</b>或留下<b>「💬 主管回饋」</b>。`
+    : (isMeField
+      ? `已自動為 <b>${myName}（外勤品管）</b> 展開專屬制式三問填寫區！包含：<br>① <b>地區</b>（支援縣市行政區快選膠囊）<br>② <b>稽查場站數</b><br>③ <b>2.0 與 2.0E 的數量</b>（自動加總合計台數）<br>填完點擊<b>「💾 儲存並複製個人 LINE 格式」</b>即可一鍵完成！`
+      : `已自動為 <b>${myName}（${myTitle}）</b> 點開填寫面板！上方支援<b>「📥 一鍵帶入前次項目」</b>、<b>「🔢 自動整理編號」</b>與<b>「⚡ 職務常用詞彙快選膠囊」</b>；填完點擊<b>「💾 儲存並複製個人 LINE 格式」</b>即可一氣呵成！`);
+
   const tourSteps = [
     {
       target: '.dr-hero-actions',
       fallbackTarget: '.dr-hero-card',
       badge: '步驟 1 / 6',
       title: '⚡ 立即填寫回報 ＆ 一鍵複製個人 LINE 格式',
-      body: '內勤同仁下班前點擊<b>「✍️ 立即填寫今日回報」</b>即可喚起極速快填抽屜！儲存後系統會自動將您的工作項目整理為 <code>1. 2. 3.</code> 條列編號並<b>自動複製個人專屬 LINE 回報格式</b>，直接去 LINE 群組貼上即可向代理副理回報！',
+      body: '全組 9 位同仁（3 位外勤品管＋6 位內勤）下班前點擊<b>「✍️ 立即填寫今日回報」</b>即可喚起極速快填抽屜！儲存後系統會依您的外勤／內勤身份<b>自動排版並複製個人專屬 LINE 回報格式</b>，直接去 LINE 貼上即可向代理副理回報！',
       position: 'bottom',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1166,7 +1174,7 @@ export function startInteractiveDailyReportSpotlightTour() {
       fallbackTarget: '.dr-hero-card',
       badge: '步驟 2 / 6',
       title: '🌀 日期補登切換 ＆ 颱風天全員免回報',
-      body: '上方支援<b>「‹ 前一天 / 後一天 ›」</b>隨時回頭查閱或補登過往進度；若遇颱風停班停課，主管或管理員只需點一下右側<b>「🌀 設為颱風天免回報」</b>，全體內勤同仁當日即自動轉為颱風假免回報，並自動暫停 17:30 下班提醒！',
+      body: '上方支援<b>「‹ 前一天 / 後一天 ›」</b>隨時回頭查閱個人紀錄或補登進度；若遇颱風停班停課，主管或管理員只需點一下右側<b>「🌀 設為颱風天免回報」</b>，全體 9 位同仁當日即自動轉為颱風假免回報，並自動暫停 17:30 下班提醒！',
       position: 'bottom',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1177,8 +1185,8 @@ export function startInteractiveDailyReportSpotlightTour() {
       target: '.dr-stats-grid',
       fallbackTarget: '.daily-report-page',
       badge: '步驟 3 / 6',
-      title: '📊 當日回報進度總覽（休假與例假日自動連動）',
-      body: '即時統計 <b>6 位內勤同仁</b>的「✅ 已完成回報」與「⏳ 待回報」名單！若同仁當天在行事曆有登記<b>「公休/請假」</b>或遇國定例假日，系統會自動標示為<b>「🏖️ 今日休假免回報」</b>，絕不誤催。',
+      title: '📊 全組 9 位同仁回報進度總覽（休假自動連動）',
+      body: '即時統計 <b>3 位外勤品管＋6 位內勤同仁</b>的「✅ 已完成回報」與「⏳ 待回報」名單！若同仁當天在行事曆有登記<b>「公休/請假」</b>或遇國定例假日，系統會自動標示為<b>「🏖️ 今日休假免回報」</b>，絕不誤催。',
       position: 'bottom',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1187,10 +1195,12 @@ export function startInteractiveDailyReportSpotlightTour() {
     },
     {
       target: myCardSelector,
-      fallbackTarget: '.dr-member-card.is-me, #dr-office-section .dr-member-card',
+      fallbackTarget: '.dr-member-card.is-me, #dr-field-section .dr-member-card, #dr-office-section .dr-member-card',
       badge: '步驟 4 / 6',
-      title: `✍️ ${myName} 的專屬回報卡（已為您展開實景填寫區）`,
-      body: `已自動為 <b>${myName}（${myTitle}）</b> 點開填寫面板！您可以看到上方支援<b>「📥 一鍵帶入前次項目」</b>、<b>「🔢 自動整理編號」</b>，以及專為您職務量身打造的<b>「⚡ 點擊快速插入常用詞彙膠囊」</b>；填完點擊右下角<b>「💾 儲存並複製個人 LINE 格式」</b>即可一氣呵成！`,
+      title: isMeSup
+        ? `👔 ${myName} 代理副理專屬審閱權限`
+        : `✍️ ${myName} 的專屬回報卡（已為您展開實景填寫區）`,
+      body: step4Body,
       position: 'top',
       beforeStep: () => {
         document.querySelector('.dr-tab-btn[data-view-mode="daily"]')?.click();
@@ -1203,11 +1213,11 @@ export function startInteractiveDailyReportSpotlightTour() {
       }
     },
     {
-      target: '#dr-exempt-section',
-      fallbackTarget: '.daily-report-page',
+      target: '#dr-field-section',
+      fallbackTarget: '#dr-office-section',
       badge: '步驟 5 / 6',
-      title: '👔 代理副理審閱 ＆ 🚲 外勤品管同仁免回報',
-      body: '完美貼合團隊實際運作！<b>代理副理（徐嘉鴻）</b>可對組員回報點選<b>「👍 已閱」</b>或留下<b>「💬 主管回饋」</b>；而 <b>3 位外勤品管同仁（孔令淳、葉爵豪、陸逸群）</b>預設標示為<b>「🚲 外勤品管（免回報）」</b>，不列入未交名單也無 17:30 提醒打擾，但仍可自由補充紀錄。',
+      title: '🔒 嚴格防代填 ＆ 回報內容僅代理副理可見',
+      body: '為保障回報真實性與工作隱私，<b>每個人只能填寫自己的回報（禁止他人代填）</b>；看板上雖公開顯示各組員「✅ 已回報 / ⏳ 待回報」狀態，但<b>所有回報的詳細內容僅代理副理（徐嘉鴻）與填寫本人可見</b>，其他同仁畫面會自動以 🔒 隱私保護遮罩隱藏！',
       position: 'top',
       beforeStep: () => {
         closeInlineEditorIfOpen();
@@ -1218,8 +1228,8 @@ export function startInteractiveDailyReportSpotlightTour() {
       target: '.dr-history-section',
       fallbackTarget: '.dr-view-tabs',
       badge: '步驟 6 / 6',
-      title: '🔍 歷史紀錄檢索（依組員篩選 ＆ 關鍵字秒搜）',
-      body: '切換至<b>「🔍 歷史紀錄檢索」</b>分頁，即可依特定組員或輸入關鍵字（如：採購、倉管、勞安、車柱）跨日期秒速搜尋過往所有的工作進度，月底寫月報或追蹤專案超輕鬆！',
+      title: '🔍 歷史紀錄檢索（個人回顧 ＆ 代理副理全組檢索）',
+      body: '切換至<b>「🔍 歷史紀錄檢索」</b>分頁，組員可隨時輸入關鍵字（如：信義區、採購、倉管、勞安）秒速搜尋<b>自己過往的所有回報紀錄</b>；而<b>代理副理（徐嘉鴻）</b>則可跨組員篩選與檢索全組 9 位同仁的歷史回報！',
       position: 'top',
       beforeStep: () => {
         closeInlineEditorIfOpen();

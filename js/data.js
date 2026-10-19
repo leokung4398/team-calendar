@@ -99,6 +99,12 @@ export function isOfficeReporter(u) {
   return true;
 }
 
+/** 判斷組員是否為需每日下班回報之同仁（6 位內勤 ＋ 3 位外勤品管，僅排除代理副理 徐嘉鴻） */
+export function isDailyReporter(u) {
+  if (!u || !u.active) return false;
+  return !isSupervisor(u);
+}
+
 /** 判斷組員是否免輪值會議紀錄人（主管：徐嘉鴻；外勤：孔令淳、葉爵豪、陸逸群） */
 export function isExcludedFromRecorder(u) {
   if (!u) return false;
