@@ -237,7 +237,7 @@ export function startInteractiveSpotlightTour() {
       route: '#/today',
       badge: '視圖切換',
       title: '📑 核心視圖導覽列',
-      body: '上方頁籤整合經營組各項協同業務：<b>今日動態</b>、<b>行事曆</b>（月曆/總表）、<b>月會</b>、<b>模擬體驗</b>與<b>採購佈告欄</b>，各模組支援專屬業務權限控管。',
+      body: '上方頁籤整合經營組各項協同業務：<b>今日動態</b>、<b>行事曆</b>（月曆/總表）、<b>月會</b>、<b>模擬體驗</b>、<b>每日回報</b>與<b>採購佈告欄</b>，各模組支援專屬業務權限控管。',
       position: 'bottom',
     },
     {
@@ -313,6 +313,14 @@ export function startInteractiveSpotlightTour() {
       position: 'bottom',
     },
     {
+      target: '.dr-hero-card',
+      route: '#/dailyReport',
+      badge: '下班進度',
+      title: '📝 每日工作進度回報中心',
+      body: '內勤同仁下班前一鍵帶入昨日項目、點選職務常用詞彙，儲存即自動複製個人 LINE 回報格式！支援颱風假全員免回報、主管已閱簽核與手機右下角通勤快填鈕。',
+      position: 'bottom',
+    },
+    {
       target: '.bulletin-frame-card',
       route: '#/bulletin',
       badge: '採購佈告欄',
@@ -323,9 +331,14 @@ export function startInteractiveSpotlightTour() {
   ].filter(s => {
     // 依當前使用者權限動態過濾導覽步數
     if (s.route === '#/simulation' && !hasModulePermission(state.me, 'simulation')) return false;
+    if (s.route === '#/dailyReport' && !hasModulePermission(state.me, 'dailyReport')) return false;
     if (s.route === '#/bulletin' && !hasModulePermission(state.me, 'bulletin')) return false;
     return true;
   });
+
+  // 判斷該步驟是否為介紹頂部全站共用按鈕（Logo、導覽列、新增行程、通知鈴鐺、個人頭像）
+  // 介紹頂部共用按鈕時，不應同時把「今日動態」頁籤框起來，避免視覺焦點分散
+  const TOPBAR_GLOBAL_TARGETS = new Set(['.brand', '[data-tabs]', '.topbar', '[data-new]', '.bell-wrap', '.user-wrap']);
 
   let stepIdx = 0;
 
@@ -419,12 +432,12 @@ export function startInteractiveSpotlightTour() {
       maskTarget.setAttribute('height', bHeight);
     }
 
-    // 同步處理上方對應頁籤的挖空與高亮 (例如介紹月曆時，上方月曆鈕與下方月曆同步透光高亮)
+    // 同步處理上方對應頁籤的挖空與高亮 (僅在介紹下方頁面實景內容時點亮對應頁籤，介紹頂部共用按鈕時不點亮頁籤)
     const targetRoute = s.route || '#/today';
     const tabEl = document.querySelector(`.tabs a[href="${targetRoute}"]`);
-    const isTargetTheTabs = s.target === '[data-tabs]' || s.target === '.topbar';
+    const isTopbarGlobalElement = TOPBAR_GLOBAL_TARGETS.has(s.target);
 
-    if (tabEl && !isTargetTheTabs) {
+    if (tabEl && !isTopbarGlobalElement) {
       const tabRect = tabEl.getBoundingClientRect();
       const tPad = 4;
       const tTop = Math.max(0, tabRect.top - tPad);
@@ -478,11 +491,12 @@ export function startInteractiveSpotlightTour() {
 
   function renderStep() {
     const s = tourSteps[stepIdx];
+    const isTopbarGlobalElement = TOPBAR_GLOBAL_TARGETS.has(s.target);
 
-    // 同步點亮頂部對應的頁籤按鈕 (Tab Highlight)
+    // 同步點亮頂部對應的頁籤按鈕 (僅在介紹頁面內容時加上 tour-active-tab)
     const targetRoute = s.route || '#/today';
     document.querySelectorAll('.tabs a').forEach(a => {
-      const match = a.getAttribute('href') === targetRoute;
+      const match = !isTopbarGlobalElement && a.getAttribute('href') === targetRoute;
       a.classList.toggle('tour-active-tab', match);
     });
 
