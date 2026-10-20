@@ -56,7 +56,7 @@ export function createDemoBackend(state, emit, describeEvent) {
       ...ME,
       photoURL: '',
       groupId: 'default',
-      role: 'admin', // 管理員暫時默認我 (孔令淳)
+      role: 'member', // 隱藏管理員（孔令淳）表面角色顯示為一般組員
       active: true,
       createdAt: ts(now - 30 * DAY),
       lastSeenActivityAt: ts(now - DAY),
@@ -68,7 +68,7 @@ export function createDemoBackend(state, emit, describeEvent) {
       email,
       photoURL: '',
       groupId: 'default',
-      role: 'member', // 其餘默認為一般組員
+      role: displayName.includes('徐嘉鴻') ? 'admin' : 'member', // 顯性管理員權限交接予代理副理 徐嘉鴻
       active: true,
       createdAt: ts(now - (29 - i) * DAY),
       lastSeenActivityAt: ts(now - DAY),

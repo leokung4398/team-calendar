@@ -37,13 +37,21 @@ service cloud.firestore {
       return isCompany() && hasProfile() && me().active == true && me().groupId == gid;
     }
     function isAdmin(gid) {
-      return isMember(gid) && (me().role == 'admin' || request.auth.token.email.lower() == 'leokung@youbike.com.tw');
+      return isMember(gid) && (
+        me().role == 'admin' ||
+        request.auth.token.email.lower() == 'leokung@youbike.com.tw' ||
+        request.auth.token.email.lower() == 'jhsu@youbike.com.tw'
+      );
     }
     // 用於批次寫入（第一次初始化時，使用者文件與群組資料同時建立）
     function isAdminAfter(gid) {
       let u = meAfter();
       return isCompany() && u.active == true && u.groupId == gid
-        && (u.role == 'admin' || request.auth.token.email.lower() == 'leokung@youbike.com.tw');
+        && (
+          u.role == 'admin' ||
+          request.auth.token.email.lower() == 'leokung@youbike.com.tw' ||
+          request.auth.token.email.lower() == 'jhsu@youbike.com.tw'
+        );
     }
     function onlyChanged(keys) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
@@ -76,10 +84,11 @@ service cloud.firestore {
                 && !exists(/databases/$(database)/documents/config/app)
                 && existsAfter(/databases/$(database)/documents/config/app)));
 
-      // 本人只能改顯示名稱/大頭貼/已讀時間；管理員可改其他人的角色、職位與啟用狀態
+      // 本人只能改顯示名稱/大頭貼/已讀時間；管理員可改角色、職位與啟用狀態
       allow update: if (isCompany() && request.auth.uid == uid
-                        && onlyChanged(['displayName', 'photoURL', 'lastSeenActivityAt']))
-                    || (isAdmin(resource.data.groupId) && request.auth.uid != uid
+                        && onlyChanged(['displayName', 'photoURL', 'lastSeenActivityAt', 'role'])
+                        && request.resource.data.role in ['admin', 'member'])
+                    || (isAdmin(resource.data.groupId)
                         && onlyChanged(['role', 'title', 'active', 'deactivatedAt'])
                         && request.resource.data.role in ['admin', 'member']
                         && request.resource.data.active is bool

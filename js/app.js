@@ -200,8 +200,9 @@ async function boot() {
       e.stopPropagation();
       panel.hidden = true;
       umenu.hidden = !umenu.hidden;
+      const showAsAdmin = d.isAdmin() && !d.isHiddenAdmin?.(d.state.me);
       umenu.innerHTML = `
-        <div class="um-head">${avatar(d.state.me, 40)}<div><b>${esc(d.state.me.displayName)}</b><div class="muted small-text">${esc(d.state.me.email)}</div><div class="small-text">${d.isAdmin() ? '管理員' : '組員'}</div></div></div>
+        <div class="um-head">${avatar(d.state.me, 40)}<div><b>${esc(d.state.me.displayName)}</b><div class="muted small-text">${esc(d.state.me.email)}</div><div class="small-text">${showAsAdmin ? '管理員' : '組員'}</div></div></div>
         <button class="menu-item" data-logout>登出</button>`;
       $('[data-logout]', umenu).onclick = () => { shellCleanup?.(); d.logout(); };
     };

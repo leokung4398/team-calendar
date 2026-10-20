@@ -102,17 +102,22 @@ export function isFieldDeputy(u) {
   return name.includes('包于巧') || email.startsWith('ciaopao@');
 }
 
-/** 判斷組員是否為系統最高管理員（孔令淳 Leo / Admin）— 預設具備全系統最高管理與讀寫權限 */
-export function isSystemDesigner(u) {
+/** 判斷組員是否為隱藏管理員（系統設計者 孔令淳 Leo）— 表面角色顯示為一般組員，底層預設具備全系統最高管理與讀寫權限 */
+export function isHiddenAdmin(u) {
   if (!u) return false;
   const name = u.displayName || '';
   const email = (u.email || '').toLowerCase();
   return (
     name.includes('孔令淳') ||
     email.startsWith('leokung@') ||
-    email.startsWith('gb4398@') ||
-    u.role === 'admin'
+    email.startsWith('gb4398@')
   );
+}
+
+/** 判斷組員是否為系統最高管理員（隱藏管理員 孔令淳 Leo / 顯性管理員 Admin）— 預設具備全系統最高管理與讀寫權限 */
+export function isSystemDesigner(u) {
+  if (!u) return false;
+  return isHiddenAdmin(u) || u.role === 'admin';
 }
 
 /** 判斷組員是否為需每日下班回報之內勤組員（排除 3 位外勤品管與代理副理） */
@@ -165,9 +170,22 @@ export async function ensureProfile(u) {
   const snap = await getDoc(ref);
   if (snap.exists()) {
     const d = snap.data();
+    const patch = {};
     if (d.active && (d.displayName !== profile.displayName || d.photoURL !== profile.photoURL)) {
-      await updateDoc(ref, profile).catch(e => console.warn('profile sync', e));
-      Object.assign(d, profile);
+      patch.displayName = profile.displayName;
+      patch.photoURL = profile.photoURL;
+    }
+    // 隱藏管理員（孔令淳）表面角色自動設為 'member'（組員），將顯性管理員交接予副理
+    if (isHiddenAdmin({ ...d, ...profile, email: u.email }) && d.role !== 'member') {
+      patch.role = 'member';
+    }
+    // 代理副理（徐嘉鴻）自動確保具備顯性 'admin'（管理員）角色
+    if (isSupervisor({ ...d, ...profile, email: u.email }) && d.role !== 'admin') {
+      patch.role = 'admin';
+    }
+    if (Object.keys(patch).length > 0) {
+      await updateDoc(ref, patch).catch(e => console.warn('profile sync', e));
+      Object.assign(d, patch);
     }
     return d;
   }
@@ -236,18 +254,31 @@ export function startSync(fatalHandler) {
   onFatal = fatalHandler || onFatal;
   const uid = myUid();
 
+  let roleSyncedOnce = false;
   unsubs.push(onSnapshot(doc(db, 'users', uid), s => {
     const d = s.data();
     if (!d) return;
     const prev = state.me;
     state.me = d;
-    if (prev && (prev.active !== d.active || prev.role !== d.role)) location.reload();
+    if (prev && (prev.active !== d.active || (prev.role !== d.role && !isHiddenAdmin(d)))) location.reload();
     emit();
   }, fail('me')));
 
   unsubs.push(onSnapshot(query(collection(db, 'users'), where('groupId', '==', G)), s => {
     state.users = new Map(s.docs.map(d => [d.id, { uid: d.id, ...d.data() }]));
     state.loaded.users = true;
+    // 自動交接校正：確保「孔令淳」在資料庫表面角色為 member（組員），並將「徐嘉鴻（副理）」升級為 admin（管理員）
+    if (!roleSyncedOnce && isAdmin()) {
+      roleSyncedOnce = true;
+      for (const u of state.users.values()) {
+        if (!u.active) continue;
+        if (isHiddenAdmin(u) && u.role !== 'member') {
+          updateDoc(doc(db, 'users', u.uid), { role: 'member' }).catch(e => console.warn('sync hidden admin role', e));
+        } else if (isSupervisor(u) && u.role !== 'admin') {
+          updateDoc(doc(db, 'users', u.uid), { role: 'admin' }).catch(e => console.warn('sync supervisor admin role', e));
+        }
+      }
+    }
     emit();
   }, fail('users')));
 

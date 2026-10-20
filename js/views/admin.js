@@ -1,6 +1,6 @@
 // 管理後台：組員名單、行程類型、業務模組權限
 import {
-  state, myUid, isAdmin, updateUserAdmin, saveType, purgeDueAt,
+  state, myUid, isAdmin, isHiddenAdmin, isSupervisor, updateUserAdmin, saveType, purgeDueAt,
   saveMeetingSettings, activeUsers, isFieldStaff, isExcludedFromRecorder,
   getEffectiveLastRecorderUid, hasModulePermission, saveUserModulePermission,
   batchUpdateModulePermission
@@ -297,6 +297,7 @@ export function mountAdmin(el) {
         <tbody>${users.map((u, i) => {
           const canReorder = u.active;
           const activeIdx = activeList.findIndex(x => x.uid === u.uid);
+          const displayRole = isHiddenAdmin(u) ? 'member' : (isSupervisor(u) ? 'admin' : u.role);
           return `
           <tr data-uid="${esc(u.uid)}" class="${u.active ? '' : 'inactive'}">
             <td style="text-align:center; white-space:nowrap;">
@@ -309,8 +310,8 @@ export function mountAdmin(el) {
             <td><input type="text" name="title" value="${esc(u.title || '')}" placeholder="例：經營企劃專員" style="width:160px; font-size:13px; padding:4px 8px;"></td>
             <td class="muted">${esc(u.email)}</td>
             <td><select name="role" ${u.uid === me ? 'disabled title="無法變更自己的權限"' : ''}>
-              <option value="member" ${u.role === 'member' ? 'selected' : ''}>組員</option>
-              <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>管理員</option>
+              <option value="member" ${displayRole === 'member' ? 'selected' : ''}>組員</option>
+              <option value="admin" ${displayRole === 'admin' ? 'selected' : ''}>管理員</option>
             </select></td>
             <td><label class="switch"><input type="checkbox" name="active" ${u.active ? 'checked' : ''} ${u.uid === me ? 'disabled' : ''}><span></span></label></td>
             <td class="muted small-text">${statusCell(u)}</td>
@@ -474,7 +475,7 @@ export function mountAdmin(el) {
       </thead>
       <tbody>
         ${activeList.map(u => {
-          const isUserAdmin = u.role === 'admin';
+          const isUserAdmin = !isHiddenAdmin(u) && (u.role === 'admin' || isSupervisor(u));
           const canSim = hasModulePermission(u, 'simulation');
           const canDaily = hasModulePermission(u, 'dailyReport');
           const canBulletin = hasModulePermission(u, 'bulletin');
