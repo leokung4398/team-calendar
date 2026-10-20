@@ -1,7 +1,7 @@
 // 資料層：登入、使用者建檔、即時同步、行程 CRUD、通知
 import { APP, DEFAULT_TYPES } from './config.js';
 import { auth, db, provider } from './firebase.js';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import {
   doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit,
   onSnapshot, writeBatch, serverTimestamp,
@@ -161,15 +161,40 @@ export function isAllowedEmail(email) {
 }
 
 // ---------------- 登入 ----------------
-export const watchAuth = cb => (demo ? demo.watchAuth(cb) : onAuthStateChanged(auth, cb));
-export const login = () => (demo ? demo.login() : signInWithPopup(auth, provider));
+export const watchAuth = cb => {
+  if (demo) return demo.watchAuth(cb);
+  // 處理手機瀏覽器使用 signInWithRedirect 返回後的結果
+  getRedirectResult(auth).catch(err => console.warn('getRedirectResult:', err));
+  return onAuthStateChanged(auth, cb);
+};
+export async function login(useRedirect = false) {
+  if (demo) return demo.login();
+  if (useRedirect) return signInWithRedirect(auth, provider);
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (e) {
+    // 手機瀏覽器若阻擋彈跳視窗或不支援 Popup，自動降級為 Redirect 登入
+    if (e?.code === 'auth/popup-blocked' || e?.code === 'auth/operation-not-supported-in-this-environment') {
+      return signInWithRedirect(auth, provider);
+    }
+    throw e;
+  }
+}
 export async function logout() {
   if (demo) return demo.logout();
   stopSync();
   await signOut(auth);
 }
 
-/** 取得（或建立）自己的使用者資料；支援後台預先建檔（user_<prefix>）於首次登入時自動無縫認領 */
+/** 輔助：為 Promise 加上逾時保護，避免手機網路切換（Google 驗證切回瀏覽器）時 getDoc 無限卡住 */
+function withTimeout(promise, ms, label = 'timeout') {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(label)), ms)),
+  ]);
+}
+
+/** 取得（或建立）自己的使用者資料；支援後台預先建檔（user_<prefix>）於首次登入時自動無縫認領，並具備手機端網路逾時離線降級保護 */
 export async function ensureProfile(u) {
   const cleanEmail = String(u.email || '').toLowerCase().trim();
   if (!isCompanyDomainEmail(cleanEmail)) {
@@ -177,8 +202,34 @@ export async function ensureProfile(u) {
   }
   if (demo) return demo.ensureProfile(u);
 
-  const ref = doc(db, 'users', u.uid);
   const profile = { displayName: u.displayName || cleanEmail.split('@')[0], photoURL: u.photoURL || '' };
+  const fallbackProfile = {
+    uid: u.uid,
+    email: cleanEmail,
+    displayName: profile.displayName,
+    photoURL: profile.photoURL,
+    title: '',
+    staffType: ['孔令淳', '葉爵豪', '陸逸群'].some(n => profile.displayName.includes(n)) ? 'field' : 'office',
+    groupId: G,
+    role: isSupervisor({ email: cleanEmail, displayName: profile.displayName }) ? 'admin' : 'member',
+    active: true,
+  };
+
+  try {
+    return await withTimeout(_ensureProfileCore(u, cleanEmail, profile), 6500, 'firestore-profile-timeout');
+  } catch (err) {
+    if (err?.message === 'not-in-whitelist') throw err;
+    console.warn('ensureProfile 逾時或暫時連線異常，啟用快速登入降級保護：', err);
+    // 若已在預設白名單內，直接放行進入系統主畫面（背景 onSnapshot 會在連線恢復後自動補齊最新資料）
+    if (isAllowedEmail(cleanEmail)) {
+      return fallbackProfile;
+    }
+    throw err;
+  }
+}
+
+async function _ensureProfileCore(u, cleanEmail, profile) {
+  const ref = doc(db, 'users', u.uid);
   const snap = await getDoc(ref);
   if (snap.exists()) {
     const d = snap.data();
@@ -196,7 +247,7 @@ export async function ensureProfile(u) {
       patch.role = 'admin';
     }
     if (Object.keys(patch).length > 0) {
-      await updateDoc(ref, patch).catch(e => console.warn('profile sync', e));
+      updateDoc(ref, patch).catch(e => console.warn('profile sync', e));
       Object.assign(d, patch);
     }
     return d;

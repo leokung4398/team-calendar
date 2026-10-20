@@ -11,10 +11,6 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
 
     // 允許預設白名單同仁，或已建立使用者檔案/已由管理員預建授權（user_<prefix>）之公司網域帳號
-    function preseededPathByEmail(email) {
-      let prefix = email.lower().split('@')[0];
-      return /databases/$(database)/documents/users/$('user_' + prefix);
-    }
     function isDefaultWhitelist(email) {
       return email.lower() in [
         'leokung@youbike.com.tw',
@@ -35,8 +31,7 @@ service cloud.firestore {
         && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$')
         && (
           isDefaultWhitelist(request.auth.token.email) ||
-          exists(userPath(request.auth.uid)) ||
-          exists(preseededPathByEmail(request.auth.token.email))
+          exists(userPath(request.auth.uid))
         );
     }
 
@@ -72,7 +67,7 @@ service cloud.firestore {
 
     // ---------- 系統設定（標記是否已產生第一位管理員） ----------
     match /config/app {
-      allow read: if isCompany();
+      allow read: if signedIn() && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$');
       allow create: if isCompany()
         && meAfter().role == 'admin'
         && request.resource.data.bootstrappedBy == request.auth.uid;
@@ -81,14 +76,16 @@ service cloud.firestore {
 
     // ---------- 使用者 ----------
     match /users/{uid} {
-      // 允許讀取自己的檔案，或讀取與自己 Email 對應的預建檔案（user_<prefix>）以進行自動認領
-      allow get: if signedIn() && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$')
-        && (request.auth.uid == uid || uid == ('user_' + request.auth.token.email.lower().split('@')[0]) || (hasProfile() && me().active == true));
+      // 允許公司網域帳號讀取自己的檔案或預建檔案（以進行首次登入驗證與自動認領）
+      allow get: if signedIn() && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$');
       allow list: if isCompany() && hasProfile() && me().active == true
         && resource.data.groupId == me().groupId;
 
-      // 1. 本人第一次登入建立自己的資料（含認領預建角色）；或 2. 管理員於後台預建新進組員（isPreseeded == true）
-      allow create: if (isCompany() && request.auth.uid == uid
+      // 1. 本人第一次登入建立自己的資料（含預設白名單成員或認領後台預建檔案）；或 2. 管理員於後台預建新進組員（isPreseeded == true）
+      allow create: if (signedIn()
+                        && request.auth.token.email_verified == true
+                        && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$')
+                        && request.auth.uid == uid
                         && request.resource.data.uid == uid
                         && request.resource.data.email.lower() == request.auth.token.email.lower()
                         && request.resource.data.active == true

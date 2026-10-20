@@ -27,23 +27,28 @@ async function boot() {
   watchAuth(async user => {
     if (!user) { started = false; return showLogin(); }
     if (!isCompanyDomainEmail(user.email)) {
+      started = false;
       await logout();
       return showLogin(`請使用 @${APP.allowedDomains[0]} 公司帳號登入（目前為 ${user.email}）`);
     }
     if (started) return;
+    started = true;
     app.innerHTML = `<div class="boot">${yb.wheelSpinner(44)}<span>登入中…</span></div>`;
     try {
       state.authUser = user;
       const me = await ensureProfile(user);
-      if (!me.active) return showDisabled(user.email);
+      if (!me.active) {
+        started = false;
+        return showDisabled(user.email);
+      }
       state.me = me;
-      started = true;
       startSync(err => {
         if (err?.code === 'permission-denied') toast('讀取資料被拒絕，帳號可能已被停用', 'error');
       });
       ensureEventsFrom(ymd(new Date(new Date().getFullYear(), new Date().getMonth(), 1 - 7)));
-      showShell(data);
+      await showShell(data);
     } catch (e) {
+      started = false;
       console.error(e);
       if (e.message === 'not-in-whitelist') {
         showLogin(`此平台僅限經營 Team 同仁存取，您的帳號（${user.email}）不在授權名單中。如需權限請洽管理員於後台「＋ 新增組員」預先建檔。`);
@@ -57,12 +62,18 @@ async function boot() {
   });
 
   function showLogin(error = '') {
+    const isLineInApp = /Line\//i.test(navigator.userAgent || '');
     app.innerHTML = `
       <div class="center-page login-page">
         <div class="card pad narrow login-card">
           <div class="login-hero"><span class="rider">${yb.bike(132, { spin: true })}</span><div class="road"></div></div>
           <h1>經營 Team 營運協同平台</h1>
           <p class="muted">出差外勤行程、品管巡檢規劃、團隊會議與協同作業管理</p>
+          ${isLineInApp ? `
+            <div style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;padding:10px 12px;border-radius:10px;font-size:12.5px;margin-bottom:12px;text-align:left;line-height:1.5">
+              💡 <b>手機登入提示：</b>偵測到您正在使用 LINE 內建瀏覽器，Google 安全政策可能會阻擋登入或導致畫面卡住。建議點擊右下角「<b>…</b>」選擇「<b>以預設瀏覽器開啟</b>」（Safari / Chrome）。
+            </div>
+          ` : ''}
           <button class="btn primary big" data-login>
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="18" height="18"> 使用公司 Google 帳號登入
           </button>
