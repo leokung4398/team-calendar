@@ -375,7 +375,7 @@ async function boot() {
       }
     });
 
-    const KIND = { deputy: '將你設為代理人', companion: '將你加入同行組員', onbehalf: '幫你登記了行程', recorder: '指派你為月會紀錄人' };
+    const KIND = { deputy: '將你設為代理人', companion: '將你加入同行組員', onbehalf: '幫你登記了行程', recorder: '指派你為月會紀錄人', chat_mention: '在聊天室標註了你' };
     const ACTION = { create: '新增了', update: '修改了', delete: '刪除了', publish_minutes: '發布了' };
 
     function renderPanel() {

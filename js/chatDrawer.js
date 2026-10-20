@@ -142,8 +142,8 @@ function renderChatSystem() {
   const chObj = CHANNELS.find(c => c.id === activeChannel) || CHANNELS[0];
 
   rootEl.innerHTML = `
-    <div class="chat-drawer-backdrop ${isMaximized ? 'show' : ''}" data-close-backdrop></div>
-    <aside class="chat-drawer ${isMaximized ? 'maximized' : ''}">
+    <div class="chat-drawer-backdrop open ${isMaximized ? 'show' : ''}" data-close-backdrop></div>
+    <aside class="chat-drawer open ${isMaximized ? 'maximized' : ''}">
       <div class="chat-head">
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:18px">💬</span>
@@ -265,7 +265,7 @@ function renderChatSystem() {
   // 綁定關閉與最大化
   rootEl.querySelector('[data-close-chat]').onclick = () => toggleChatDrawer(false);
   const bd = rootEl.querySelector('[data-close-backdrop]');
-  if (bd) bd.onclick = () => { isMaximized = false; renderChatSystem(); };
+  if (bd) bd.onclick = () => toggleChatDrawer(false);
   rootEl.querySelector('[data-toggle-max]').onclick = () => {
     isMaximized = !isMaximized;
     renderChatSystem();
