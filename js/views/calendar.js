@@ -5,6 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, WEEK } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { openExportDialog } from '../export.js';
+import { getMemosOnDay, openDayMemoModal } from './stickyHub.js';
 
 export function mountCalendar(el, ctx) {
   if (!window.FullCalendar) {
@@ -28,6 +29,7 @@ export function mountCalendar(el, ctx) {
       </div>
       <h2 class="view-title" data-title></h2>
       <div class="filters">
+        <button class="btn ghost" data-act="new-memo" style="border-color:#fcd34d;background:#fffbeb;color:#b45309;font-weight:700">📌 新增備忘錄</button>
         <select data-f="person"></select>
         <select data-f="type"></select>
         <button class="btn" data-act="export">⬇ 匯出 Excel</button>
@@ -69,7 +71,13 @@ export function mountCalendar(el, ctx) {
       }
       refresh();
     },
-    dateClick: a => openEventEditor({ date: a.dateStr }),
+    dateClick: a => {
+      if (a.jsEvent?.target?.closest('[data-cal-memo-pill]')) {
+        openDayMemoModal(a.dateStr, refresh);
+        return;
+      }
+      openEventEditor({ date: a.dateStr });
+    },
     eventClick: a => {
       if (a.event.id.startsWith('m_')) {
         location.hash = '#/meeting';
@@ -81,12 +89,25 @@ export function mountCalendar(el, ctx) {
   });
 
   function dayCellHtml(date) {
-    const i = dayInfo(ymd(date));
+    const dStr = ymd(date);
+    const i = dayInfo(dStr);
     const label = i.name ? `<span class="hol-name">${esc(i.name)}</span>` : i.makeup ? '<span class="hol-name makeup">補班</span>' : '';
-    return `<span class="dnum">${date.getDate()}</span>${label}`;
+    const memos = getMemosOnDay(dStr);
+    let memoBadge = '';
+    if (memos.length > 0) {
+      const pending = memos.filter(m => !m.done);
+      const tipText = memos.map(m => `${m.done ? '✅' : '📌'} ${m.text}`).join('\n');
+      if (pending.length > 0) {
+        memoBadge = `<span class="cal-memo-pill" data-cal-memo-pill="${dStr}" title="${esc(tipText + '\n(點擊檢視或打勾消除)')}">📌 ${pending.length}</span>`;
+      } else {
+        memoBadge = `<span class="cal-memo-pill all-done" data-cal-memo-pill="${dStr}" title="${esc(tipText + '\n(全部已完成)')}">✅ ${memos.length}</span>`;
+      }
+    }
+    return `<span class="dnum">${date.getDate()}</span><span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">${memoBadge}${label}</span>`;
   }
 
   function refresh() {
+    cal.setOption('dayCellContent', a => ({ html: dayCellHtml(a.date) }));
     // 篩選器選項
     const users = activeUsers();
     const me = myUid();
@@ -138,6 +159,7 @@ export function mountCalendar(el, ctx) {
   q('[data-act=prev]').onclick = () => cal.prev();
   q('[data-act=next]').onclick = () => cal.next();
   q('[data-act=today]').onclick = () => cal.today();
+  q('[data-act=new-memo]').onclick = () => openDayMemoModal(ymd(), refresh);
   q('[data-act=export]').onclick = () => openExportDialog(ctx.month);
   q('[data-f=person]').onchange = e => { person = e.target.value; refresh(); };
   q('[data-f=type]').onchange = e => { typeFilter = e.target.value; refresh(); };

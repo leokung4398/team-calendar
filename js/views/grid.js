@@ -5,6 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, eachDay, monthRange, shiftMonth, weekdayZh, avatar } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { openExportDialog } from '../export.js';
+import { getMemosOnDay, openDayMemoModal } from './stickyHub.js';
 
 export function mountGrid(el, ctx) {
   el.innerHTML = `
@@ -15,7 +16,10 @@ export function mountGrid(el, ctx) {
         <button class="btn icon" data-act="next">›</button>
       </div>
       <h2 class="view-title" data-title></h2>
-      <div class="filters"><button class="btn" data-act="export">⬇ 匯出 Excel</button></div>
+      <div class="filters">
+        <button class="btn ghost" data-act="new-memo" style="border-color:#fcd34d;background:#fffbeb;color:#b45309;font-weight:700">📌 新增備忘錄</button>
+        <button class="btn" data-act="export">⬇ 匯出 Excel</button>
+      </div>
     </div>
     <div class="card grid-wrap"><div class="grid-scroll" data-grid></div></div>
     <div class="legend" data-legend></div>
@@ -32,9 +36,16 @@ export function mountGrid(el, ctx) {
   q('[data-act=prev]').onclick = () => go(shiftMonth(ctx.month, -1));
   q('[data-act=next]').onclick = () => go(shiftMonth(ctx.month, 1));
   q('[data-act=today]').onclick = () => go(ymd().slice(0, 7));
+  q('[data-act=new-memo]').onclick = () => openDayMemoModal(ymd(), render);
   q('[data-act=export]').onclick = () => openExportDialog(ctx.month);
 
   q('[data-grid]').addEventListener('click', e => {
+    const memoChip = e.target.closest('[data-grid-memo]');
+    if (memoChip) {
+      e.stopPropagation();
+      openDayMemoModal(memoChip.dataset.gridMemo, render);
+      return;
+    }
     const chip = e.target.closest('[data-ev]');
     if (chip) {
       const ev = state.events.get(chip.dataset.ev);
@@ -61,11 +72,16 @@ export function mountGrid(el, ctx) {
     const head = days.map(d => {
       const i = dayInfo(d);
       const mItem = meetingOn(d);
+      const memos = getMemosOnDay(d);
+      const pendingMemos = memos.filter(x => !x.done);
+      const memoDot = memos.length
+        ? `<div class="grid-memo-badge ${pendingMemos.length ? '' : 'done'}" data-grid-memo="${d}" title="${esc(memos.map(x => `${x.done ? '✅' : '📌'} ${x.text}`).join('\n') + '\n(點擊查看或打勾消除)')}">${pendingMemos.length ? `📌${pendingMemos.length}` : '✅'}</div>`
+        : '';
       const cls = [i.off ? 'off' : '', i.makeup ? 'makeup' : '', d === today ? 'today' : '', mItem ? 'has-meeting' : ''].join(' ');
       const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `💼 月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : ''].filter(Boolean);
       const tip = tipParts.join(' / ');
       const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}">💼</div>` : '';
-      return `<th class="${cls}" ${tip ? `title="${esc(tip)}"` : ''}><div class="dn">${Number(d.slice(8))}</div><div class="wd">${weekdayZh(d)}</div>${mIcon}${i.name ? '<div class="hol-dot"></div>' : ''}</th>`;
+      return `<th class="${cls}" ${tip ? `title="${esc(tip)}"` : ''}><div class="dn">${Number(d.slice(8))}</div><div class="wd">${weekdayZh(d)}</div>${mIcon}${memoDot}${i.name ? '<div class="hol-dot"></div>' : ''}</th>`;
     }).join('');
 
     const body = users.map(u => {

@@ -1,6 +1,167 @@
 // 🎯 團隊黏著度與日常互動中樞（今日備忘錄 Memo / 下午茶午餐揪團 / 團隊感謝貼紙 Kudos / 每日微投票 / 五區即時天氣）
 import { state, myUid, isAdmin, activeUsers, userOf, saveVibeDoc, saveToolsDoc } from '../data.js';
-import { esc, ymd, fmtMD, weekdayZh, avatar, toast, openModal, closeModal } from '../utils.js';
+import { esc, ymd, fmtMD, weekdayZh, eachDay, avatar, toast, openModal, closeModal } from '../utils.js';
+
+/** 取得目前登入組員可見的所有備忘錄（個人私密 + 全組共享） */
+export function getVisibleMemos() {
+  const uid = myUid();
+  const memosDoc = state.toolsData.get('memos') || { list: [] };
+  const allMemos = Array.isArray(memosDoc.list) ? memosDoc.list : [];
+  return allMemos.filter(m => m.scope === 'team' || m.uid === uid);
+}
+
+/** 取得特定日期 (YYYY-MM-DD) 的可見備忘錄 */
+export function getMemosOnDay(dayStr) {
+  return getVisibleMemos().filter(m => m.date === dayStr);
+}
+
+/** 開啟特定日期的「📌 備忘錄管理與快速新增」彈窗（供月曆、總表、或新增行程視窗直接呼叫） */
+export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
+  const uid = myUid();
+  let curDate = defaultDate || ymd();
+
+  const renderModalContent = () => {
+    const memosDoc = state.toolsData.get('memos') || { list: [] };
+    const allMemos = Array.isArray(memosDoc.list) ? memosDoc.list : [];
+    const dayMemos = allMemos
+      .filter(m => (m.scope === 'team' || m.uid === uid) && m.date === curDate)
+      .sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1));
+
+    return `
+      <div class="modal-head">
+        <h3>📌 ${fmtMD(curDate)}（${weekdayZh(curDate)}）備忘錄提醒</h3>
+        <button class="icon-btn" data-close>✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="cal-memo-add-form" class="form" style="background:#FFFDF5;border:1px solid #FDE68A;padding:12px 14px;border-radius:12px;margin-bottom:14px">
+          <div style="font-size:12.5px;font-weight:800;color:#B45309;margin-bottom:8px">✨ 新增備忘提醒（支援單日或連續多日預排）</div>
+          <div class="row2">
+            <label class="field"><span>開始日期 <em>*</em></span>
+              <input type="date" name="startDate" value="${esc(curDate)}" required>
+            </label>
+            <label class="field"><span>結束日期（可跨日建立）</span>
+              <input type="date" name="endDate" value="${esc(curDate)}" required>
+            </label>
+          </div>
+          <div class="row2">
+            <label class="field"><span>可見範圍</span>
+              <select name="scope">
+                <option value="mine">🔒 個人備忘（僅自己可見）</option>
+                <option value="team">📢 全組共享（提醒全體組員）</option>
+              </select>
+            </label>
+            <label class="field"><span>備忘內容 <em>*</em></span>
+              <input type="text" name="text" placeholder="輸入待辦事項，完成後點選即可消除…" required maxlength="120">
+            </label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px">
+            <button type="submit" class="btn small primary">＋ 加入備忘錄</button>
+          </div>
+        </form>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <strong style="font-size:13.5px;color:#0F172A">📋 當日備忘清單（點擊項目即可勾選完成消除）</strong>
+          <span class="muted tiny">共 ${dayMemos.length} 筆 · 未完成 ${dayMemos.filter(x => !x.done).length} 筆</span>
+        </div>
+        <div class="memo-list-wrap" style="max-height:280px">
+          ${dayMemos.length === 0 ? `
+            <div class="bw-empty">✨ ${fmtMD(curDate)} 尚無備忘事項，可由上方直接新增！</div>
+          ` : dayMemos.map(m => `
+            <div class="memo-item-row ${m.done ? 'is-done' : ''}" data-modal-toggle-memo="${esc(m.id)}" title="點擊即可打勾完成 / 消除">
+              <span class="memo-check-box">${m.done ? '✅' : '⬜'}</span>
+              <div class="memo-item-body">
+                <div class="memo-item-text">${esc(m.text)}</div>
+                <div class="memo-item-meta">
+                  <span class="memo-scope-badge">${m.scope === 'team' ? `📢 ${esc(m.authorName)} 共享` : '🔒 個人私密'}</span>
+                </div>
+              </div>
+              ${(m.uid === uid || isAdmin()) ? `<button type="button" class="memo-del-btn" data-modal-del-memo="${esc(m.id)}" title="永久刪除">✕</button>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="modal-foot">
+        <span class="hint">💡 提示：在月曆與總表上點擊「📌」角標，皆可隨時查看或打勾消除！</span>
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-close>關閉</button>
+      </div>
+    `;
+  };
+
+  const m = openModal(renderModalContent());
+
+  const bindModalEvents = () => {
+    const form = m.el.querySelector('#cal-memo-add-form');
+    if (form) {
+      form.startDate.onchange = () => {
+        if (form.endDate.value < form.startDate.value) form.endDate.value = form.startDate.value;
+      };
+      form.onsubmit = async e => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const text = String(fd.get('text') || '').trim();
+        const sDate = String(fd.get('startDate') || curDate);
+        const eDate = String(fd.get('endDate') || sDate);
+        const scope = String(fd.get('scope') || 'mine');
+        if (!text) return;
+        const days = eachDay(sDate, eDate >= sDate ? eDate : sDate).slice(0, 31); // 最多一次連建 31 天防呆
+        const memosDoc = state.toolsData.get('memos') || { list: [] };
+        const allMemos = Array.isArray(memosDoc.list) ? memosDoc.list : [];
+        const newItems = days.map((dStr, idx) => ({
+          id: 'mm_' + Date.now().toString(36) + '_' + idx + Math.random().toString(36).slice(2, 5),
+          uid,
+          authorName: state.me?.displayName || '組員',
+          date: dStr,
+          scope,
+          text,
+          done: false,
+          createdAt: new Date().toISOString(),
+        }));
+        await saveToolsDoc('memos', { list: [...newItems, ...allMemos] });
+        curDate = sDate;
+        toast(days.length > 1 ? `已為 ${days.length} 天建立備忘錄！` : `已新增 ${fmtMD(sDate)} 備忘錄！`, 'success');
+        m.el.innerHTML = renderModalContent();
+        bindModalEvents();
+        onUpdated?.();
+      };
+    }
+
+    m.el.querySelectorAll('[data-modal-toggle-memo]').forEach(row => {
+      row.onclick = async e => {
+        if (e.target.closest('[data-modal-del-memo]')) return;
+        const mid = row.dataset.modalToggleMemo;
+        const memosDoc = state.toolsData.get('memos') || { list: [] };
+        const allMemos = Array.isArray(memosDoc.list) ? memosDoc.list : [];
+        const nextList = allMemos.map(x => x.id === mid ? { ...x, done: !x.done } : x);
+        await saveToolsDoc('memos', { list: nextList });
+        m.el.innerHTML = renderModalContent();
+        bindModalEvents();
+        onUpdated?.();
+      };
+    });
+
+    m.el.querySelectorAll('[data-modal-del-memo]').forEach(btn => {
+      btn.onclick = async e => {
+        e.stopPropagation();
+        const mid = btn.dataset.modalDelMemo;
+        const memosDoc = state.toolsData.get('memos') || { list: [] };
+        const allMemos = Array.isArray(memosDoc.list) ? memosDoc.list : [];
+        const nextList = allMemos.filter(x => x.id !== mid);
+        await saveToolsDoc('memos', { list: nextList });
+        toast('已刪除備忘錄');
+        m.el.innerHTML = renderModalContent();
+        bindModalEvents();
+        onUpdated?.();
+      };
+    });
+
+    m.el.querySelectorAll('[data-close]').forEach(b => {
+      b.onclick = () => m.close();
+    });
+  };
+
+  bindModalEvents();
+}
 
 // 每日微投票題庫（依日期 Hash 自動輪播，全組同一天看到同一題）
 const DAILY_POLL_QUESTIONS = [

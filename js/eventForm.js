@@ -88,7 +88,18 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
   const initSt = v.period === 'am' ? '08:30' : v.period === 'pm' ? '13:00' : (v.startTime || '08:30');
   const initEt = v.period === 'am' ? '12:00' : v.period === 'pm' ? '17:30' : (v.endTime || '17:30');
 
+  const modeSwitchBar = !ev ? `
+    <div style="display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:6px 10px;margin-bottom:12px">
+      <span style="font-size:12.5px;font-weight:700;color:#334155">🎯 選擇要建立的項目：</span>
+      <div style="display:flex;gap:6px">
+        <button type="button" class="btn small primary" style="padding:4px 12px">🗓️ 差勤行程</button>
+        <button type="button" class="btn small ghost" data-switch-to-memo style="padding:4px 12px;border-color:#FCD34D;background:#FFFBEB;color:#B45309;font-weight:700">📌 備忘錄提醒</button>
+      </div>
+    </div>
+  ` : '';
+
   const body = `
+  ${modeSwitchBar}
   <form id="ev-form" class="form" novalidate>
     ${ownerField}
     <div class="field"><span>類型 <em>*</em></span>
@@ -124,6 +135,14 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
   });
   const form = $('#ev-form', m.el);
   const errEl = $('.form-error', form);
+  const switchMemoBtn = $('[data-switch-to-memo]', m.el);
+  if (switchMemoBtn) {
+    switchMemoBtn.onclick = () => {
+      const pickedDate = form.startDate?.value || d;
+      m.close();
+      openDayMemoModal(pickedDate);
+    };
+  }
 
   // 互動：時段切換（上午自動帶入 08:30-12:00、下午自動帶入 13:00-17:30，若手動改時間則自動切至自訂時段）、日期連動、排除登記人自己
   const syncPeriod = (changedByRadio = false) => {
