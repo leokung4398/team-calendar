@@ -195,7 +195,7 @@ export function openMeetingEditor(m = null) {
     curAgenda = getTeamDefaultAgenda(users, q('[name=hostUid]')?.value || hostUid);
     agEditorEl.innerHTML = renderAgendaRows();
     modal.el.dispatchEvent(new Event('change', { bubbles: true }));
-    toast('已帶入經營組常態議程範本', 'info');
+    toast('已帶入經營 Team 常態議程範本', 'info');
   };
 
   agEditorEl.addEventListener('click', e => {
@@ -409,7 +409,7 @@ export function openMinutesEditor(meeting) {
       <div class="min-header-banner">
         <div>
           <span class="badge-tag ok">會議紀錄編輯</span>
-          <b style="font-size:16px; margin-left:6px;">${esc(meeting.date)} 經營組月會</b>
+          <b style="font-size:16px; margin-left:6px;">${esc(meeting.date)} 經營 Team 月會</b>
           <span class="muted small-text" style="margin-left:8px;">紀錄人：${esc(state.users.get(meeting.recorderUid)?.displayName || '我')}</span>
         </div>
         <div style="display:flex; align-items:center; gap:10px;">
@@ -1325,7 +1325,7 @@ export function openMinutesViewer(meeting) {
       <div class="min-header-banner">
         <div>
           <span class="badge-tag ok">會議紀錄存檔</span>
-          <b style="font-size:16px; margin-left:6px;">${esc(meeting.date)} 經營組月會</b>
+          <b style="font-size:16px; margin-left:6px;">${esc(meeting.date)} 經營 Team 月會</b>
           <span class="muted small-text" style="margin-left:8px;">紀錄人：${esc(rec?.displayName || '未指定')}</span>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">

@@ -10,7 +10,7 @@ export function mountMeeting(el) {
       <div class="meeting-top-actions">
         ${isAdmin() ? '<button class="btn primary" data-new-meeting>＋ 排定新月會</button>' : ''}
       </div>
-      <h2 class="view-title">經營組月會</h2>
+      <h2 class="view-title">經營 Team 月會</h2>
       <div class="toolbar-end"></div>
     </div>
     <div class="meeting-content" data-content></div>`;
@@ -246,7 +246,7 @@ export function mountMeeting(el) {
       <div class="meeting-hero card pad" style="padding:14px 18px">
         <div class="mh-top">
           <div class="mh-header-left">
-            <h1 class="mh-title" style="margin:0;font-size:19px">💼 ${fmtMD(upcoming.date)}（${weekdayZh(upcoming.date)}）經營組月會 ${countdownTag} ${minutesStatusTag}</h1>
+            <h1 class="mh-title" style="margin:0;font-size:19px">💼 ${fmtMD(upcoming.date)}（${weekdayZh(upcoming.date)}）經營 Team 月會 ${countdownTag} ${minutesStatusTag}</h1>
             <div class="mh-info" style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
               <span>⏰ ${esc(upcoming.startTime)} – ${esc(upcoming.endTime)}</span>
               <span>📍 ${esc(upcoming.location || '總公司會議室')}</span>

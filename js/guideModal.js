@@ -28,10 +28,10 @@ export function openGuideModal() {
       ]
     },
     {
-      title: '💼 經營組月會 (Meeting)',
+      title: '💼 經營 Team 月會 (Meeting)',
       badge: '會議與紀錄',
       color: '#9333ea',
-      desc: '每個月定期的經營組月會管理、會前簡報資料共享與會後紀錄。',
+      desc: '每個月定期的經營 Team 月會管理、會前簡報資料共享與會後紀錄。',
       items: [
         { label: '月會資訊與 Meet 連結', detail: '置頂展示即將舉行的月會倒數、時間地點、主持人與本月輪值紀錄人，一鍵加入 Google Meet。' },
         { label: '會前議題與簡報資料', detail: '報告人於會前點擊「＋ 貼上簡報/資料連結」，讓現場與高雄遠端同仁能同步開啟簡報瀏覽。' },
@@ -254,7 +254,7 @@ export function startInteractiveSpotlightTour() {
       route: '#/today',
       badge: '起點站',
       title: '🚲 經營 Team 專屬行事曆',
-      body: '歡迎來到經營組專用行事曆！點選左上角 Logo 可以隨時回到今日首頁。全系統針對 YouBike 經營團隊量身定制。',
+      body: '歡迎來到經營 Team 專用行事曆！點選左上角 Logo 可以隨時回到今日首頁。全系統針對 YouBike 經營團隊量身定制。',
       position: 'bottom',
     },
     {
@@ -262,7 +262,7 @@ export function startInteractiveSpotlightTour() {
       route: '#/today',
       badge: '視圖切換',
       title: '📑 核心視圖導覽列',
-      body: '上方頁籤整合經營組各項協同業務：<b>今日動態</b>、<b>行事曆</b>（月曆/總表）、<b>月會</b>、<b>模擬體驗</b>、<b>每日回報</b>與<b>採購佈告欄</b>，各模組支援專屬業務權限控管。',
+      body: '上方頁籤整合經營 Team 各項協同業務：<b>今日動態</b>、<b>行事曆</b>（月曆/總表）、<b>月會</b>、<b>模擬體驗</b>、<b>每日回報</b>與<b>採購佈告欄</b>，各模組支援專屬業務權限控管。',
       position: 'bottom',
     },
     {
@@ -301,7 +301,7 @@ export function startInteractiveSpotlightTour() {
       target: '[data-detail]',
       route: '#/today',
       badge: '出勤清單',
-      title: '👥 經營站・全員即時動態卡片',
+      title: '👥 經營 Team ・全員即時動態卡片',
       body: '每位組員都有專屬卡片，顯示今天是否在辦公室、預計外出地點、回辦公室時間與代理人，支援一鍵撥打電話！',
       position: 'top',
     },
@@ -325,7 +325,7 @@ export function startInteractiveSpotlightTour() {
       target: '.meeting-hero',
       route: '#/meeting',
       badge: '定期月會',
-      title: '💼 經營組月會專區',
+      title: '💼 經營 Team 月會專區',
       body: '查看下一場月會倒數計時、一鍵加入 Google Meet、會前上傳簡報試算表連結、線上即時會議紀錄填寫與歷次存檔。',
       position: 'bottom',
     },

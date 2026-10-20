@@ -124,7 +124,7 @@ export function createDemoBackend(state, emit, describeEvent) {
     add({ ownerUid: 'u6', typeId: 'out', startDate: today, endDate: today, period: 'custom', startTime: hm(n - 240), endTime: hm(n - 120), location: '南港站點巡檢' });
     add({ ownerUid: 'u8', typeId: 'out', startDate: today, endDate: today, period: 'custom', startTime: hm(n - 30), endTime: hm(n + 30), location: '台北市議會', reason: '議員質詢備詢', canAnswer: false, deputyUid: 'u9' });
     // 孔令淳今天安排「進辦公室」，展現進駐時在辦公室的效果；陸逸群今天無行程，展現常態外勤效果
-    add({ ownerUid: ME.uid, typeId: 'office', startDate: today, endDate: today, period: 'full', location: '總公司 3F 經營組工位', reason: '例行進辦與組務討論' });
+    add({ ownerUid: ME.uid, typeId: 'office', startDate: today, endDate: today, period: 'full', location: '總公司 3F 經營 Team 工位', reason: '例行進辦與組務討論' });
 
     // ---- 其他日子：依機率隨機產生 ----
     const workdays = eachDay(from, to).filter(d => !dayInfo(d).off && d !== today);
@@ -534,7 +534,7 @@ export function createDemoBackend(state, emit, describeEvent) {
           actorUid: ME.uid,
           action: 'publish_minutes',
           meetingId,
-          summary: `會議紀錄發布｜${m.date} 經營組月會會議紀錄已發布`,
+          summary: `會議紀錄發布｜${m.date} 經營 Team 月會會議紀錄已發布`,
           createdAt: ts(now),
         }, ...state.activities];
       }

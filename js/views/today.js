@@ -27,7 +27,7 @@ export function mountToday(el) {
     <div data-ride></div>
     <section class="station detail card" data-detail>
       <div class="st-head st-toggle" data-toggle role="button" tabindex="0" aria-expanded="false">
-        <span class="st-title">${dock(16)} 經營站・詳細資料</span>
+        <span class="st-title">${dock(16)} 經營 Team ・詳細資料</span>
         <span class="st-tools">
           <span class="st-sum" data-sum></span>
           <span class="seg small on-dark" data-filter>
@@ -111,7 +111,7 @@ export function mountToday(el) {
       mBanner = `
         <div class="card banner-meeting">
           <div class="bm-left">
-            <span class="bm-tag">💼 經營組月會</span>
+            <span class="bm-tag">💼 經營 Team 月會</span>
             <span class="bm-time">⏰ ${esc(mToday.startTime)} – ${esc(mToday.endTime)}</span>
             <span class="bm-loc">📍 ${esc(mToday.location || '總公司會議室')}</span>
             <span class="bm-rec muted small-text">（紀錄人：${esc(userName(mToday.recorderUid))}）</span>
@@ -191,7 +191,7 @@ export function mountToday(el) {
     return `
       <section class="station card">
         <div class="st-head">
-          <span class="st-title">${dock(16)} 經營站・${isToday ? '即時動態' : esc(fmtMD(day)) + ' 行程'}</span>
+          <span class="st-title">${dock(16)} 經營 Team ・${isToday ? '即時動態' : esc(fmtMD(day)) + ' 行程'}</span>
           ${isToday ? `<span class="st-time">更新於 ${esc(minToHM(now))}</span>` : ''}
         </div>
         <div class="st-cols">

@@ -957,7 +957,7 @@ export async function saveMeetingMinutes(meetingId, minutesData, isPublish = fal
       actorUid: me,
       action: 'publish_minutes',
       meetingId,
-      summary: `會議紀錄發布｜${m?.date || ''} 經營組月會會議紀錄已發布`,
+      summary: `會議紀錄發布｜${m?.date || ''} 經營 Team 月會會議紀錄已發布`,
       createdAt: serverTimestamp(),
     });
   }
