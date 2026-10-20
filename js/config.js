@@ -7,13 +7,9 @@
 // 2. 若有修改 allowedDomains，請同步修改 firestore.rules 中的 isCompany()。
 // ============================================================
 
-const _host = typeof location !== 'undefined' ? location.hostname : '';
 export const firebaseConfig = {
   apiKey: "AIzaSyAS9YFhHAKazjKmCLJfJvjg325_8gZUtDs",
-  // 若目前位於 Firebase Hosting 同源網域（.web.app 或 .firebaseapp.com），自動對齊 authDomain 以避免手機 iOS Safari / 跨網域 Storage Partitioning 造成登入卡住
-  authDomain: (_host.endsWith('.web.app') || _host.endsWith('.firebaseapp.com'))
-    ? _host
-    : "team-calendar-93cb2.firebaseapp.com",
+  authDomain: "team-calendar-93cb2.firebaseapp.com",
   projectId: "team-calendar-93cb2",
   storageBucket: "team-calendar-93cb2.firebasestorage.app",
   messagingSenderId: "973017260884",

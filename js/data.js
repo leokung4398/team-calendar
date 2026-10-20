@@ -163,26 +163,45 @@ export function isAllowedEmail(email) {
 // ---------------- 登入 ----------------
 export const watchAuth = cb => {
   if (demo) return demo.watchAuth(cb);
-  // 僅在同源 Firebase Hosting 網域下才嘗試處理 Redirect 結果
+  // 僅在同源 firebaseapp.com 網域下處理 Redirect 結果
   const host = typeof location !== 'undefined' ? location.hostname : '';
-  if (host.endsWith('.web.app') || host.endsWith('.firebaseapp.com')) {
+  if (host.endsWith('.firebaseapp.com')) {
     getRedirectResult(auth).catch(err => console.warn('getRedirectResult:', err));
   }
   return onAuthStateChanged(auth, cb);
 };
-export async function login() {
+export async function login(loginHintEmail = '') {
   if (demo) return demo.login();
+  const params = {
+    hd: APP.allowedDomains[0],
+    prompt: 'select_account',
+  };
+  const cleanHint = String(loginHintEmail || '').trim().toLowerCase();
+  if (cleanHint && cleanHint.endsWith('@' + APP.allowedDomains[0])) {
+    params.login_hint = cleanHint;
+    try { localStorage.setItem('yb_login_hint_email', cleanHint); } catch {}
+  } else {
+    try {
+      const saved = localStorage.getItem('yb_login_hint_email');
+      if (saved && saved.endsWith('@' + APP.allowedDomains[0])) params.login_hint = saved;
+    } catch {}
+  }
+  provider.setCustomParameters(params);
+
   try {
     return await signInWithPopup(auth, provider);
   } catch (e) {
-    // 若在非同源網域（例如 github.io）遇到手機阻擋 Popup，直接導向同源的 Firebase Hosting 正式網址，徹底避開 iOS / 現代瀏覽器 Storage Partitioning 造成的 "Unable to process request due to missing initial state" 錯誤
+    // 若在非 firebaseapp.com 網域遇到手機阻擋 Popup，導向與 authDomain 完全同源的 https://team-calendar-93cb2.firebaseapp.com/
+    // 既符合 Google Cloud 預設 Authorized Redirect URI（不會出現 400 redirect_uri_mismatch），也同源避開 iOS Storage Partitioning！
     const host = typeof location !== 'undefined' ? location.hostname : '';
-    const isSameOriginHosting = host.endsWith('.web.app') || host.endsWith('.firebaseapp.com');
+    const isAuthDomainOrigin = host === 'team-calendar-93cb2.firebaseapp.com';
     if (e?.code === 'auth/popup-blocked' || e?.code === 'auth/operation-not-supported-in-this-environment') {
-      if (isSameOriginHosting) {
+      if (isAuthDomainOrigin) {
         return signInWithRedirect(auth, provider);
       }
-      location.href = 'https://team-calendar-93cb2.web.app/' + (location.hash || '');
+      const target = new URL('https://team-calendar-93cb2.firebaseapp.com/');
+      if (params.login_hint) target.searchParams.set('hint', params.login_hint);
+      location.href = target.toString();
       return;
     }
     throw e;

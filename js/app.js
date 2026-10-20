@@ -67,9 +67,10 @@ async function boot() {
     const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
     const host = location.hostname || '';
 
-    // 1. 若手機從 github.io 進入，自動無縫導向同源的 Firebase Hosting 正式網址，徹底解決 iOS Safari 跨網域 Storage Partitioning 造成的 "Unable to process request due to missing initial state" 錯誤
-    if (isMobile && host.endsWith('github.io')) {
-      const target = new URL('https://team-calendar-93cb2.web.app/');
+    // 1. 若手機從 github.io 或 .web.app 進入，自動無縫導向與 authDomain 完全同源的 https://team-calendar-93cb2.firebaseapp.com/
+    //    既不會觸發 Google OAuth 400 redirect_uri_mismatch，也能徹底解決 iOS 跨網域 Storage Partitioning 造成的 "Unable to process request due to missing initial state"
+    if (isMobile && (host.endsWith('github.io') || host.endsWith('.web.app'))) {
+      const target = new URL('https://team-calendar-93cb2.firebaseapp.com/');
       if (isLineInApp) target.searchParams.set('openExternalBrowser', '1');
       location.replace(target.toString());
       return;
@@ -77,16 +78,32 @@ async function boot() {
 
     // 2. 若在 LINE 內建瀏覽器中開啟，且網址尚未加上 openExternalBrowser=1，自動跳轉喚起手機預設瀏覽器（Safari / Chrome）
     if (isLineInApp && !new URLSearchParams(location.search).has('openExternalBrowser')) {
-      const u = new URL(location.href);
+      const u = new URL('https://team-calendar-93cb2.firebaseapp.com/');
       u.searchParams.set('openExternalBrowser', '1');
       location.replace(u.toString());
+      return;
     }
 
-    const externalUrl = (() => {
-      const u = new URL('https://team-calendar-93cb2.web.app/');
-      u.searchParams.set('openExternalBrowser', '1');
-      return u.toString();
-    })();
+    const externalUrl = 'https://team-calendar-93cb2.firebaseapp.com/?openExternalBrowser=1';
+
+    // 預設成員快速選單（自動填入 @youbike.com.tw 帳號前綴，防呆避免手機誤用個人 @gmail.com）
+    const memberPresets = [
+      { name: '徐嘉鴻', prefix: 'jhsu' },
+      { name: '孔令淳', prefix: 'leokung' },
+      { name: '葉爵豪', prefix: 'chuehhaoyeh' },
+      { name: '陸逸群', prefix: 'yichunlu' },
+      { name: '張必忠', prefix: 'joshchang' },
+      { name: '賴宜平', prefix: 'benlai' },
+      { name: '包于巧', prefix: 'ciaopao' },
+      { name: '陳麒任', prefix: 'aidpanchen' },
+      { name: '丁美云', prefix: 'sunnyting' },
+      { name: '蕭琮瀚', prefix: 'jackhsiao' },
+    ];
+    let savedEmail = '';
+    try {
+      savedEmail = new URLSearchParams(location.search).get('hint') || localStorage.getItem('yb_login_hint_email') || '';
+    } catch {}
+    const savedPrefix = savedEmail.endsWith('@youbike.com.tw') ? savedEmail.split('@')[0] : '';
 
     app.innerHTML = `
       <div class="center-page login-page">
@@ -97,22 +114,55 @@ async function boot() {
           ${isLineInApp ? `
             <div style="background:#FFFBEB;border:1px solid #F59E0B;color:#92400E;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:14px;text-align:left;line-height:1.55">
               ⚠️ <b>偵測到 LINE 內建瀏覽器：</b><br>
-              Google 安全政策與 iOS 隱私隔離會阻擋 LINE 內建視窗登入（會出現 <code>missing initial state</code> 白畫面）。<br>
-              請點選下方按鈕或右下角「<b>…</b> / <b>分享</b>」→「<b>以預設瀏覽器開啟（Safari / Chrome）</b>」即可正常登入：
+              為避免手機登入被阻擋，請點選下方按鈕或右下角「<b>…</b>」→「<b>以預設瀏覽器開啟（Safari / Chrome）</b>」：
               <div style="margin-top:8px">
                 <a href="${esc(externalUrl)}" target="_blank" rel="noopener" class="btn sm" style="display:inline-flex;background:#F59E0B;color:#fff;border:none;font-weight:700;text-decoration:none">🌐 點此以預設瀏覽器開啟</a>
               </div>
             </div>
           ` : ''}
-          <button class="btn primary big" data-login>
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="18" height="18"> 使用公司 Google 帳號登入
+          <div style="text-align:left;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;margin-bottom:14px">
+            <label style="display:block;font-size:12.5px;font-weight:700;color:#334155;margin-bottom:6px">
+              🛡️ 步驟 1：選擇您的姓名或輸入公司信箱（防呆避免誤登私人 Gmail）
+            </label>
+            <select data-member-select style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #CBD5E1;font-size:14px;margin-bottom:8px;background:#fff;color:#0F172A;font-weight:600">
+              <option value="">-- 點此快速選擇您的姓名（或於下方手動輸入） --</option>
+              ${memberPresets.map(m => `<option value="${esc(m.prefix)}" ${m.prefix === savedPrefix ? 'selected' : ''}>${esc(m.name)}（${esc(m.prefix)}@youbike.com.tw）</option>`).join('')}
+            </select>
+            <div style="display:flex;align-items:center;background:#fff;border:1.5px solid #CBD5E1;border-radius:8px;overflow:hidden">
+              <input type="text" data-email-prefix value="${esc(savedPrefix)}" placeholder="帳號前綴（例如 leokung）" autocapitalize="none" autocorrect="off" spellcheck="false" style="flex:1;border:none;padding:9px 10px;font-size:14px;outline:none;min-width:0;font-weight:600;color:#0F172A">
+              <span style="background:#FEF3C7;color:#92400E;font-weight:700;font-size:13px;padding:9px 10px;border-left:1px solid #CBD5E1;white-space:nowrap">@youbike.com.tw</span>
+            </div>
+            <div style="font-size:11.5px;color:#64748B;margin-top:6px;line-height:1.4">
+              💡 系統會自動帶入您的 <b>@youbike.com.tw</b> 帳號至 Google 驗證頁，防止手機自動跳去個人 <code>@gmail.com</code>。
+            </div>
+          </div>
+          <button class="btn primary big" data-login style="width:100%;justify-content:center">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" width="18" height="18"> 步驟 2：使用 YouBike 公司帳號登入
           </button>
           <p class="hint">僅限經營 Team 授權成員登入存取（@${esc(APP.allowedDomains.join(', @'))}）</p>
           ${error ? `<p class="form-error">${esc(error)}</p>` : ''}
         </div>
       </div>`;
+
+    const selEl = $('[data-member-select]');
+    const prefixEl = $('[data-email-prefix]');
+    if (selEl && prefixEl) {
+      selEl.onchange = () => {
+        if (selEl.value) prefixEl.value = selEl.value;
+      };
+      prefixEl.oninput = () => {
+        const clean = prefixEl.value.trim().toLowerCase().replace(/@.*$/, '');
+        if (prefixEl.value !== clean && prefixEl.value.includes('@')) {
+          prefixEl.value = clean;
+        }
+        selEl.value = memberPresets.some(m => m.prefix === clean) ? clean : '';
+      };
+    }
+
     $('[data-login]').onclick = async () => {
-      try { await login(); } catch (e) {
+      const rawPrefix = (prefixEl?.value || '').trim().toLowerCase().replace(/@.*$/, '');
+      const hintEmail = rawPrefix ? `${rawPrefix}@${APP.allowedDomains[0]}` : '';
+      try { await login(hintEmail); } catch (e) {
         if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
           showLogin('登入失敗：' + (e.code || e.message));
         }
