@@ -53,9 +53,10 @@ const WEATHER_REGIONS = [
 ];
 
 const CWA_LIVE_MAPS = [
-  { id: 'radar', label: '📡 即時雷達迴波圖', url: 'https://www.cwa.gov.tw/Data/radar/CV1_3600.png', desc: '中央氣象署最新台灣降雨雷達迴波（每 10 分鐘自動更新）' },
-  { id: 'rain', label: '🌧️ 今日累積雨量圖', url: 'https://www.cwa.gov.tw/Data/rainfall/QZJ.jpg', desc: '中央氣象署今日 00:00 至今全台日累積雨量分佈' },
-  { id: 'temp', label: '🌡️ 全台即時溫度分佈', url: 'https://www.cwa.gov.tw/Data/temperature/temp.jpg', desc: '中央氣象署全台地面觀測等溫線分佈圖' },
+  { id: 'radar', label: '📡 即時雷達迴波', type: 'img', url: 'https://www.cwa.gov.tw/Data/radar/CV1_3600.png', desc: '中央氣象署最新台灣降雨雷達迴波（每 10 分鐘自動更新）' },
+  { id: 'rain', label: '🌧️ 今日累積雨量', type: 'img', url: 'https://www.cwa.gov.tw/Data/rainfall/QZJ.jpg', desc: '中央氣象署今日 00:00 至今全台日累積雨量分佈' },
+  { id: 'temp', label: '🌡️ 全台即時溫度', type: 'img', url: 'https://www.cwa.gov.tw/Data/temperature/temp.jpg', desc: '中央氣象署全台地面觀測等溫線分佈圖' },
+  { id: 'windy', label: '🌀 Windy 颱風動態', type: 'iframe', url: 'https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=kt&zoom=5&overlay=wind&product=ecmwf&level=surface&lat=25.000&lon=121.483&message=true', extUrl: 'https://www.windy.com/?25.000,121.483,5', desc: 'Windy 全球颱風路徑、陣風與氣壓即時互動預報（可直接拖曳地圖、播放時間軸關心颱風假動向！）' },
 ];
 
 // ================= 2. 🚲 YouBike 官方全台即時場站 API 對照表 =================
@@ -232,6 +233,7 @@ function getCorridorStatus(corridor) {
 const DEFAULT_BOOKMARKS = [
   { id: 'bm_1', title: 'YouBike 官方場站地圖', url: 'https://www.youbike.com.tw/region/main/stations/', tag: '場站查詢', icon: '🚲', builtinTab: 'youbike' },
   { id: 'bm_2', title: '中央氣象署－鄉鎮天氣預報', url: 'https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6300100', tag: '天氣雷達', icon: '🌦️', builtinTab: 'weather' },
+  { id: 'bm_windy', title: 'Windy 颱風路徑與風場動態', url: 'https://www.windy.com/?25.000,121.483,5', tag: '颱風假觀測', icon: '🌀', builtinTab: 'weather', builtinCwaMap: 'windy' },
   { id: 'bm_3', title: '台鐵列車時刻／誤點即時查詢', url: 'https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime', tag: '交通時刻', icon: '🚆', builtinTab: 'rail' },
   { id: 'bm_4', title: '台灣高鐵時刻表與票價查詢', url: 'https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c', tag: '交通時刻', icon: '🚄', builtinTab: 'rail' },
   { id: 'bm_5', title: '1968 高速公路即時路況影像', url: 'https://1968.freeway.gov.tw/', tag: '外勤路況', icon: '🛣️', builtinTab: 'freeway' },
@@ -443,30 +445,49 @@ export function mountTools(el) {
         ` : ''}
 
         ${showSection('weather') ? `
-        <!-- 系統 2：🌦️ 中央氣象署即時雷達迴波圖 ＆ 全台鄉鎮天氣預報 -->
+        <!-- 系統 2：🌦️ 中央氣象署即時雷達迴波圖、🌀 Windy 颱風動態 ＆ 全台鄉鎮天氣預報 -->
         <div class="card pad tools-builtin-card">
           <div class="tools-card-header">
             <div>
-              <h3 style="margin:0;font-size:16px">🌦️ 中央氣象署－即時雷達迴波圖 ＆ 各區鄉鎮天氣預報</h3>
-              <div class="muted tiny" style="margin-top:3px">左方直通中央氣象署最新雷達迴波／累積雨量／溫度圖，右方提供全台五大營運區重點鄉鎮即時氣溫與降雨率</div>
+              <h3 style="margin:0;font-size:16px">🌦️ 中央氣象署－即時雷達迴波圖、🌀 Windy 颱風動態 ＆ 各區鄉鎮預報</h3>
+              <div class="muted tiny" style="margin-top:3px">左方直通氣象署雷達迴波／雨量／溫度與 Windy 全球颱風路徑動態，右方提供全台五大營運區重點鄉鎮即時氣溫與降雨率</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <button type="button" class="btn sm ghost" data-cwa-reload>🔄 更新氣象圖</button>
+              <a href="https://www.windy.com/?25.000,121.483,5" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🌀 Windy 颱風官網 ↗</a>
               <a href="https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6300100" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">氣象署鄉鎮預報 ↗</a>
             </div>
           </div>
 
           <div class="weather-radar-bento">
-            <!-- 左側：中央氣象署即時雷達迴波與雨量視覺圖 -->
+            <!-- 左側：中央氣象署即時雷達迴波與 Windy 颱風動態圖 -->
             <div class="cwa-radar-box">
-              <div class="seg" style="margin-bottom:8px;width:100%;display:flex">
-                ${CWA_LIVE_MAPS.map(m => `<button type="button" style="flex:1" class="${m.id === activeCwaMap ? 'active' : ''}" data-cwa-map="${m.id}">${m.label}</button>`).join('')}
+              <div class="seg cwa-map-seg" style="margin-bottom:8px;width:100%;display:grid;grid-template-columns:repeat(2, 1fr);gap:4px">
+                ${CWA_LIVE_MAPS.map(m => `<button type="button" class="${m.id === activeCwaMap ? 'active' : ''}" data-cwa-map="${m.id}" style="padding:6px 8px;font-size:12px">${m.label}</button>`).join('')}
               </div>
-              <div class="cwa-img-frame" data-open-cwa-zoom title="點擊放大檢視高解析度氣象圖">
-                <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" loading="lazy">
-                <span class="cwa-zoom-hint">🔍 點擊放大全螢幕檢視</span>
-              </div>
-              <div class="muted tiny" style="margin-top:6px;text-align:center">${esc(curCwaMap.desc)}</div>
+              ${curCwaMap.type === 'iframe' ? `
+                <div class="cwa-img-frame" style="cursor:default">
+                  <iframe
+                    src="${curCwaMap.url}"
+                    style="width:100%;height:100%;border:none;display:block"
+                    loading="lazy"
+                    title="Windy 颱風與風場即時預報"
+                  ></iframe>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px">
+                  <span class="muted tiny">${esc(curCwaMap.desc)}</span>
+                  <div style="display:flex;gap:4px;flex-shrink:0">
+                    <button type="button" class="btn sm ghost" data-open-cwa-zoom style="padding:3px 8px;font-size:11px">🔍 放大互動</button>
+                    <a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn sm primary" style="padding:3px 8px;font-size:11px;text-decoration:none">🌀 開啟 Windy ↗</a>
+                  </div>
+                </div>
+              ` : `
+                <div class="cwa-img-frame" data-open-cwa-zoom title="點擊放大檢視高解析度氣象圖">
+                  <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" loading="lazy">
+                  <span class="cwa-zoom-hint">🔍 點擊放大全螢幕檢視</span>
+                </div>
+                <div class="muted tiny" style="margin-top:6px;text-align:center">${esc(curCwaMap.desc)}</div>
+              `}
             </div>
 
             <!-- 右側：五大營運區鄉鎮即時天氣與未來降雨預報 -->
@@ -754,7 +775,7 @@ export function mountTools(el) {
                 const canDel = isCustom && (b.uid === myUid() || isAdmin());
                 return `
                   <div class="bm-chip-card">
-                    <a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" class="bm-chip-link" ${b.builtinTab ? `data-jump-builtin="${b.builtinTab}"` : ''}>
+                    <a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" class="bm-chip-link" ${b.builtinTab ? `data-jump-builtin="${b.builtinTab}"` : ''} ${b.builtinCwaMap ? `data-jump-cwa-map="${b.builtinCwaMap}"` : ''}>
                       <span class="bm-chip-icon">${esc(b.icon || '🔗')}</span>
                       <div style="min-width:0;flex:1">
                         <div class="bm-chip-title">${esc(b.title)}</div>
@@ -787,6 +808,7 @@ export function mountTools(el) {
       a.onclick = e => {
         e.preventDefault();
         activeSubTab = a.dataset.jumpBuiltin;
+        if (a.dataset.jumpCwaMap) activeCwaMap = a.dataset.jumpCwaMap;
         render();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       };
@@ -849,14 +871,19 @@ export function mountTools(el) {
             <button class="icon-btn" data-close>✕</button>
           </div>
           <div style="text-align:center;background:#0F172A;padding:12px;border-radius:12px">
-            <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" style="max-width:100%;max-height:74vh;border-radius:8px">
+            ${curCwaMap.type === 'iframe' ? `
+              <iframe src="${curCwaMap.url}" style="width:100%;height:72vh;border:none;border-radius:8px;display:block" title="${esc(curCwaMap.label)}"></iframe>
+            ` : `
+              <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" style="max-width:100%;max-height:74vh;border-radius:8px">
+            `}
           </div>
           <div class="modal-foot">
             <span class="muted tiny">${esc(curCwaMap.desc)}</span>
             <span class="spacer"></span>
+            ${curCwaMap.extUrl ? `<a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn primary" style="text-decoration:none">🌀 前往 Windy 官網完整版 ↗</a>` : ''}
             <button class="btn" data-close>關閉</button>
           </div>
-        `);
+        `, { wide: true });
       };
     }
 
