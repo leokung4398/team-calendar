@@ -182,12 +182,11 @@ export function canViewReportContent(targetUid, rep = null) {
   if (isSupervisor(me) || isSystemDesigner(me)) return true;
 
   const targetUser = state.users.get(targetUid);
-  const isTargetField = isFieldStaff(targetUser) || rep?.reportType === 'field';
-  if (isTargetField) {
-    // 外勤三人的回報內容：僅包于巧（外勤代理人）與徐嘉鴻（代理副理）及本人可見
+  // 常態外勤三人的回報內容：僅包于巧（外勤代理人）與徐嘉鴻（代理副理）及本人可見
+  if (isFieldStaff(targetUser)) {
     return isFieldDeputy(me);
   }
-  // 內勤同仁的每日工作進度：全體組員皆可看見
+  // 內勤同仁（含一般進度或每月支援外勤模擬體驗回報）：全體組員皆可看見
   return true;
 }
 
@@ -214,20 +213,22 @@ export function getPreviousUserReport(uid, beforeDateStr) {
   return null;
 }
 
-/** 產生個人專屬的 LINE 群組回報文字格式（自動區分外勤制式 3 題 與 內勤工作進度） */
+/** 產生個人專屬的 LINE 群組回報文字格式（自動區分外勤制式 3 題 / 內勤支援外勤模擬體驗 / 內勤工作進度） */
 export function formatPersonalLineReport(u, dateStr, report) {
   const name = u?.displayName || '組員';
   const md = fmtMD(dateStr);
   const wd = weekdayZh(dateStr);
+  const isRegularField = isFieldStaff(u);
 
-  if (isFieldStaff(u) || report?.reportType === 'field') {
+  if (isRegularField || report?.reportType === 'field') {
     const region = (report?.fieldRegion || '').trim() || '（未填）';
     const stations = Number(report?.fieldStations) || 0;
     const v20 = Number(report?.fieldV20) || 0;
     const v20e = Number(report?.fieldV20E) || 0;
     const totalBikes = v20 + v20e;
+    const titleLabel = isRegularField ? '外勤品管每日回報' : '外勤支援（模擬體驗）每日回報';
     const lines = [
-      `【${md} (${wd}) 外勤品管每日回報 - ${name}】`,
+      `【${md} (${wd}) ${titleLabel} - ${name}】`,
       `地區：${region}`,
       `稽查場站數：${stations} 站`,
       `2.0與2.0E的數量：2.0 共 ${v20} 台 / 2.0E 共 ${v20e} 台（合計 ${totalBikes} 台）`,
@@ -507,6 +508,8 @@ export function mountDailyReport(root) {
     `;
   }
 
+  let editingModeOverride = null; // 供內勤同仁切換 'office' (一般進度) | 'field' (每月支援外勤模擬體驗)
+
   function renderMemberCard(u, dateStr, doc, myId, isSup, isDesigner, canManage) {
     const st = evaluateMemberReportStatus(u, dateStr);
     const rep = st.report || {};
@@ -518,13 +521,18 @@ export function mountDailyReport(root) {
     const canEditThis = isMe || isDesigner;
     const isEditing = editingUid === u.uid && canEditThis;
 
+    // 內勤同仁展開編輯時，支援分頁切換「🏢 內勤工作進度（預設）」與「🚲 外勤支援（模擬體驗）」
+    const activeEditorMode = isField
+      ? 'field'
+      : (editingModeOverride || (rep.reportType === 'field' ? 'field' : 'office'));
+
     // 內勤全體可見；外勤僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與本人可見
     const canSeeDetails = canViewReportContent(u.uid, rep);
 
     const ackList = Object.values(rep.ackBy || {});
     const myAck = !!(rep.ackBy && rep.ackBy[myId]);
     const prevEntry = isEditing ? getPreviousUserReport(u.uid, dateStr) : null;
-    const chips = isEditing && !isField ? getQuickChipsForUser(u) : [];
+    const chips = isEditing && activeEditorMode === 'office' ? getQuickChipsForUser(u) : [];
 
     return `
       <article class="card dr-member-card tone-${esc(st.tone)} ${isMe ? 'is-me' : ''} ${isEditing ? 'is-editing' : ''}" id="dr-card-${esc(u.uid)}">
@@ -536,6 +544,7 @@ export function mountDailyReport(root) {
                 ${esc(u.displayName)}
                 ${isMe ? '<span class="dr-me-tag">我</span>' : ''}
                 ${isField ? '<span class="dr-role-pill field">🚲 外勤品管</span>' : '<span class="dr-role-pill office">🏢 內勤</span>'}
+                ${(!isField && rep.reportType === 'field' && hasSubmitted) ? '<span class="dr-role-pill field" title="當日支援外勤模擬體驗">🚲 外勤支援</span>' : ''}
               </div>
               <div class="dr-user-title">${esc(u.title || '經營 Team 組員')}</div>
             </div>
@@ -549,10 +558,14 @@ export function mountDailyReport(root) {
           </div>
         ` : ''}
 
-        ${isEditing ? (isField ? renderFieldInlineEditor(u, rep, prevEntry) : renderOfficeInlineEditor(u, rep, prevEntry, chips)) : (
+        ${isEditing ? (
+          activeEditorMode === 'field'
+            ? renderFieldInlineEditor(u, rep, prevEntry, !isField)
+            : renderOfficeInlineEditor(u, rep, prevEntry, chips, !isField)
+        ) : (
           hasSubmitted ? (
             canSeeDetails ? (
-              isField ? renderFieldReportBody(rep) : renderOfficeReportBody(rep)
+              (isField || rep.reportType === 'field') ? renderFieldReportBody(rep, !isField) : renderOfficeReportBody(rep)
             ) : `
               <div class="dr-private-mask">
                 <span class="dr-lock-icon">🔒</span>
@@ -634,8 +647,24 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 外勤品管同仁專屬：制式化 3 題行內編輯器（含「縣市 ➔ 行政區」連動下拉選單） */
-  function renderFieldInlineEditor(u, rep, prevEntry) {
+  /** 內勤同仁專屬：回報模式切換分頁列（一般工作進度 vs. 每月支援外勤模擬體驗） */
+  function renderOfficeModeTabs(uid, activeMode) {
+    return `
+      <div class="dr-office-mode-tabs" style="display:flex; gap:6px; margin-bottom:12px; padding:4px; background:#f1f5f9; border-radius:10px; border:1px solid #e2e8f0;">
+        <button type="button" class="dr-mode-tab-btn ${activeMode === 'office' ? 'active' : ''}" data-switch-edit-mode="office" data-target-uid="${esc(uid)}"
+          style="flex:1; padding:7px 12px; border-radius:7px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; ${activeMode === 'office' ? 'background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
+          🏢 內勤工作進度（日常預設）
+        </button>
+        <button type="button" class="dr-mode-tab-btn ${activeMode === 'field' ? 'active' : ''}" data-switch-edit-mode="field" data-target-uid="${esc(uid)}"
+          style="flex:1; padding:7px 12px; border-radius:7px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; ${activeMode === 'field' ? 'background:#fff; color:#0369a1; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
+          🚲 外勤支援回報（每月模擬體驗）
+        </button>
+      </div>
+    `;
+  }
+
+  /** 外勤品管 / 內勤支援外勤模擬體驗：制式化 3 題行內編輯器（含「縣市 ➔ 行政區」連動下拉選單） */
+  function renderFieldInlineEditor(u, rep, prevEntry, showModeSwitcher = false) {
     const v20 = rep.fieldV20 !== undefined ? rep.fieldV20 : '';
     const v20e = rep.fieldV20E !== undefined ? rep.fieldV20E : '';
     const total = (Number(v20) || 0) + (Number(v20e) || 0);
@@ -645,8 +674,9 @@ export function mountDailyReport(root) {
 
     return `
       <div class="dr-inline-editor field-mode" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
+        ${showModeSwitcher ? renderOfficeModeTabs(u.uid, 'field') : ''}
         <div class="dr-editor-top-tools">
-          <span class="dr-field-mode-tag">🚲 外勤品管制式回報（3 項必填）</span>
+          <span class="dr-field-mode-tag">${showModeSwitcher ? '🚲 內勤支援外勤（模擬體驗）回報（3 項必填）' : '🚲 外勤品管制式回報（3 項必填）'}</span>
           ${prevEntry ? `
             <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
               📥 帶入前次地區與數據（${esc(fmtMD(prevEntry.date))}）
@@ -720,9 +750,10 @@ export function mountDailyReport(root) {
   }
 
   /** 內勤同仁專屬：條列式工作進度行內編輯器 */
-  function renderOfficeInlineEditor(u, rep, prevEntry, chips) {
+  function renderOfficeInlineEditor(u, rep, prevEntry, chips, showModeSwitcher = false) {
     return `
       <div class="dr-inline-editor" data-editor-for="${esc(u.uid)}" data-editor-mode="office">
+        ${showModeSwitcher ? renderOfficeModeTabs(u.uid, 'office') : ''}
         <div class="dr-editor-top-tools">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
@@ -763,13 +794,14 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 外勤品管已填寫內容顯示區（僅本人、代理副理 徐嘉鴻、外勤代理人 包于巧 可見） */
-  function renderFieldReportBody(rep) {
+  /** 外勤品管 / 內勤支援外勤模擬體驗 已填寫內容顯示區 */
+  function renderFieldReportBody(rep, isOfficeSupport = false) {
     const v20 = Number(rep.fieldV20) || 0;
     const v20e = Number(rep.fieldV20E) || 0;
     const total = v20 + v20e;
     return `
       <div class="dr-report-body field-summary">
+        ${isOfficeSupport ? `<div style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:6px;">🚲 當日支援外勤（模擬體驗）稽查回報</div>` : ''}
         <div class="dr-field-metrics">
           <div class="dr-f-metric">
             <span class="dr-fm-label">📍 地區</span>
@@ -961,6 +993,17 @@ export function mountDailyReport(root) {
           return;
         }
         editingUid = targetId;
+        editingModeOverride = null;
+        render();
+        const firstInput = root.querySelector(`[data-f-region="${editingUid}"], [data-f-today="${editingUid}"]`);
+        if (firstInput) firstInput.focus();
+      };
+    });
+
+    // 內勤同仁切換「🏢 內勤工作進度 / 🚲 外勤支援回報（每月模擬體驗）」分頁
+    root.querySelectorAll('[data-switch-edit-mode]').forEach(tabBtn => {
+      tabBtn.onclick = () => {
+        editingModeOverride = tabBtn.dataset.switchEditMode;
         render();
         const firstInput = root.querySelector(`[data-f-region="${editingUid}"], [data-f-today="${editingUid}"]`);
         if (firstInput) firstInput.focus();
@@ -971,18 +1014,20 @@ export function mountDailyReport(root) {
     if (cancelEditBtn) {
       cancelEditBtn.onclick = () => {
         editingUid = null;
+        editingModeOverride = null;
         render();
       };
     }
 
-    // 一鍵帶入前次項目（同時支援內勤與外勤品管）
+    // 一鍵帶入前次項目（同時支援內勤與外勤品管/支援模式）
     root.querySelectorAll('[data-import-prev]').forEach(btn => {
       btn.onclick = () => {
         const uid = btn.dataset.importPrev;
         const prev = getPreviousUserReport(uid, selectedDate);
         if (!prev) return toast('查無前次歷史回報紀錄');
-        const u = state.users.get(uid);
-        if (isFieldStaff(u)) {
+        const editorEl = root.querySelector(`[data-editor-for="${uid}"]`);
+        const isFieldMode = editorEl?.dataset.editorMode === 'field';
+        if (isFieldMode) {
           const regIn = root.querySelector(`[data-f-region="${uid}"]`);
           const stIn = root.querySelector(`[data-f-stations="${uid}"]`);
           const v20In = root.querySelector(`[data-f-v20="${uid}"]`);
@@ -1102,12 +1147,13 @@ export function mountDailyReport(root) {
         return;
       }
       const targetUser = state.users.get(uid);
-      const isField = isFieldStaff(targetUser);
+      const editorEl = root.querySelector(`[data-editor-for="${uid}"]`);
+      const isFieldMode = editorEl ? editorEl.dataset.editorMode === 'field' : isFieldStaff(targetUser);
       const notesIn = root.querySelector(`[data-f-notes="${uid}"]`);
       const notes = (notesIn?.value || '').trim();
 
       let payload;
-      if (isField) {
+      if (isFieldMode) {
         const regIn = root.querySelector(`[data-f-region="${uid}"]`);
         const stIn = root.querySelector(`[data-f-stations="${uid}"]`);
         const v20In = root.querySelector(`[data-f-v20="${uid}"]`);
@@ -1161,6 +1207,7 @@ export function mountDailyReport(root) {
 
       const saved = await saveUserDailyReport(selectedDate, uid, payload);
       editingUid = null;
+      editingModeOverride = null;
 
       if (copyToLine) {
         const text = formatPersonalLineReport(targetUser, selectedDate, saved);
@@ -1291,10 +1338,11 @@ export function mountDailyReport(root) {
 }
 
 // ============================================================
-// 行動端通勤極速快填抽屜（Bottom Sheet / Modal）
-// 自動識別登入者為「🚲 外勤品管（制式 3 題）」或「🏢 內勤（工作進度）」
+// 行動端通勤極速快填彈窗（Modal）
+// - 外勤品管同仁：直接使用制式 3 題
+// - 內勤同仁：預設為「🏢 內勤工作進度」，並提供「🚲 外勤支援回報（模擬體驗）」分頁切換
 // ============================================================
-export function openQuickDailyReportSheet(dateStr = ymd()) {
+export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) {
   const existingModal = document.getElementById('dr-quick-sheet-backdrop');
   if (existingModal) existingModal.remove();
 
@@ -1302,9 +1350,14 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
   const uid = myUid();
   if (!me || !uid) return;
 
-  const isField = isFieldStaff(me);
+  const isRegularField = isFieldStaff(me);
   const doc = dailyReportDocOf(dateStr);
   const rep = doc.reports?.[uid] || {};
+  const activeSheetMode = isRegularField
+    ? 'field'
+    : (modeOverride || (rep.reportType === 'field' ? 'field' : 'office'));
+  const isField = activeSheetMode === 'field';
+
   const prevEntry = getPreviousUserReport(uid, dateStr);
   const chips = !isField ? getQuickChipsForUser(me) : [];
   const cities = isField ? getOrderedCitiesForUser(me) : [];
@@ -1323,13 +1376,26 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
       <div class="dr-sheet-handle"></div>
       <div class="dr-sheet-head">
         <div>
-          <div class="dr-sheet-badge">${isField ? '🚲 外勤品管制式快填・僅徐嘉鴻與包于巧可見' : '⚡ 內勤每日進度快填・全組公開共享'}</div>
+          <div class="dr-sheet-badge">${isRegularField ? '🚲 外勤品管制式快填・僅徐嘉鴻與包于巧可見' : (isField ? '🚲 內勤支援外勤（模擬體驗）快填' : '⚡ 內勤每日進度快填・全組公開共享')}</div>
           <h3>📝 ${esc(fmtMD(dateStr))}（週${esc(weekdayZh(dateStr))}）${esc(me.displayName)} 回報</h3>
         </div>
         <button type="button" class="icon-btn" data-close-sheet aria-label="關閉">✕</button>
       </div>
 
       <div class="dr-sheet-body">
+        ${!isRegularField ? `
+          <div class="dr-office-mode-tabs" style="display:flex; gap:6px; margin-bottom:12px; padding:4px; background:#f1f5f9; border-radius:10px; border:1px solid #e2e8f0;">
+            <button type="button" class="dr-mode-tab-btn ${activeSheetMode === 'office' ? 'active' : ''}" data-sheet-switch-mode="office"
+              style="flex:1; padding:7px 10px; border-radius:7px; border:none; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; ${activeSheetMode === 'office' ? 'background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
+              🏢 內勤工作進度（日常預設）
+            </button>
+            <button type="button" class="dr-mode-tab-btn ${activeSheetMode === 'field' ? 'active' : ''}" data-sheet-switch-mode="field"
+              style="flex:1; padding:7px 10px; border-radius:7px; border:none; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; ${activeSheetMode === 'field' ? 'background:#fff; color:#0369a1; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
+              🚲 外勤支援回報（每月模擬體驗）
+            </button>
+          </div>
+        ` : ''}
+
         <div class="dr-sheet-quickbar">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-sheet-prev-btn" data-sheet-import-prev>
@@ -1444,6 +1510,13 @@ export function openQuickDailyReportSheet(dateStr = ymd()) {
     if (e.target === backdrop) close();
   });
   backdrop.querySelectorAll('[data-close-sheet]').forEach(b => { b.onclick = close; });
+
+  // 內勤同仁於彈窗內切換「🏢 內勤工作進度 / 🚲 外勤支援回報」分頁
+  backdrop.querySelectorAll('[data-sheet-switch-mode]').forEach(tabBtn => {
+    tabBtn.onclick = () => {
+      openQuickDailyReportSheet(dateStr, tabBtn.dataset.sheetSwitchMode);
+    };
+  });
 
   if (isField) {
     const regIn = backdrop.querySelector('[data-sheet-region]');
