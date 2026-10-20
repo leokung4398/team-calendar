@@ -163,19 +163,27 @@ export function isAllowedEmail(email) {
 // ---------------- 登入 ----------------
 export const watchAuth = cb => {
   if (demo) return demo.watchAuth(cb);
-  // 處理手機瀏覽器使用 signInWithRedirect 返回後的結果
-  getRedirectResult(auth).catch(err => console.warn('getRedirectResult:', err));
+  // 僅在同源 Firebase Hosting 網域下才嘗試處理 Redirect 結果
+  const host = typeof location !== 'undefined' ? location.hostname : '';
+  if (host.endsWith('.web.app') || host.endsWith('.firebaseapp.com')) {
+    getRedirectResult(auth).catch(err => console.warn('getRedirectResult:', err));
+  }
   return onAuthStateChanged(auth, cb);
 };
-export async function login(useRedirect = false) {
+export async function login() {
   if (demo) return demo.login();
-  if (useRedirect) return signInWithRedirect(auth, provider);
   try {
     return await signInWithPopup(auth, provider);
   } catch (e) {
-    // 手機瀏覽器若阻擋彈跳視窗或不支援 Popup，自動降級為 Redirect 登入
+    // 若在非同源網域（例如 github.io）遇到手機阻擋 Popup，直接導向同源的 Firebase Hosting 正式網址，徹底避開 iOS / 現代瀏覽器 Storage Partitioning 造成的 "Unable to process request due to missing initial state" 錯誤
+    const host = typeof location !== 'undefined' ? location.hostname : '';
+    const isSameOriginHosting = host.endsWith('.web.app') || host.endsWith('.firebaseapp.com');
     if (e?.code === 'auth/popup-blocked' || e?.code === 'auth/operation-not-supported-in-this-environment') {
-      return signInWithRedirect(auth, provider);
+      if (isSameOriginHosting) {
+        return signInWithRedirect(auth, provider);
+      }
+      location.href = 'https://team-calendar-93cb2.web.app/' + (location.hash || '');
+      return;
     }
     throw e;
   }

@@ -62,7 +62,32 @@ async function boot() {
   });
 
   function showLogin(error = '') {
-    const isLineInApp = /Line\//i.test(navigator.userAgent || '');
+    const ua = navigator.userAgent || '';
+    const isLineInApp = /Line\//i.test(ua);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+    const host = location.hostname || '';
+
+    // 1. 若手機從 github.io 進入，自動無縫導向同源的 Firebase Hosting 正式網址，徹底解決 iOS Safari 跨網域 Storage Partitioning 造成的 "Unable to process request due to missing initial state" 錯誤
+    if (isMobile && host.endsWith('github.io')) {
+      const target = new URL('https://team-calendar-93cb2.web.app/');
+      if (isLineInApp) target.searchParams.set('openExternalBrowser', '1');
+      location.replace(target.toString());
+      return;
+    }
+
+    // 2. 若在 LINE 內建瀏覽器中開啟，且網址尚未加上 openExternalBrowser=1，自動跳轉喚起手機預設瀏覽器（Safari / Chrome）
+    if (isLineInApp && !new URLSearchParams(location.search).has('openExternalBrowser')) {
+      const u = new URL(location.href);
+      u.searchParams.set('openExternalBrowser', '1');
+      location.replace(u.toString());
+    }
+
+    const externalUrl = (() => {
+      const u = new URL('https://team-calendar-93cb2.web.app/');
+      u.searchParams.set('openExternalBrowser', '1');
+      return u.toString();
+    })();
+
     app.innerHTML = `
       <div class="center-page login-page">
         <div class="card pad narrow login-card">
@@ -70,8 +95,13 @@ async function boot() {
           <h1>經營 Team 營運協同平台</h1>
           <p class="muted">出差外勤行程、品管巡檢規劃、團隊會議與協同作業管理</p>
           ${isLineInApp ? `
-            <div style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;padding:10px 12px;border-radius:10px;font-size:12.5px;margin-bottom:12px;text-align:left;line-height:1.5">
-              💡 <b>手機登入提示：</b>偵測到您正在使用 LINE 內建瀏覽器，Google 安全政策可能會阻擋登入或導致畫面卡住。建議點擊右下角「<b>…</b>」選擇「<b>以預設瀏覽器開啟</b>」（Safari / Chrome）。
+            <div style="background:#FFFBEB;border:1px solid #F59E0B;color:#92400E;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:14px;text-align:left;line-height:1.55">
+              ⚠️ <b>偵測到 LINE 內建瀏覽器：</b><br>
+              Google 安全政策與 iOS 隱私隔離會阻擋 LINE 內建視窗登入（會出現 <code>missing initial state</code> 白畫面）。<br>
+              請點選下方按鈕或右下角「<b>…</b> / <b>分享</b>」→「<b>以預設瀏覽器開啟（Safari / Chrome）</b>」即可正常登入：
+              <div style="margin-top:8px">
+                <a href="${esc(externalUrl)}" target="_blank" rel="noopener" class="btn sm" style="display:inline-flex;background:#F59E0B;color:#fff;border:none;font-weight:700;text-decoration:none">🌐 點此以預設瀏覽器開啟</a>
+              </div>
             </div>
           ` : ''}
           <button class="btn primary big" data-login>
