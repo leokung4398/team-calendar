@@ -388,7 +388,7 @@ export function mountSimulation(el, ctx = {}) {
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
             <div style="display:flex;align-items:center;gap:8px">
               <h3 style="font-size:15.5px; margin:0;">📋 各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
-              <span class="info-pill-tip" title="點選上方粉紅列『出差日期』可記錄幾號出差（例：15, 16）；點選下方格子可直接編輯排班次數">ⓘ 操作提示</span>
+              <span class="info-pill-tip" data-tip="點選上方粉紅列『出差日期』可記錄幾號出差（例：15, 16）；點選下方格子可直接編輯排班次數">ⓘ 操作提示</span>
             </div>
           </div>
 

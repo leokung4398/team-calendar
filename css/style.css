@@ -2931,11 +2931,11 @@ th.has-meeting { position: relative; }
   color: #0f172a;
   border-color: #94a3b8;
 }
-.info-pill-tip::after {
+.info-pill-tip[data-tip]::after {
   content: attr(data-tip);
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  left: 0;
   width: max-content;
   max-width: 340px;
   padding: 10px 12px;
@@ -2954,8 +2954,8 @@ th.has-meeting { position: relative; }
   z-index: 120;
   white-space: normal;
 }
-.info-pill-tip:hover::after,
-.info-pill-tip:focus::after {
+.info-pill-tip[data-tip]:hover::after,
+.info-pill-tip[data-tip]:focus::after {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);

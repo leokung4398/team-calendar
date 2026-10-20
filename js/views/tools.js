@@ -107,7 +107,7 @@ export function mountTools(el) {
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px">
           <h2 class="view-title" style="margin:0">🧰 實用小工具百寶箱</h2>
-          <span class="info-pill-tip" title="整合外勤與內勤常用的即時天氣、台鐵高鐵查詢、里程旅費與工作日計算機，以及團隊共用書籤">ⓘ 說明</span>
+          <span class="info-pill-tip" data-tip="整合外勤與內勤常用的即時天氣、台鐵高鐵查詢、里程旅費與工作日計算機，以及團隊共用書籤">ⓘ 說明</span>
         </div>
         <div class="toolbar-end">
           <button class="btn primary sm" data-add-bm>＋ 新增常用網站捷徑</button>

@@ -344,7 +344,7 @@ export function mountDailyReport(root) {
           <div class="dr-hero-top" style="margin-bottom:10px">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <h1 class="dr-title" style="margin:0;font-size:19px">📝 每日工作進度回報</h1>
-              <span class="info-pill-tip" title="🏢 內勤同仁填寫今日工作進度（全員可見，每月支援外勤日可切換外勤回報分頁）；🚲 外勤三人制式回報 3 題（僅副理徐嘉鴻、代理人包于巧與本人可見）。🔒 嚴格防代填保護。">ⓘ 規則說明</span>
+              <span class="info-pill-tip" data-tip="🏢 內勤同仁填寫今日工作進度（全員可見，每月支援外勤日可切換外勤回報分頁）；🚲 外勤三人制式回報 3 題（僅副理徐嘉鴻、代理人包于巧與本人可見）。🔒 嚴格防代填保護。">ⓘ 規則說明</span>
               <div class="compact-kpi-strip">
                 <span class="kpi-chip" style="background:#F0FDF4;border-color:#BBF7D0;color:#166534">✅ 已回報 <b>${submittedCount}/${allReporters.length}</b></span>
                 <span class="kpi-chip ${pendingCount > 0 ? 'danger' : ''}">⏳ 待回報 <b>${pendingCount}</b></span>
@@ -423,7 +423,7 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
           <h2>🚲 外勤品管稽查回報（${fieldMembers.length} 位）</h2>
-          <span class="info-pill-tip" title="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見">🔒 權限保護</span>
+          <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見">🔒 權限保護</span>
         </div>
         <div class="dr-cards-grid">
           ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -434,7 +434,7 @@ export function mountDailyReport(root) {
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
           <h2>🏢 內勤同仁工作進度（${officeMembers.length} 位）</h2>
-          <span class="info-pill-tip" title="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『🚲 外勤支援回報』分頁">👥 全員公開</span>
+          <span class="info-pill-tip" data-tip="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『🚲 外勤支援回報』分頁">👥 全員公開</span>
         </div>
         <div class="dr-cards-grid">
           ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}

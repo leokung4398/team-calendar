@@ -43,7 +43,7 @@ export function mountCases(el) {
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <h2 class="view-title" style="margin:0">📌 例案追蹤</h2>
-          <span class="info-pill-tip" title="針對部門長期專案設立進度與時間軸軌跡；在『月會』頁面亦可一鍵引用個人負責的例案進度">ⓘ 說明</span>
+          <span class="info-pill-tip" data-tip="針對部門長期專案設立進度與時間軸軌跡；在『月會』頁面亦可一鍵引用個人負責的例案進度">ⓘ 說明</span>
           <div class="compact-kpi-strip">
             <span class="kpi-chip ${filterStatus === 'all' ? 'active' : ''}" data-filter-status="all">全部 <b>${counts.all}</b></span>
             <span class="kpi-chip ${filterStatus === 'active' ? 'active' : ''}" data-filter-status="active">🚀 進行中 <b>${counts.active}</b></span>

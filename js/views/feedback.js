@@ -30,7 +30,7 @@ export function mountWishes(el) {
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <h2 class="view-title" style="margin:0">🌠 團隊許願池</h2>
-          <span class="info-pill-tip" title="想要什麼實用工具、自動化報表或好用的系統介面？歡迎具名提出並讓大家按 +1 附議集氣！">ⓘ 說明</span>
+          <span class="info-pill-tip" data-tip="想要什麼實用工具、自動化報表或好用的系統介面？歡迎具名提出並讓大家按 +1 附議集氣！">ⓘ 說明</span>
           <div class="compact-kpi-strip">
             <span class="kpi-chip">總許願 <b>${wishes.length}</b></span>
             <span class="kpi-chip">🎉 已實現 <b>${wishes.filter(w => w.status === 'done').length}</b></span>
@@ -201,7 +201,7 @@ export function mountVents(el) {
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <h2 class="view-title" style="margin:0">🗣️ 意見箱（吐苦水樹洞）</h2>
-          <span class="info-pill-tip" title="選擇『🥷 完全匿名』發表時，系統連資料庫都不會寫入您的真實帳號 UID，管理員與任何人都無法反查身分，請安心抒發！">🛡️ 100% 零追蹤匿名保護</span>
+          <span class="info-pill-tip" data-tip="選擇『🥷 完全匿名』發表時，系統連資料庫都不會寫入您的真實帳號 UID，管理員與任何人都無法反查身分，請安心抒發！">🛡️ 100% 零追蹤匿名保護</span>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
           <a href="#/wishes" class="btn sm ghost" style="text-decoration:none">🌠 切換至許願池</a>
