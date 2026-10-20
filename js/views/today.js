@@ -165,16 +165,11 @@ export function mountToday(el) {
       const x = isToday ? st.current : st.list[0];
       const ev = x.ev, t = typeOf(ev.typeId);
       const more = !isToday && st.list.length > 1 ? `<small class="muted">＋${st.list.length - 1} 筆</small>` : '';
-      const phone = ev.phone
-        ? `<a href="tel:${esc(ev.phone)}" onclick="event.stopPropagation()">${esc(ev.phone)}</a>${ev.canAnswer ? '<span class="tag ok">可接</span>' : '<span class="tag no">不便接</span>'}`
-        : (ev.canAnswer === false ? '<span class="tag no">不便接</span>' : '<span class="muted">—</span>');
       return `
         <div class="sb-row" data-ev="${esc(ev.id)}" title="點擊查看行程細節">
           <span class="sb-who" data-goto="${esc(u.uid)}">${avatar(userOf(u.uid), 26)}<b>${nameOf(u)}</b></span>
-          <span class="sb-what"><span class="sb-type" style="--c:${esc(t.color)}">${esc(t.name)}</span><span class="sb-loc">${esc(ev.location || '')}</span>${more}</span>
+          <span class="sb-what"><span class="sb-type" style="--c:${esc(t.color)}">${esc(t.name)}</span><span class="sb-loc">${esc(ev.reason || '')}</span>${more}</span>
           <span class="sb-back"><i>${isToday ? '回來' : '時間'}</i>${esc(isToday ? returnText(ev, day, x.iv) : timeOnDayText(ev, day))}</span>
-          <span class="sb-phone"><i>電話</i>${phone}</span>
-          <span class="sb-dep"><i>代理</i>${ev.deputyUid ? esc(userName(ev.deputyUid)) : '<span class="muted">—</span>'}</span>
         </div>`;
     };
     const inChip = ({ u, st }) => {
@@ -240,12 +235,10 @@ export function mountToday(el) {
       const ev = cur.ev;
       main = `
         <div class="now" data-ev="${esc(ev.id)}">
-          <div class="now-line"><b>${esc(timeOnDayText(ev, day))}</b>${ev.location ? `・${esc(ev.location)}` : ''}</div>
+          <div class="now-line"><b>${esc(timeOnDayText(ev, day))}</b></div>
           ${ev.reason ? `<div class="muted clamp">${esc(ev.reason)}</div>` : ''}
           <div class="now-meta">
             <span>⏰ 預計回來：<b>${esc(returnText(ev, day, cur.iv))}</b></span>
-            ${ev.phone ? `<span>📞 <a href="tel:${esc(ev.phone)}" onclick="event.stopPropagation()">${esc(ev.phone)}</a> ${ev.canAnswer ? '<span class="tag ok">可接</span>' : '<span class="tag no">不便接聽</span>'}</span>` : (ev.canAnswer === false ? '<span><span class="tag no">不便接聽</span></span>' : '')}
-            ${ev.deputyUid ? `<span>🙋 代理人：<b>${esc(userName(ev.deputyUid))}</b></span>` : ''}
           </div>
         </div>`;
     }

@@ -19,9 +19,6 @@ export function openEventViewer(ev) {
   const t = typeOf(ev.typeId);
   const row = (label, value) => value ? `<div class="kv"><dt>${label}</dt><dd>${value}</dd></div>` : '';
   const people = ev.participantUids.map(u => `<span class="person">${avatar(userOf(u), 22)}${esc(userName(u))}${u === ev.ownerUid && ev.participantUids.length > 1 ? '<small>（登記人）</small>' : ''}</span>`).join('');
-  const phone = ev.phone
-    ? `<a href="tel:${esc(ev.phone)}">${esc(ev.phone)}</a> ${ev.canAnswer ? '<span class="tag ok">可接電話</span>' : '<span class="tag no">不方便接聽</span>'}`
-    : (ev.canAnswer === false ? '<span class="tag no">不方便接聽</span>' : '');
   const body = `
     <div class="ev-view">
       <div class="ev-type" style="--c:${esc(t.color)}">${esc(t.name)}</div>
@@ -29,10 +26,7 @@ export function openEventViewer(ev) {
         ${row('組員', `<div class="people">${people}</div>`)}
         ${row('日期', esc(dateRangeText(ev)))}
         ${row('時段', esc(periodText(ev)))}
-        ${row('地點 / 對象', esc(ev.location))}
         ${row('事由 / 備註', esc(ev.reason).replace(/\n/g, '<br>'))}
-        ${row('聯絡方式', phone)}
-        ${row('代理人', ev.deputyUid ? esc(userName(ev.deputyUid)) : '')}
         ${row('預計回辦公室', ev.returnAt ? esc(ev.returnAt.replace('T', ' ')) : '')}
       </dl>
       <p class="meta">最後修改：${esc(userName(ev.updatedBy))} ${ev.updatedAt ? '・' + timeAgo(ev.updatedAt) : ''}</p>
@@ -111,15 +105,7 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
         <label class="field"><span data-et>結束時間</span><input type="time" name="endTime" value="${esc(v.endTime || '09:30')}"></label>
       </div>
     </div>
-    <label class="field"><span>地點 / 拜訪對象</span><input name="location" maxlength="100" placeholder="例：台中・XX 公司" value="${esc(v.location)}"></label>
     <label class="field"><span>事由 / 備註</span><textarea name="reason" rows="2" maxlength="500">${esc(v.reason)}</textarea></label>
-    <div class="row2 align-end">
-      <label class="field"><span>聯絡手機</span><input name="phone" type="tel" maxlength="30" placeholder="09xx-xxx-xxx" value="${esc(v.phone)}"></label>
-      <label class="field check"><input type="checkbox" name="canAnswer" ${v.canAnswer !== false ? 'checked' : ''}> 可接電話</label>
-    </div>
-    <label class="field"><span>代理人（不在時找誰）</span>
-      <select name="deputyUid"><option value="">（無）</option>${users.map(u => `<option value="${esc(u.uid)}" ${u.uid === v.deputyUid ? 'selected' : ''}>${esc(u.displayName)}</option>`).join('')}</select>
-    </label>
     <div class="field"><span>同行組員 <small class="hint">（行程會同時出現在同行者的行事曆）</small></span>
       <div class="chip-select">${users.map(u => `
         <label class="chip-opt" data-uid="${esc(u.uid)}"><input type="checkbox" name="companionUids" value="${esc(u.uid)}" ${v.companionUids?.includes(u.uid) ? 'checked' : ''}><span>${esc(u.displayName)}</span></label>`).join('')}
@@ -153,8 +139,6 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
       el.hidden = self;
       if (self) el.querySelector('input').checked = false;
     });
-    [...form.deputyUid.options].forEach(op => { op.disabled = op.value === o && o !== ''; });
-    if (form.deputyUid.value === o) form.deputyUid.value = '';
   };
   form.addEventListener('change', e => {
     if (e.target.name === 'period') syncPeriod();
@@ -187,7 +171,6 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
     btn.textContent = '儲存中…';
     try {
       await saveEvent(data, ev);
-      if (data.phone && data.ownerUid === myUid()) localStorage.setItem(PHONE_KEY, data.phone);
       toast(ev ? '已更新行程' : '已新增行程', 'success');
       m.close();
     } catch (e2) {
@@ -211,11 +194,11 @@ function readForm(form) {
     period,
     startTime: period === 'custom' ? fd.get('startTime') || '' : '',
     endTime: period === 'custom' ? fd.get('endTime') || '' : '',
-    location: (fd.get('location') || '').trim(),
+    location: '',
     reason: (fd.get('reason') || '').trim(),
-    phone: (fd.get('phone') || '').trim(),
-    canAnswer: fd.get('canAnswer') === 'on',
-    deputyUid: fd.get('deputyUid') || '',
+    phone: '',
+    canAnswer: true,
+    deputyUid: '',
     companionUids: fd.getAll('companionUids').filter(u => u !== fd.get('ownerUid')),
     returnAt: fd.get('returnAt') || '',
   };
@@ -230,6 +213,5 @@ function validate(d) {
     if (!d.startTime || !d.endTime) return '請填寫自訂時段的開始與結束時間';
     if (d.startDate === d.endDate && d.endTime <= d.startTime) return '結束時間必須晚於開始時間';
   }
-  if (d.deputyUid && d.deputyUid === d.ownerUid) return '代理人不能是自己';
   return '';
 }
