@@ -1,13 +1,7 @@
 // 💬 團隊即時聊天室（全站常駐滑出抽屜 + 支援最大化寬版模式）
-// 支援：3 大頻道分流（📢 團隊大廳 / 🚲 外勤連線 / ☕ 摸魚茶水間）、@標註組員、引用回覆、表情符號反應、貼上圖片自動壓縮、YouBike 專屬趣味貼圖與快捷語
+// 單一全組共用大廳、支援 @標註組員、引用回覆、表情符號反應、貼上圖片自動壓縮、YouBike 專屬快捷語
 import { state, myUid, isAdmin, activeUsers, userOf, sendChatMessage, toggleChatReaction, deleteChatMessage, onChange } from './data.js';
 import { esc, avatar, toast } from './utils.js';
-
-const CHANNELS = [
-  { id: 'general', label: '📢 團隊大廳', desc: '全組日常協作與公告交流' },
-  { id: 'field',   label: '🚲 外勤連線', desc: '即時路況、場站支援、外勤連線' },
-  { id: 'lounge',  label: '☕ 摸魚茶水間', desc: '美食、下午茶揪團、輕鬆閒聊' },
-];
 
 const QUICK_PHRASES = [
   '🚲 出發巡檢！',
@@ -22,7 +16,6 @@ const REACTION_EMOJIS = ['👍', '❤️', '😂', '🔥', '🙏'];
 
 let drawerOpen = false;
 let isMaximized = false;
-let activeChannel = 'general';
 let replyTarget = null; // { id, authorName, text }
 let pendingImageData = '';
 let lastReadTime = Number(localStorage.getItem('yb_chat_last_read') || 0);
@@ -136,10 +129,9 @@ function renderChatSystem() {
     return;
   }
 
-  const msgs = state.chatMessages.filter(m => (m.channel || 'general') === activeChannel);
+  const msgs = state.chatMessages;
   const users = activeUsers();
   const uid = myUid();
-  const chObj = CHANNELS.find(c => c.id === activeChannel) || CHANNELS[0];
 
   rootEl.innerHTML = `
     <div class="chat-drawer-backdrop open ${isMaximized ? 'show' : ''}" data-close-backdrop></div>
@@ -148,8 +140,8 @@ function renderChatSystem() {
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:18px">💬</span>
           <div>
-            <strong style="font-size:14.5px">經營 Team 即時聊天室</strong>
-            <div class="muted" style="font-size:11px">${esc(chObj.desc)}</div>
+            <strong style="font-size:14.5px">經營 Team 即時聊天大廳</strong>
+            <div class="muted" style="font-size:11px">全組日常協作、外勤連線與輕鬆交流</div>
           </div>
         </div>
         <div style="display:flex;gap:4px;align-items:center">
@@ -158,25 +150,12 @@ function renderChatSystem() {
         </div>
       </div>
 
-      <!-- 頻道切換列 -->
-      <div class="chat-channels-bar">
-        ${CHANNELS.map(c => {
-          const count = state.chatMessages.filter(m => (m.channel || 'general') === c.id).length;
-          return `
-            <button class="chat-ch-tab ${c.id === activeChannel ? 'active' : ''}" data-ch="${c.id}">
-              <span>${c.label}</span>
-              <span class="chat-ch-count">${count}</span>
-            </button>
-          `;
-        }).join('')}
-      </div>
-
       <!-- 訊息列表區 -->
       <div class="chat-body" id="chat-scroll-box">
         ${msgs.length === 0 ? `
           <div class="muted" style="text-align:center;padding:48px 16px;font-size:13px">
             <div style="font-size:32px;margin-bottom:8px">🚲</div>
-            「${esc(chObj.label)}」目前還沒有訊息，發送第一句招呼或貼圖熱絡一下吧！
+            聊天大廳目前還沒有訊息，發送第一句招呼或貼圖熱絡一下吧！
           </div>
         ` : msgs.map(m => {
           const mine = m.uid === uid;
@@ -271,14 +250,6 @@ function renderChatSystem() {
     renderChatSystem();
   };
 
-  // 切換頻道
-  rootEl.querySelectorAll('[data-ch]').forEach(btn => {
-    btn.onclick = () => {
-      activeChannel = btn.dataset.ch;
-      renderChatSystem();
-    };
-  });
-
   // 表情反應、回覆、刪除
   rootEl.querySelectorAll('[data-rx-msg]').forEach(btn => {
     btn.onclick = () => toggleChatReaction(btn.dataset.rxMsg, btn.dataset.rxEm);
@@ -321,7 +292,7 @@ function renderChatSystem() {
   rootEl.querySelectorAll('[data-quick-phrase]').forEach(btn => {
     btn.onclick = async () => {
       const phrase = btn.dataset.quickPhrase;
-      await sendChatMessage({ channel: activeChannel, text: phrase, replyTo: replyTarget });
+      await sendChatMessage({ channel: 'general', text: phrase, replyTo: replyTarget });
       replyTarget = null;
     };
   });
@@ -376,7 +347,7 @@ function renderChatSystem() {
       pendingImageData = '';
       replyTarget = null;
       await sendChatMessage({
-        channel: activeChannel,
+        channel: 'general',
         text,
         imageData: img,
         replyTo: rep,
