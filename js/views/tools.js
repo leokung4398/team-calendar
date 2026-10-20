@@ -237,7 +237,6 @@ const DEFAULT_BOOKMARKS = [
   { id: 'bm_3', title: '台鐵列車時刻／誤點即時查詢', url: 'https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime', tag: '交通時刻', icon: '🚆', builtinTab: 'rail' },
   { id: 'bm_4', title: '台灣高鐵時刻表與票價查詢', url: 'https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c', tag: '交通時刻', icon: '🚄', builtinTab: 'rail' },
   { id: 'bm_5', title: '1968 高速公路即時路況影像', url: 'https://1968.freeway.gov.tw/', tag: '外勤路況', icon: '🛣️', builtinTab: 'freeway' },
-  { id: 'bm_6', title: '微笑單車採購電子佈告欄', url: 'https://leokung4398.github.io/procurement-board/', tag: '內部系統', icon: '📢', builtinTab: 'bulletin' },
 ];
 
 let weatherCache = new Map();
@@ -341,21 +340,20 @@ export function mountTools(el) {
       <div class="toolbar" style="margin-bottom:10px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <h2 class="view-title" style="margin:0">🧰 實用小工具百寶箱</h2>
-          <span class="info-pill-tip" data-tip="已將 6 大常用系統直接內建於本頁！免跳出外部網站即可直接查詢全台 YouBike 2.0/2.0E 車位、氣象署即時雷達迴波、高鐵/台鐵票價與車程、1968 國道即時路況，以及內嵌採購佈告欄">ⓘ 操作提示</span>
+          <span class="info-pill-tip" data-tip="已將常用系統直接內建於本頁！免跳出外部網站即可直接查詢全台 YouBike 2.0/2.0E 車位、氣象署即時雷達與 Windy 颱風動態、高鐵/台鐵票價與車程、以及 1968 國道即時路況">ⓘ 操作提示</span>
         </div>
         <div class="toolbar-end">
           <button class="btn primary sm" data-add-bm>＋ 新增常用網站捷徑</button>
         </div>
       </div>
 
-      <!-- 頂部 6 大常用系統內建切換導覽列 -->
+      <!-- 頂部常用系統內建切換導覽列 -->
       <div class="tools-sys-nav">
         <button type="button" class="tools-sys-tab ${activeSubTab === 'all' ? 'active' : ''}" data-sys-tab="all">✨ 全部工具總覽</button>
         <button type="button" class="tools-sys-tab ${activeSubTab === 'youbike' ? 'active' : ''}" data-sys-tab="youbike">🚲 YouBike 場站即時查</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'weather' ? 'active' : ''}" data-sys-tab="weather">🌦️ 氣象署雷達＆鄉鎮預報</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'weather' ? 'active' : ''}" data-sys-tab="weather">🌦️ 氣象署雷達＆颱風動態</button>
         <button type="button" class="tools-sys-tab ${activeSubTab === 'rail' ? 'active' : ''}" data-sys-tab="rail">🚄 高鐵／🚆 台鐵時刻票價</button>
         <button type="button" class="tools-sys-tab ${activeSubTab === 'freeway' ? 'active' : ''}" data-sys-tab="freeway">🛣️ 1968 國道即時路況</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'bulletin' ? 'active' : ''}" data-sys-tab="bulletin">📢 微笑單車採購佈告欄</button>
         <button type="button" class="tools-sys-tab ${activeSubTab === 'calc' ? 'active' : ''}" data-sys-tab="calc">🧮 差旅試算＆常用捷徑</button>
       </div>
 
@@ -691,31 +689,6 @@ export function mountTools(el) {
                 title="國道即時路況地圖"
               ></iframe>
             </div>
-          </div>
-        </div>
-        ` : ''}
-
-        ${showSection('bulletin') ? `
-        <!-- 系統 6：📢 微笑單車採購電子佈告欄（內建免跳轉即時看板） -->
-        <div class="card pad tools-builtin-card">
-          <div class="tools-card-header">
-            <div>
-              <h3 style="margin:0;font-size:16px">📢 微笑單車採購電子佈告欄（內嵌直覽）</h3>
-              <div class="muted tiny" style="margin-top:3px">免跳出小工具頁面，直接在此查閱最新採購電子週報、料件交期異動與營運處打卡</div>
-            </div>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <a href="#/bulletin" class="btn sm primary" style="text-decoration:none">🖥️ 切換至全螢幕佈告欄分頁</a>
-              <a href="https://leokung4398.github.io/procurement-board/admin" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">⚙️ 佈告欄管理後台 ↗</a>
-              <a href="https://leokung4398.github.io/procurement-board/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">另開新視窗 ↗</a>
-            </div>
-          </div>
-          <div style="border:1px solid #CBD5E1;border-radius:12px;overflow:hidden;height:${activeSubTab === 'bulletin' ? '680px' : '460px'};background:#F8FAFC">
-            <iframe
-              src="https://leokung4398.github.io/procurement-board/"
-              style="width:100%;height:100%;border:none;display:block"
-              loading="lazy"
-              title="微笑單車採購電子佈告欄"
-            ></iframe>
           </div>
         </div>
         ` : ''}
