@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ffc400">
   <title>經營 Team 營運協同平台</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23ffc400'/><text x='50' y='70' font-size='62' text-anchor='middle'>🚲</text></svg>">
-  <link rel="stylesheet" href="css/style.css?v=20261020v5">
+  <link rel="stylesheet" href="css/style.css?v=20261020v6">
   <!-- 月曆元件（CDN，不需 npm） -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js" defer></script>
   <script>
@@ -22,8 +22,8 @@
     window.addEventListener('unhandledrejection', function(e) {
       var d = document.getElementById('app');
       var r = String((e.reason && (e.reason.stack || e.reason.message)) || e.reason || '');
-      if (r.indexOf('does not provide an export') !== -1 && !sessionStorage.getItem('_reloaded_mod_v8')) {
-        sessionStorage.setItem('_reloaded_mod_v8', '1');
+      if (r.indexOf('does not provide an export') !== -1 && !sessionStorage.getItem('_reloaded_mod_v9')) {
+        sessionStorage.setItem('_reloaded_mod_v9', '1');
         location.reload();
         return;
       }
@@ -35,6 +35,6 @@
   <div id="app"><div class="boot">載入中…</div></div>
   <div id="modal-root"></div>
   <div id="toast-root"></div>
-  <script type="module" src="js/app.js?v=20261020v5"></script>
+  <script type="module" src="js/app.js?v=20261020v6"></script>
 </body>
 </html>

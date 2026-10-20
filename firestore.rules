@@ -10,22 +10,34 @@ service cloud.firestore {
     // ---------- 共用函式 ----------
     function signedIn() { return request.auth != null; }
 
-    // 只允許公司網域且列於經營 Team 白名單之帳號（若有修改，請同步修改 js/config.js）
+    // 允許預設白名單同仁，或已建立使用者檔案/已由管理員預建授權（user_<prefix>）之公司網域帳號
+    function preseededPathByEmail(email) {
+      let prefix = email.lower().split('@')[0];
+      return /databases/$(database)/documents/users/$('user_' + prefix);
+    }
+    function isDefaultWhitelist(email) {
+      return email.lower() in [
+        'leokung@youbike.com.tw',
+        'chuehhaoyeh@youbike.com.tw',
+        'yichunlu@youbike.com.tw',
+        'joshchang@youbike.com.tw',
+        'benlai@youbike.com.tw',
+        'ciaopao@youbike.com.tw',
+        'aidpanchen@youbike.com.tw',
+        'sunnyting@youbike.com.tw',
+        'jackhsiao@youbike.com.tw',
+        'jhsu@youbike.com.tw'
+      ];
+    }
     function isCompany() {
       return signedIn()
         && request.auth.token.email_verified == true
-        && request.auth.token.email.lower() in [
-          'leokung@youbike.com.tw',
-          'chuehhaoyeh@youbike.com.tw',
-          'yichunlu@youbike.com.tw',
-          'joshchang@youbike.com.tw',
-          'benlai@youbike.com.tw',
-          'ciaopao@youbike.com.tw',
-          'aidpanchen@youbike.com.tw',
-          'sunnyting@youbike.com.tw',
-          'jackhsiao@youbike.com.tw',
-          'jhsu@youbike.com.tw'
-        ];
+        && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$')
+        && (
+          isDefaultWhitelist(request.auth.token.email) ||
+          exists(userPath(request.auth.uid)) ||
+          exists(preseededPathByEmail(request.auth.token.email))
+        );
     }
 
     function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
@@ -69,32 +81,40 @@ service cloud.firestore {
 
     // ---------- 使用者 ----------
     match /users/{uid} {
-      allow get: if isCompany() && request.auth.uid == uid;
+      // 允許讀取自己的檔案，或讀取與自己 Email 對應的預建檔案（user_<prefix>）以進行自動認領
+      allow get: if signedIn() && request.auth.token.email.lower().matches('.*@youbike\\.com\\.tw$')
+        && (request.auth.uid == uid || uid == ('user_' + request.auth.token.email.lower().split('@')[0]) || (hasProfile() && me().active == true));
       allow list: if isCompany() && hasProfile() && me().active == true
         && resource.data.groupId == me().groupId;
 
-      // 第一次登入建立自己的資料；只有在系統尚未初始化時，才能以 admin 身分建立
-      allow create: if isCompany() && request.auth.uid == uid
-        && request.resource.data.uid == uid
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.active == true
-        && request.resource.data.groupId == 'default'
-        && (request.resource.data.role == 'member'
-            || (request.resource.data.role == 'admin'
-                && !exists(/databases/$(database)/documents/config/app)
-                && existsAfter(/databases/$(database)/documents/config/app)));
+      // 1. 本人第一次登入建立自己的資料（含認領預建角色）；或 2. 管理員於後台預建新進組員（isPreseeded == true）
+      allow create: if (isCompany() && request.auth.uid == uid
+                        && request.resource.data.uid == uid
+                        && request.resource.data.email.lower() == request.auth.token.email.lower()
+                        && request.resource.data.active == true
+                        && request.resource.data.groupId == 'default'
+                        && request.resource.data.role in ['member', 'admin'])
+                    || (isAdmin('default')
+                        && request.resource.data.isPreseeded == true
+                        && request.resource.data.groupId == 'default'
+                        && request.resource.data.role in ['member', 'admin']
+                        && request.resource.data.active == true);
 
-      // 本人只能改顯示名稱/大頭貼/已讀時間；管理員可改角色、職位與啟用狀態
+      // 本人可同步基本欄位；管理員可改角色、職位、姓名、工作性質與啟用狀態
       allow update: if (isCompany() && request.auth.uid == uid
-                        && onlyChanged(['displayName', 'photoURL', 'lastSeenActivityAt', 'role'])
+                        && onlyChanged(['displayName', 'photoURL', 'lastSeenActivityAt', 'role', 'staffType', 'title'])
                         && request.resource.data.role in ['admin', 'member'])
                     || (isAdmin(resource.data.groupId)
-                        && onlyChanged(['role', 'title', 'active', 'deactivatedAt'])
+                        && onlyChanged(['displayName', 'email', 'role', 'title', 'staffType', 'active', 'deactivatedAt', 'isPreseeded'])
                         && request.resource.data.role in ['admin', 'member']
                         && request.resource.data.active is bool
                         && validDeactivatedAt());
-      // 停用滿 90 天才允許刪除；或預建帳號（isPreseeded == true）允許管理員隨時清理
-      allow delete: if purgeable(uid) || (isAdmin(resource.data.groupId) && resource.data.isPreseeded == true);
+      // 停用滿 90 天才允許刪除；或預建帳號（isPreseeded == true）允許管理員隨時移除、或由本人首次登入認領時自動清理
+      allow delete: if purgeable(uid)
+        || (resource.data.isPreseeded == true && (
+              isAdmin(resource.data.groupId) ||
+              (signedIn() && resource.data.email.lower() == request.auth.token.email.lower())
+           ));
 
       // 個人通知
       match /notifications/{nid} {

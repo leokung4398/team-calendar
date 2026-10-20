@@ -3,7 +3,7 @@ import { APP, DEFAULT_TYPES } from './config.js';
 import { auth, db, provider } from './firebase.js';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js';
 import {
-  doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, orderBy, limit,
+  doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit,
   onSnapshot, writeBatch, serverTimestamp,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js';
 import { dateRangeText, periodShort } from './schedule.js';
@@ -79,9 +79,11 @@ export function activeUsers() {
     });
 }
 
-/** 判斷組員是否為常態外勤性質（嚴格限定：孔令淳、葉爵豪、陸逸群 三位） */
+/** 判斷組員是否為常態外勤性質（支援後台設定 staffType === 'field'，或預設孔令淳、葉爵豪、陸逸群三位） */
 export function isFieldStaff(u) {
   if (!u) return false;
+  if (u.staffType === 'field') return true;
+  if (u.staffType === 'office') return false;
   const name = u.displayName || '';
   return ['孔令淳', '葉爵豪', '陸逸群'].some(n => name.includes(n));
 }
@@ -120,20 +122,20 @@ export function isSystemDesigner(u) {
   return isHiddenAdmin(u) || u.role === 'admin';
 }
 
-/** 判斷組員是否為需每日下班回報之內勤組員（排除 3 位外勤品管與代理副理） */
+/** 判斷組員是否為需每日下班回報之內勤組員（排除外勤品管與代理副理） */
 export function isOfficeReporter(u) {
   if (!u || !u.active) return false;
   if (isFieldStaff(u) || isSupervisor(u)) return false;
   return true;
 }
 
-/** 判斷組員是否為需每日下班回報之同仁（6 位內勤 ＋ 3 位外勤品管，僅排除代理副理 徐嘉鴻） */
+/** 判斷組員是否為需每日下班回報之同仁（內勤 ＋ 外勤品管，僅排除代理副理 徐嘉鴻） */
 export function isDailyReporter(u) {
   if (!u || !u.active) return false;
   return !isSupervisor(u);
 }
 
-/** 判斷組員是否免輪值會議紀錄人（主管：徐嘉鴻；外勤：孔令淳、葉爵豪、陸逸群） */
+/** 判斷組員是否免輪值會議紀錄人（主管：徐嘉鴻；外勤品管同仁） */
 export function isExcludedFromRecorder(u) {
   if (!u) return false;
   return isSupervisor(u) || isFieldStaff(u);
@@ -141,13 +143,21 @@ export function isExcludedFromRecorder(u) {
 
 export const canEdit = ev => !!ev && (ev.ownerUid === myUid() || isAdmin());
 
+/** 檢查是否屬於公司允許的網域（@youbike.com.tw） */
+export function isCompanyDomainEmail(email) {
+  const e = String(email || '').toLowerCase().trim();
+  return APP.allowedDomains.some(d => e.endsWith('@' + d));
+}
+
 export function isAllowedEmail(email) {
   const e = String(email || '').toLowerCase().trim();
-  if (!APP.allowedDomains.some(d => e.endsWith('@' + d))) return false;
-  if (APP.whitelistEmails && APP.whitelistEmails.length > 0) {
-    return APP.whitelistEmails.includes(e);
+  if (!isCompanyDomainEmail(e)) return false;
+  if (APP.whitelistEmails && APP.whitelistEmails.includes(e)) return true;
+  // 若記憶體中已載入該 Email（例如後台動態新增的組員），亦視為授權通過
+  for (const u of state.users.values()) {
+    if (String(u.email || '').toLowerCase().trim() === e) return true;
   }
-  return true;
+  return false;
 }
 
 // ---------------- 登入 ----------------
@@ -159,14 +169,16 @@ export async function logout() {
   await signOut(auth);
 }
 
-/** 取得（或建立）自己的使用者資料；第一位登入者自動成為管理員 */
+/** 取得（或建立）自己的使用者資料；支援後台預先建檔（user_<prefix>）於首次登入時自動無縫認領 */
 export async function ensureProfile(u) {
-  if (!isAllowedEmail(u.email)) {
+  const cleanEmail = String(u.email || '').toLowerCase().trim();
+  if (!isCompanyDomainEmail(cleanEmail)) {
     throw new Error('not-in-whitelist');
   }
   if (demo) return demo.ensureProfile(u);
+
   const ref = doc(db, 'users', u.uid);
-  const profile = { displayName: u.displayName || u.email.split('@')[0], photoURL: u.photoURL || '' };
+  const profile = { displayName: u.displayName || cleanEmail.split('@')[0], photoURL: u.photoURL || '' };
   const snap = await getDoc(ref);
   if (snap.exists()) {
     const d = snap.data();
@@ -176,11 +188,11 @@ export async function ensureProfile(u) {
       patch.photoURL = profile.photoURL;
     }
     // 隱藏管理員（孔令淳）表面角色自動設為 'member'（組員），將顯性管理員交接予副理
-    if (isHiddenAdmin({ ...d, ...profile, email: u.email }) && d.role !== 'member') {
+    if (isHiddenAdmin({ ...d, ...profile, email: cleanEmail }) && d.role !== 'member') {
       patch.role = 'member';
     }
     // 代理副理（徐嘉鴻）自動確保具備顯性 'admin'（管理員）角色
-    if (isSupervisor({ ...d, ...profile, email: u.email }) && d.role !== 'admin') {
+    if (isSupervisor({ ...d, ...profile, email: cleanEmail }) && d.role !== 'admin') {
       patch.role = 'admin';
     }
     if (Object.keys(patch).length > 0) {
@@ -190,26 +202,42 @@ export async function ensureProfile(u) {
     return d;
   }
 
-  // 檢查是否有預建的同名/同 Email 資料（例如先前系統預先建檔的職位）
-  let preTitle = '';
-  let preseededDocId = null;
+  // 檢查是否有管理員於後台預建的同 Email 資料（user_<帳號前綴>）
+  const prefix = cleanEmail.split('@')[0];
+  const preseededId = 'user_' + prefix;
+  let preData = null;
+  let preseededDocRef = null;
   try {
-    const preDocRef = doc(db, 'users', 'user_' + u.email.split('@')[0]);
+    const preDocRef = doc(db, 'users', preseededId);
     const preSnap = await getDoc(preDocRef);
     if (preSnap.exists() && preSnap.data().isPreseeded) {
-      preTitle = preSnap.data().title || '';
-      preseededDocId = preDocRef;
+      preData = preSnap.data();
+      preseededDocRef = preDocRef;
     }
   } catch (err) {
     console.warn('check preseeded user error:', err);
   }
 
+  // 若既不在預設白名單內，且管理員也未在後台預先建檔，則拒絕登入
+  if (!preData && !isAllowedEmail(cleanEmail)) {
+    throw new Error('not-in-whitelist');
+  }
+
   const base = {
-    uid: u.uid, email: u.email, ...profile,
-    title: preTitle,
-    groupId: G, role: 'member', active: true,
-    createdAt: serverTimestamp(), lastSeenActivityAt: serverTimestamp(),
+    uid: u.uid,
+    email: cleanEmail,
+    // 優先保留管理員預先建檔時設定的中文姓名，但同步 Google 頭像
+    displayName: (preData?.displayName && preData.displayName.trim()) ? preData.displayName.trim() : profile.displayName,
+    photoURL: profile.photoURL || preData?.photoURL || '',
+    title: preData?.title || '',
+    staffType: preData?.staffType || (['孔令淳', '葉爵豪', '陸逸群'].some(n => (preData?.displayName || profile.displayName).includes(n)) ? 'field' : 'office'),
+    groupId: G,
+    role: preData?.role === 'admin' ? 'admin' : 'member',
+    active: preData?.active !== false,
+    createdAt: preData?.createdAt || serverTimestamp(),
+    lastSeenActivityAt: serverTimestamp(),
   };
+
   const cfg = await getDoc(doc(db, 'config', 'app'));
   if (!cfg.exists()) {
     try {
@@ -218,19 +246,48 @@ export async function ensureProfile(u) {
       b.set(doc(db, 'config', 'app'), { bootstrappedBy: u.uid, createdAt: serverTimestamp() });
       b.set(groupDoc(), { name: APP.groupName, createdAt: serverTimestamp() });
       DEFAULT_TYPES.forEach((t, i) => b.set(groupDoc('eventTypes', t.id), { name: t.name, color: t.color, order: i, active: true }));
-      if (preseededDocId) b.delete(preseededDocId);
+      if (preseededDocRef) b.delete(preseededDocRef);
       await b.commit();
       return { ...base, role: 'admin' };
     } catch (e) {
       console.warn('初始化管理員失敗，改以一般組員加入', e);
     }
   }
-  
-  if (preseededDocId) {
+
+  if (preseededDocRef) {
     const b = writeBatch(db);
     b.set(ref, base);
-    b.delete(preseededDocId);
+    b.delete(preseededDocRef);
     await b.commit();
+    // 嘗試將預建 ID 的模組權限與自訂排序無縫轉移至正式 uid
+    try {
+      const permRef = groupDoc('settings', 'permissions');
+      const permSnap = await getDoc(permRef);
+      if (permSnap.exists() && permSnap.data()?.[preseededId]) {
+        const permData = { ...permSnap.data() };
+        permData[u.uid] = permData[preseededId];
+        delete permData[preseededId];
+        await setDoc(permRef, permData);
+      }
+      const meetRef = groupDoc('settings', 'meeting');
+      const meetSnap = await getDoc(meetRef);
+      if (meetSnap.exists()) {
+        const mData = meetSnap.data();
+        let changed = false;
+        const patch = {};
+        if (Array.isArray(mData.userOrder) && mData.userOrder.includes(preseededId)) {
+          patch.userOrder = mData.userOrder.map(id => (id === preseededId ? u.uid : id));
+          changed = true;
+        }
+        if (Array.isArray(mData.rotationOrder) && mData.rotationOrder.includes(preseededId)) {
+          patch.rotationOrder = mData.rotationOrder.map(id => (id === preseededId ? u.uid : id));
+          changed = true;
+        }
+        if (changed) await setDoc(meetRef, patch, { merge: true });
+      }
+    } catch (migErr) {
+      console.warn('preseeded settings migration skipped:', migErr);
+    }
   } else {
     await setDoc(ref, base);
   }
@@ -458,6 +515,70 @@ export function updateUserAdmin(uid, patch) {
   // 停用時記錄停用時間（伺服器時間），重新啟用時清除
   if ('active' in patch) patch = { ...patch, deactivatedAt: patch.active ? null : serverTimestamp() };
   return updateDoc(doc(db, 'users', uid), patch);
+}
+
+/**
+ * 供管理員於後台「新增組員（預先授權建檔）」：
+ * - 自動正規化 Email（轉小寫、去空白、若僅填帳號自動補齊 @youbike.com.tw）
+ * - 防呆檢查是否與既有組員 Email 重複
+ * - 建立 `users/user_<prefix>`（標記 `isPreseeded: true`），待新人首次登入時自動無縫認領
+ */
+export async function createPreseededUser({ displayName, email, title = '', staffType = 'office', role = 'member' }) {
+  if (!isAdmin()) throw new Error('只有管理員可以新增組員');
+  const cleanName = String(displayName || '').trim();
+  if (!cleanName) throw new Error('請輸入新進組員姓名');
+
+  let cleanEmail = String(email || '').toLowerCase().trim();
+  if (!cleanEmail) throw new Error('請輸入公司 Email 帳號');
+  if (!cleanEmail.includes('@')) {
+    cleanEmail = `${cleanEmail}@${APP.allowedDomains[0]}`;
+  }
+  if (!isCompanyDomainEmail(cleanEmail)) {
+    throw new Error(`Email 必須為公司網域（@${APP.allowedDomains.join(' 或 @')}）`);
+  }
+
+  const prefix = cleanEmail.split('@')[0].replace(/[^a-z0-9._-]/g, '');
+  if (!prefix) throw new Error('Email 帳號格式不正確');
+
+  // 檢查是否已存在相同 Email 的組員
+  for (const existing of state.users.values()) {
+    if (String(existing.email || '').toLowerCase().trim() === cleanEmail) {
+      throw new Error(`此 Email（${cleanEmail}）已在組員名單中（${existing.displayName}）`);
+    }
+  }
+
+  const preUid = `user_${prefix}`;
+  const payload = {
+    uid: preUid,
+    displayName: cleanName,
+    email: cleanEmail,
+    title: String(title || '').trim(),
+    staffType: staffType === 'field' ? 'field' : 'office',
+    role: role === 'admin' ? 'admin' : 'member',
+    groupId: G,
+    active: true,
+    isPreseeded: true,
+    photoURL: '',
+  };
+
+  if (demo) {
+    return demo.createPreseededUser(payload);
+  }
+
+  await setDoc(doc(db, 'users', preUid), {
+    ...payload,
+    createdAt: serverTimestamp(),
+  });
+  return payload;
+}
+
+/** 供管理員刪除尚未登入認領的預建組員資料（例如建錯帳號時直接清理） */
+export async function deletePreseededUser(uid) {
+  if (!isAdmin()) throw new Error('只有管理員可以移除預建組員');
+  const u = state.users.get(uid);
+  if (!u || !u.isPreseeded) throw new Error('僅能直接移除尚未登入認領的預建組員');
+  if (demo) return demo.deletePreseededUser(uid);
+  await deleteDoc(doc(db, 'users', uid));
 }
 
 /** 停用滿 purgeAfterDays 天的組員資料到期日（毫秒），未停用則回傳 null */

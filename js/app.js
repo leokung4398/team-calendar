@@ -21,19 +21,14 @@ if (!isConfigured) {
 
 async function boot() {
   const data = await import('./data.js');
-  const { watchAuth, login, logout, ensureProfile, isAllowedEmail, startSync, ensureEventsFrom, state, onChange } = data;
+  const { watchAuth, login, logout, ensureProfile, isCompanyDomainEmail, startSync, ensureEventsFrom, state, onChange } = data;
 
   let started = false;
   watchAuth(async user => {
     if (!user) { started = false; return showLogin(); }
-    if (!isAllowedEmail(user.email)) {
+    if (!isCompanyDomainEmail(user.email)) {
       await logout();
-      const isCompanyDomain = APP.allowedDomains.some(d => (user.email || '').toLowerCase().endsWith('@' + d));
-      if (!isCompanyDomain) {
-        return showLogin(`請使用 @${APP.allowedDomains[0]} 公司帳號登入（目前為 ${user.email}）`);
-      } else {
-        return showLogin(`此平台僅限經營 Team 同仁存取，您的帳號（${user.email}）不在授權名單中。如需權限請洽管理員。`);
-      }
+      return showLogin(`請使用 @${APP.allowedDomains[0]} 公司帳號登入（目前為 ${user.email}）`);
     }
     if (started) return;
     app.innerHTML = `<div class="boot">${yb.wheelSpinner(44)}<span>登入中…</span></div>`;
@@ -51,10 +46,10 @@ async function boot() {
     } catch (e) {
       console.error(e);
       if (e.message === 'not-in-whitelist') {
-        showLogin(`此平台僅限經營 Team 同仁存取，您的帳號（${user.email}）不在授權名單中。如需權限請洽管理員。`);
+        showLogin(`此平台僅限經營 Team 同仁存取，您的帳號（${user.email}）不在授權名單中。如需權限請洽管理員於後台「＋ 新增組員」預先建檔。`);
       } else {
         showLogin(e.code === 'permission-denied'
-          ? '沒有存取權限：請確認使用公司帳號，或聯絡管理員。'
+          ? '沒有存取權限：請確認使用公司帳號，或請管理員於後台「＋ 新增組員」建檔授權。'
           : '登入時發生錯誤：' + (e.code || e.message));
       }
       await logout().catch(() => {});

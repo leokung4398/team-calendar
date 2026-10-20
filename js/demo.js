@@ -405,6 +405,18 @@ export function createDemoBackend(state, emit, describeEvent) {
       state.users = new Map(state.users).set(uid, { ...state.users.get(uid), ...patch });
       emit();
     },
+    async createPreseededUser(payload) {
+      const u = { ...payload, createdAt: ts(Date.now()) };
+      state.users = new Map(state.users).set(u.uid, u);
+      emit();
+      return u;
+    },
+    async deletePreseededUser(uid) {
+      const m = new Map(state.users);
+      m.delete(uid);
+      state.users = m;
+      emit();
+    },
     async purgeExpiredUsers() {
       const limit = Date.now() - APP.purgeAfterDays * DAY;
       const gone = [...state.users.values()].filter(u => !u.active && u.deactivatedAt && u.deactivatedAt.toMillis() < limit);

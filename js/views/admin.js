@@ -1,6 +1,6 @@
 // 管理後台：組員名單、行程類型、業務模組權限
 import {
-  state, myUid, isAdmin, isHiddenAdmin, isSupervisor, updateUserAdmin, saveType, purgeDueAt,
+  state, myUid, isAdmin, isHiddenAdmin, isSupervisor, updateUserAdmin, createPreseededUser, deletePreseededUser, saveType, purgeDueAt,
   saveMeetingSettings, activeUsers, isFieldStaff, isExcludedFromRecorder,
   getEffectiveLastRecorderUid, hasModulePermission, saveUserModulePermission,
   batchUpdateModulePermission
@@ -39,11 +39,16 @@ export function mountAdmin(el) {
     <!-- 系統組員與基本設定面板 -->
     <div class="admin-panel" data-panel="system">
       <section class="card pad">
-        <div class="section-head">
+        <div class="section-head" style="flex-wrap:wrap; gap:10px;">
           <h3>組員名單</h3>
-          <label class="field check small-text"><input type="checkbox" data-show-inactive> 顯示已停用 <span data-inactive-count></span></label>
+          <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
+            <label class="field check small-text" style="margin:0;"><input type="checkbox" data-show-inactive> 顯示已停用 <span data-inactive-count></span></label>
+            <button type="button" class="btn primary small" data-add-user style="display:inline-flex; align-items:center; gap:5px; font-weight:600; padding:6px 12px;">
+              <span>＋</span><span>新增組員</span>
+            </button>
+          </div>
         </div>
-        <p class="hint">公司網域帳號第一次登入後會自動加入。停用後該組員無法登入、從名單隱藏，<b>停用滿 ${APP.purgeAfterDays} 天未重新啟用將自動刪除</b>（過去的行程保留，顯示為「已離職組員」）。</p>
+        <p class="hint">新人入職時可點擊右上角「<b>＋ 新增組員</b>」預先授權建檔（設定姓名、公司 Email、職稱與內/外勤工作性質），新人首次使用公司 Google 帳號登入後將<b>自動無縫認領</b>。停用後該組員無法登入、從名單隱藏，<b>停用滿 ${APP.purgeAfterDays} 天未重新啟用將自動刪除</b>（過去的行程保留，顯示為「已離職組員」）。</p>
         <div class="table-scroll"><table class="table" data-users></table></div>
       </section>
       <section class="card pad">
@@ -106,7 +111,7 @@ export function mountAdmin(el) {
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📝</span>
-            <b>每日回報</b>：<span class="muted">全組 9 人內外勤回報（內勤工作進度全組公開共享；外勤三問回報僅代理副理 徐嘉鴻、代理人 包于巧 與本人可見）</span>
+            <b>每日回報</b>：<span class="muted">全組內外勤回報（內勤工作進度全組公開共享；外勤三問回報僅代理副理 徐嘉鴻、代理人 包于巧 與本人可見）</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
             <span style="font-size:14px;">📢</span>
@@ -153,6 +158,106 @@ export function mountAdmin(el) {
     achieveBtn.onclick = () => openAchievementsModal();
   }
 
+  // 開啟「＋ 新增組員（預先授權建檔）」置中彈窗
+  function openAddUserModal() {
+    const root = document.getElementById('modal-root');
+    if (!root) return;
+    const domain = APP.allowedDomains?.[0] || 'youbike.com.tw';
+    root.innerHTML = `
+      <div class="modal-backdrop" data-add-user-backdrop>
+        <div class="modal" style="max-width:500px; width:94%;">
+          <div class="modal-head">
+            <h3 style="display:flex; align-items:center; gap:8px; margin:0;">
+              <span>👤</span><span>新增組員（新人入職預先建檔）</span>
+            </h3>
+            <button type="button" class="icon-btn" data-close-add-user aria-label="關閉">✕</button>
+          </div>
+          <form class="form" data-add-user-form style="padding:18px 20px;">
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#475569; line-height:1.55; margin-bottom:4px;">
+              💡 <b>防呆自動認領機制</b>：建檔後即自動開通該信箱登入白名單。新進同仁首次以 Google 帳號登入時，系統將<b>自動認領並繼承</b>下方設定的職位、內/外勤工作性質與權限，不會產生重複帳號。
+            </div>
+
+            <div class="row2">
+              <label class="field">
+                <span>組員姓名 <b style="color:#dc2626;">*</b></span>
+                <input type="text" name="displayName" required maxlength="20" placeholder="例：王小明" autofocus>
+              </label>
+              <label class="field">
+                <span>職位名稱</span>
+                <input type="text" name="title" maxlength="30" placeholder="例：經營企劃專員">
+              </label>
+            </div>
+
+            <label class="field">
+              <span>公司 Google 帳號 (Email) <b style="color:#dc2626;">*</b></span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <input type="text" name="emailInput" required placeholder="可輸入完整信箱或帳號前綴（例：mingwang）" style="flex:1;">
+                <span class="muted small-text" style="white-space:nowrap; background:#f1f5f9; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">@${esc(domain)}</span>
+              </div>
+              <small class="muted" style="font-size:11.5px;">系統會自動轉小寫、去除空白並檢查是否重複。</small>
+            </label>
+
+            <div class="row2">
+              <label class="field">
+                <span>工作性質（連動每日回報與輪值）</span>
+                <select name="staffType">
+                  <option value="office" selected>🏢 內勤同仁（公開進度回報 / 參與月會輪值）</option>
+                  <option value="field">🛵 外勤品管（三問縣市回報 / 免月會紀錄輪值）</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>系統權限</span>
+                <select name="role">
+                  <option value="member" selected>👤 組員（一般權限）</option>
+                  <option value="admin">⚙️ 管理員（後台設定權限）</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="modal-foot" style="padding:12px 0 0; margin-top:8px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
+              <button type="button" class="btn ghost" data-close-add-user>取消</button>
+              <button type="submit" class="btn primary" data-submit-add-user>＋ 確認新增組員</button>
+            </div>
+          </form>
+        </div>
+      </div>`;
+
+    const close = () => { root.innerHTML = ''; };
+    root.querySelectorAll('[data-close-add-user]').forEach(b => { b.onclick = close; });
+    root.querySelector('[data-add-user-backdrop]')?.addEventListener('click', e => {
+      if (e.target.hasAttribute('data-add-user-backdrop')) close();
+    });
+
+    const form = root.querySelector('[data-add-user-form]');
+    form?.addEventListener('submit', async e => {
+      e.preventDefault();
+      const submitBtn = form.querySelector('[data-submit-add-user]');
+      const displayName = form.displayName.value.trim();
+      const title = form.title.value.trim();
+      const rawEmail = form.emailInput.value.trim().toLowerCase();
+      const email = rawEmail.includes('@') ? rawEmail : `${rawEmail}@${domain}`;
+      const staffType = form.staffType.value;
+      const role = form.role.value;
+
+      if (!displayName) return toast('請輸入組員姓名', 'warn');
+      if (!rawEmail) return toast('請輸入公司 Email 帳號', 'warn');
+
+      submitBtn.disabled = true;
+      try {
+        const created = await createPreseededUser({ displayName, email, title, staffType, role });
+        toast(`已新增組員「${created.displayName}」（待首次登入自動啟用）`, 'success');
+        close();
+        render();
+      } catch (err) {
+        console.error(err);
+        toast(err.message || '新增失敗', 'error');
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  q('[data-add-user]')?.addEventListener('click', openAddUserModal);
+
   q('[data-users]').addEventListener('change', async e => {
     const tr = e.target.closest('tr[data-uid]');
     if (!tr) return;
@@ -161,6 +266,7 @@ export function mountAdmin(el) {
     let patch = {};
     if (e.target.name === 'role') patch.role = e.target.value;
     else if (e.target.name === 'title') patch.title = e.target.value.trim();
+    else if (e.target.name === 'staffType') patch.staffType = e.target.value;
     else if (e.target.name === 'active') patch.active = e.target.checked;
     else return;
 
@@ -171,6 +277,7 @@ export function mountAdmin(el) {
     try {
       await updateUserAdmin(uid, patch);
       toast('已更新', 'success');
+      render();
     } catch (err) {
       console.error(err);
       toast('更新失敗：' + (err.code || err.message), 'error');
@@ -179,6 +286,23 @@ export function mountAdmin(el) {
   });
 
   q('[data-users]').addEventListener('click', async e => {
+    const delPreBtn = e.target.closest('[data-delete-preseeded]');
+    if (delPreBtn) {
+      const uid = delPreBtn.dataset.deletePreseeded;
+      const u = state.users.get(uid);
+      if (!u) return;
+      const ok = await confirmDialog(`確定要移除尚未登入的預建組員 <b>${esc(u.displayName)}</b>（${esc(u.email)}）嗎？`, { danger: true, okText: '確認移除' });
+      if (!ok) return;
+      try {
+        await deletePreseededUser(uid);
+        toast(`已移除預建組員 ${u.displayName}`, 'info');
+        render();
+      } catch (err) {
+        toast('移除失敗：' + (err.code || err.message), 'error');
+      }
+      return;
+    }
+
     const upBtn = e.target.closest('[data-user-up]');
     const downBtn = e.target.closest('[data-user-down]');
     if (!upBtn && !downBtn) return;
@@ -285,6 +409,13 @@ export function mountAdmin(el) {
 
     const md = ms => { const d = new Date(ms); return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
     const statusCell = u => {
+      if (u.isPreseeded) {
+        return `
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <span class="badge-tag" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; font-size:11.5px; padding:2px 7px; border-radius:999px;" title="新人首次使用公司 Google 帳號登入後即自動認領啟用">⏳ 待首次登入</span>
+            <button type="button" class="btn small ghost" data-delete-preseeded="${esc(u.uid)}" title="移除此筆預建組員資料" style="padding:1px 6px; font-size:11px; color:#dc2626;">移除</button>
+          </div>`;
+      }
       if (u.active) return u.createdAt ? `加入 ${timeAgo(u.createdAt)}` : '';
       const due = purgeDueAt(u);
       if (!due) return '已停用';
@@ -293,11 +424,13 @@ export function mountAdmin(el) {
     };
     if (!editingUser) {
       q('[data-users]').innerHTML = `
-        <thead><tr><th style="width:72px; text-align:center;">順序</th><th>組員</th><th>職位</th><th>Email</th><th>系統權限</th><th>啟用</th><th>狀態</th></tr></thead>
+        <thead><tr><th style="width:72px; text-align:center;">順序</th><th>組員</th><th>職位</th><th>工作性質</th><th>Email</th><th>系統權限</th><th>啟用</th><th>狀態</th></tr></thead>
         <tbody>${users.map((u, i) => {
           const canReorder = u.active;
           const activeIdx = activeList.findIndex(x => x.uid === u.uid);
           const displayRole = isHiddenAdmin(u) ? 'member' : (isSupervisor(u) ? 'admin' : u.role);
+          const isField = isFieldStaff(u);
+          const isSuper = isSupervisor(u);
           return `
           <tr data-uid="${esc(u.uid)}" class="${u.active ? '' : 'inactive'}">
             <td style="text-align:center; white-space:nowrap;">
@@ -306,8 +439,16 @@ export function mountAdmin(el) {
                 <button type="button" class="btn icon small ghost" data-user-down="${activeIdx}" ${activeIdx === activeList.length - 1 ? 'disabled' : ''} title="往後移" style="padding:2px 4px; font-size:11px;">▼</button>
               ` : '<span class="muted small-text">-</span>'}
             </td>
-            <td><span class="person">${avatar(u, 28)}${esc(u.displayName)}${u.uid === me ? '<span class="me-tag">我</span>' : ''}${isFieldStaff(u) ? '<span class="member-field-tag">外勤</span>' : ''}</span></td>
-            <td><input type="text" name="title" value="${esc(u.title || '')}" placeholder="例：經營企劃專員" style="width:160px; font-size:13px; padding:4px 8px;"></td>
+            <td><span class="person">${avatar(u, 28)}${esc(u.displayName)}${u.uid === me ? '<span class="me-tag">我</span>' : ''}${isField ? '<span class="member-field-tag">外勤</span>' : ''}</span></td>
+            <td><input type="text" name="title" value="${esc(u.title || '')}" placeholder="例：經營企劃專員" style="width:155px; font-size:13px; padding:4px 8px;"></td>
+            <td>
+              ${isSuper ? `<span class="muted small-text">主管（免回報）</span>` : `
+                <select name="staffType" style="font-size:12.5px; padding:3px 6px;" title="切換內勤/外勤工作性質（連動每日回報與月會輪值）">
+                  <option value="office" ${!isField ? 'selected' : ''}>🏢 內勤</option>
+                  <option value="field" ${isField ? 'selected' : ''}>🛵 外勤</option>
+                </select>
+              `}
+            </td>
             <td class="muted">${esc(u.email)}</td>
             <td><select name="role" ${u.uid === me ? 'disabled title="無法變更自己的權限"' : ''}>
               <option value="member" ${displayRole === 'member' ? 'selected' : ''}>組員</option>
