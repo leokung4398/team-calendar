@@ -83,16 +83,15 @@ export function statusNow(uid, day, nowMin, events) {
   return { kind: current ? 'out' : 'office', current, upcoming, list };
 }
 
-/** 預計回辦公室文字 */
+/** 預計回辦公室文字（自動依時段結束時間判斷，>= 17:30 或整天則為今日不進辦公室） */
 export function returnText(ev, day, iv) {
-  if (ev.returnAt) {
-    const [d, t] = ev.returnAt.split('T');
-    return d === day ? `今天 ${t}` : `${fmtMD(d)}(${weekdayZh(d)}) ${t}`;
-  }
   if (ev.endDate > day) {
     return `${fmtMD(ev.endDate)}(${weekdayZh(ev.endDate)}) 行程結束`;
   }
-  if (iv && iv[1] < 1440 && ev.period !== 'full') return `約 ${minToHM(iv[1])}`;
+  const workEndMin = toMin(APP.periods.pm[1] || '17:30');
+  if (iv && iv[1] < workEndMin && ev.period !== 'full') {
+    return `約 ${minToHM(iv[1])} 後回辦`;
+  }
   return '今日不進辦公室';
 }
 

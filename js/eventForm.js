@@ -27,7 +27,6 @@ export function openEventViewer(ev) {
         ${row('日期', esc(dateRangeText(ev)))}
         ${row('時段', esc(periodText(ev)))}
         ${row('事由 / 備註', esc(ev.reason).replace(/\n/g, '<br>'))}
-        ${row('預計回辦公室', ev.returnAt ? esc(ev.returnAt.replace('T', ' ')) : '')}
       </dl>
       <p class="meta">最後修改：${esc(userName(ev.updatedBy))} ${ev.updatedAt ? '・' + timeAgo(ev.updatedAt) : ''}</p>
     </div>`;
@@ -86,6 +85,9 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
     ? `<label class="field"><span>組員 <em>*</em></span><select name="ownerUid">${users.map(u => `<option value="${esc(u.uid)}" ${u.uid === v.ownerUid ? 'selected' : ''}>${esc(u.displayName)}${u.uid === me ? '（我）' : ''}</option>`).join('')}</select><small class="hint">管理員可以代組員登記</small></label>`
     : `<div class="field"><span>組員</span><div class="static">${avatar(userOf(v.ownerUid), 22)} ${esc(userName(v.ownerUid))}</div><input type="hidden" name="ownerUid" value="${esc(v.ownerUid)}"></div>`;
 
+  const initSt = v.period === 'am' ? '08:30' : v.period === 'pm' ? '13:00' : (v.startTime || '08:30');
+  const initEt = v.period === 'am' ? '12:00' : v.period === 'pm' ? '17:30' : (v.endTime || '17:30');
+
   const body = `
   <form id="ev-form" class="form" novalidate>
     ${ownerField}
@@ -100,9 +102,9 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
     </div>
     <div class="field"><span>時段 <em>*</em></span>
       <div class="seg">${PERIODS.map(p => `<label><input type="radio" name="period" value="${p.id}" ${p.id === v.period ? 'checked' : ''}><span>${p.label}</span></label>`).join('')}</div>
-      <div class="row2 custom-times" ${v.period === 'custom' ? '' : 'hidden'}>
-        <label class="field"><span data-st>開始時間</span><input type="time" name="startTime" value="${esc(v.startTime || '08:30')}"></label>
-        <label class="field"><span data-et>結束時間</span><input type="time" name="endTime" value="${esc(v.endTime || '09:30')}"></label>
+      <div class="row2 custom-times" ${v.period === 'full' ? 'hidden' : ''} style="margin-top:8px">
+        <label class="field"><span data-st>開始時間</span><input type="time" name="startTime" value="${esc(initSt)}"></label>
+        <label class="field"><span data-et>結束時間</span><input type="time" name="endTime" value="${esc(initEt)}"></label>
       </div>
     </div>
     <label class="field"><span>事由 / 備註</span><textarea name="reason" rows="2" maxlength="500">${esc(v.reason)}</textarea></label>
@@ -111,7 +113,6 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
         <label class="chip-opt" data-uid="${esc(u.uid)}"><input type="checkbox" name="companionUids" value="${esc(u.uid)}" ${v.companionUids?.includes(u.uid) ? 'checked' : ''}><span>${esc(u.displayName)}</span></label>`).join('')}
       </div>
     </div>
-    <label class="field"><span>預計回辦公室時間</span><input type="datetime-local" name="returnAt" value="${esc(v.returnAt)}"></label>
     <p class="form-error" hidden></p>
   </form>`;
 
@@ -124,13 +125,32 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
   const form = $('#ev-form', m.el);
   const errEl = $('.form-error', form);
 
-  // 互動：時段切換、日期連動、排除登記人自己
-  const syncPeriod = () => {
-    const isCustom = form.period.value === 'custom';
-    $('.custom-times', form).hidden = !isCustom;
+  // 互動：時段切換（上午自動帶入 08:30-12:00、下午自動帶入 13:00-17:30，若手動改時間則自動切至自訂時段）、日期連動、排除登記人自己
+  const syncPeriod = (changedByRadio = false) => {
+    const p = form.period.value;
+    $('.custom-times', form).hidden = (p === 'full');
+    if (changedByRadio) {
+      if (p === 'am') {
+        form.startTime.value = '08:30';
+        form.endTime.value = '12:00';
+      } else if (p === 'pm') {
+        form.startTime.value = '13:00';
+        form.endTime.value = '17:30';
+      }
+    }
     const multi = form.startDate.value !== form.endDate.value;
     $('[data-st]', form).textContent = multi ? '首日開始時間' : '開始時間';
     $('[data-et]', form).textContent = multi ? '末日結束時間' : '結束時間';
+  };
+  const syncTimeEdited = () => {
+    const st = form.startTime.value;
+    const et = form.endTime.value;
+    const p = form.period.value;
+    if (p === 'am' && (st !== '08:30' || et !== '12:00')) {
+      form.period.value = 'custom';
+    } else if (p === 'pm' && (st !== '13:00' || et !== '17:30')) {
+      form.period.value = 'custom';
+    }
   };
   const syncOwner = () => {
     const o = form.ownerUid.value;
@@ -141,12 +161,13 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
     });
   };
   form.addEventListener('change', e => {
-    if (e.target.name === 'period') syncPeriod();
+    if (e.target.name === 'period') syncPeriod(true);
+    if (e.target.name === 'startTime' || e.target.name === 'endTime') syncTimeEdited();
     if (e.target.name === 'ownerUid') syncOwner();
     if (e.target.name === 'startDate' && form.endDate.value < form.startDate.value) form.endDate.value = form.startDate.value;
-    if (e.target.name === 'startDate' || e.target.name === 'endDate') syncPeriod();
+    if (e.target.name === 'startDate' || e.target.name === 'endDate') syncPeriod(false);
   });
-  syncPeriod();
+  syncPeriod(false);
   syncOwner();
 
   if (ev) $('[data-del]', m.el).onclick = async () => { if (await confirmAndDelete(ev)) m.close(); };
@@ -185,22 +206,27 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
 
 function readForm(form) {
   const fd = new FormData(form);
-  const period = fd.get('period');
+  let period = fd.get('period');
+  const st = fd.get('startTime') || '';
+  const et = fd.get('endTime') || '';
+  // 若選了上午或下午，但微調過時間，自動歸為自訂時段以保留精確區間
+  if (period === 'am' && (st !== '08:30' || et !== '12:00')) period = 'custom';
+  if (period === 'pm' && (st !== '13:00' || et !== '17:30')) period = 'custom';
   return {
     ownerUid: fd.get('ownerUid'),
     typeId: fd.get('typeId') || '',
     startDate: fd.get('startDate') || '',
     endDate: fd.get('endDate') || '',
     period,
-    startTime: period === 'custom' ? fd.get('startTime') || '' : '',
-    endTime: period === 'custom' ? fd.get('endTime') || '' : '',
+    startTime: period === 'custom' ? st : '',
+    endTime: period === 'custom' ? et : '',
     location: '',
     reason: (fd.get('reason') || '').trim(),
     phone: '',
     canAnswer: true,
     deputyUid: '',
     companionUids: fd.getAll('companionUids').filter(u => u !== fd.get('ownerUid')),
-    returnAt: fd.get('returnAt') || '',
+    returnAt: '',
   };
 }
 
@@ -210,7 +236,7 @@ function validate(d) {
   if (!d.startDate || !d.endDate) return '請填寫開始與結束日期';
   if (d.endDate < d.startDate) return '結束日期不可早於開始日期';
   if (d.period === 'custom') {
-    if (!d.startTime || !d.endTime) return '請填寫自訂時段的開始與結束時間';
+    if (!d.startTime || !d.endTime) return '請填寫開始與結束時間';
     if (d.startDate === d.endDate && d.endTime <= d.startTime) return '結束時間必須晚於開始時間';
   }
   return '';
