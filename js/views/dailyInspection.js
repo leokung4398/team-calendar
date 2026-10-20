@@ -148,34 +148,31 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
   const weekDayHeaders = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
 
   containerEl.innerHTML = `
-    <div class="daily-inspection-wrapper" style="display:flex; flex-direction:column; gap:16px;">
+    <div class="daily-inspection-wrapper" style="display:flex; flex-direction:column; gap:12px;">
       
-      <!-- 頂部規則導覽與行政說明橫幅 -->
-      <div class="card pad" style="background:linear-gradient(135deg, ${isNorth ? '#f0f9ff' : '#f0fdf4'} 0%, #ffffff 100%); border-left:4px solid ${isNorth ? '#0284c7' : '#16a34a'};">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-          <div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <span style="font-size:20px;">${isNorth ? '🧭' : '🌴'}</span>
-              <h3 style="margin:0; font-size:17px; color:#0f172a;">
-                ${isNorth ? '北區每日品管區域範圍' : '南區每日品管區域範圍'}（${yearNum} 年 ${monthNum} 月）
-              </h3>
-              <span class="badge-tag ${isNorth ? 'info' : 'ok'} small">${isNorth ? 'Leo & Hao 雙人協同' : '南部各縣市巡檢'}</span>
-            </div>
-            <p style="margin:6px 0 0 0; font-size:13px; color:#475569; line-height:1.5;">
-              📌 <b>出差申請單規則：</b>${esc(rules.tripForm || '雙北 3 日申請一張，其他區域連續 2 日申請一張')} ｜ 
-              🏢 <b>辦公室：</b>${esc(rules.office || '兩週一次、會議')}
-            </p>
+      <!-- 圖3 輕量化：頂部規則與行政區範圍（預設收合，點擊展開/收合） -->
+      <details class="card insp-collapsible-card" style="background:linear-gradient(135deg, ${isNorth ? '#f0f9ff' : '#f0fdf4'} 0%, #ffffff 100%); border-left:4px solid ${isNorth ? '#0284c7' : '#16a34a'}; padding:10px 16px;">
+        <summary class="insp-collapsible-summary">
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="font-size:18px;">${isNorth ? '🧭' : '🌴'}</span>
+            <h3 style="margin:0; font-size:15.5px; color:#0f172a;">
+              ${isNorth ? '北區每日品管區域範圍' : '南區每日品管區域範圍'}（${yearNum} 年 ${monthNum} 月）
+            </h3>
+            <span class="badge-tag ${isNorth ? 'info' : 'ok'} small">${isNorth ? 'Leo & Hao 雙人協同' : '南部各縣市巡檢'}</span>
+            <span class="insp-expand-hint">▸ 展開規則與行政區範圍</span>
           </div>
-
-          <div style="display:flex; gap:8px; align-items:center;">
-            <button class="btn primary small" data-save-daily-insp style="background:${isNorth ? '#0284c7' : '#16a34a'};">
+          <div style="display:flex; gap:8px; align-items:center;" onclick="event.stopPropagation()">
+            <button type="button" class="btn primary small" data-save-daily-insp style="background:${isNorth ? '#0284c7' : '#16a34a'};">
               💾 儲存${isNorth ? '北區' : '南區'}每日排程
             </button>
           </div>
-        </div>
+        </summary>
 
-        <!-- 區域分級速查標籤列（收合/展開） -->
-        <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1; font-size:12px; color:#334155;">
+        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; font-size:12.5px; color:#334155;">
+          <p style="margin:0 0 8px 0; color:#475569; line-height:1.5;">
+            📌 <b>出差申請單規則：</b>${esc(rules.tripForm || '雙北 3 日申請一張，其他區域連續 2 日申請一張')} ｜ 
+            🏢 <b>辦公室：</b>${esc(rules.office || '兩週一次、會議')}
+          </p>
           ${isNorth ? `
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
               <b style="color:#0284c7;">🏙️ 新北市區：</b>
@@ -205,7 +202,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
             </div>
           `}
         </div>
-      </div>
+      </details>
 
       <!-- 組員排程日曆卡片 (並排或分卡) -->
       ${members.map(m => {
@@ -216,33 +213,20 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
           <div class="daily-compare-card" data-member-key="${m.key}">
             <div class="daily-user-header">
               <div style="display:flex; align-items:center; gap:10px;">
-                <div style="width:36px; height:36px; border-radius:10px; background:${isNorth ? '#e0f2fe' : '#dcfce7'}; color:${isNorth ? '#0369a1' : '#15803d'}; font-weight:800; font-size:15px; display:flex; align-items:center; justify-content:center;">
+                <div style="width:32px; height:32px; border-radius:8px; background:${isNorth ? '#e0f2fe' : '#dcfce7'}; color:${isNorth ? '#0369a1' : '#15803d'}; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center;">
                   ${m.key}
                 </div>
                 <div>
-                  <h4 style="margin:0; font-size:15px; color:#1e293b;">${esc(m.name)}</h4>
-                  <span class="muted tiny">${esc(m.role)}</span>
+                  <h4 style="margin:0; font-size:14.5px; color:#1e293b;">${esc(m.name)}</h4>
                 </div>
               </div>
 
-              <!-- 個人當月出差與工作數據統計 -->
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <div class="sim-kpi-chip" style="background:#f8fafc; padding:4px 10px; border-radius:6px; border:1px solid #e2e8f0;">
-                  <span class="muted tiny" style="display:block;">雙北/在地巡檢</span>
-                  <b style="font-size:13px; color:#15803d;">${stats.localDays} 天</b>
-                </div>
-                <div class="sim-kpi-chip" style="background:#f8fafc; padding:4px 10px; border-radius:6px; border:1px solid #e2e8f0;">
-                  <span class="muted tiny" style="display:block;">外縣市出差</span>
-                  <b style="font-size:13px; color:#2563eb;">${stats.travelDays} 天</b>
-                </div>
-                <div class="sim-kpi-chip" style="background:#f8fafc; padding:4px 10px; border-radius:6px; border:1px solid #e2e8f0;">
-                  <span class="muted tiny" style="display:block;">辦公室/會議</span>
-                  <b style="font-size:13px; color:#475569;">${stats.officeDays} 天</b>
-                </div>
-                <div class="sim-kpi-chip" style="background:#fefce8; padding:4px 10px; border-radius:6px; border:1px solid #fef08a;">
-                  <span class="muted tiny" style="display:block; color:#854d0e;">建議出差申請單</span>
-                  <b style="font-size:13px; color:#b45309;">${stats.localTripForms} 張</b>
-                </div>
+              <!-- 輕量化單行統計膠囊 -->
+              <div class="compact-kpi-strip">
+                <span class="kpi-chip">雙北/在地 <b style="color:#15803d">${stats.localDays}</b>天</span>
+                <span class="kpi-chip">外縣市 <b style="color:#2563eb">${stats.travelDays}</b>天</span>
+                <span class="kpi-chip">進辦 <b style="color:#475569">${stats.officeDays}</b>天</span>
+                <span class="kpi-chip" style="background:#fefce8;border-color:#fef08a;color:#854d0e">建議出差單 <b>${stats.localTripForms}</b>張</span>
               </div>
             </div>
 

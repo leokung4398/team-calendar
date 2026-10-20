@@ -5,6 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, fmtMD, weekdayZh, nowMinutes, avatar, minToHM } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { bike, dock, rideBar } from '../yb.js';
+import { renderDailyVibeBar } from './vibeBar.js';
 
 export function mountToday(el) {
   let day = ymd();
@@ -21,6 +22,7 @@ export function mountToday(el) {
       <h2 class="view-title" data-title></h2>
       <div class="toolbar-end"></div>
     </div>
+    <div data-vibe></div>
     <div data-banner></div>
     <div data-ride></div>
     <section class="station detail card" data-detail>
@@ -98,6 +100,7 @@ export function mountToday(el) {
   });
 
   function render() {
+    renderDailyVibeBar(q('[data-vibe]'), () => renderDailyVibeBar(q('[data-vibe]')));
     const isToday = day === ymd();
     const now = nowMinutes();
     const events = eventList();

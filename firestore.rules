@@ -215,6 +215,48 @@ service cloud.firestore {
         allow create, update: if isMember(gid);
         allow delete: if isAdmin(gid);
       }
+
+      // ---------- 📌 例案追蹤（長期專案進度管理） ----------
+      match /cases/{caseId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isMember(gid) && (resource.data.createdBy == request.auth.uid || isAdmin(gid));
+      }
+
+      // ---------- 🌠 許願池（具名提議與 +1 附議） ----------
+      match /wishes/{wishId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isMember(gid) && (resource.data.createdBy == request.auth.uid || isAdmin(gid));
+      }
+
+      // ---------- 🗣️ 意見箱 / 抱怨箱（支援完全匿名吐苦水與打氣） ----------
+      match /vents/{ventId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isMember(gid) && (resource.data.createdBy == request.auth.uid || isAdmin(gid));
+      }
+
+      // ---------- 💬 團隊即時聊天室 ----------
+      match /chatMessages/{msgId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isMember(gid) && (resource.data.uid == request.auth.uid || isAdmin(gid));
+      }
+
+      // ---------- ☕ 晨間補給站（自行車延伸話題分享 / 投稿笑話 / 互動投票） ----------
+      match /vibeShared/{docId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isAdmin(gid);
+      }
+
+      // ---------- 🧰 小工具共用資料（團隊共用書籤等） ----------
+      match /toolsData/{docId} {
+        allow read: if isMember(gid);
+        allow create, update: if isMember(gid);
+        allow delete: if isAdmin(gid);
+      }
     }
   }
 }

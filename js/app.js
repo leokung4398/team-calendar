@@ -193,13 +193,22 @@ async function boot() {
     const { mountSimulation } = await import('./views/simulation.js');
     const { mountBulletin } = await import('./views/bulletin.js');
     const { mountDailyReport, initDailyReportFloatingWidget } = await import('./views/dailyReport.js');
+    const { mountCases } = await import('./views/cases.js');
+    const { mountTools } = await import('./views/tools.js');
+    const { mountWishes, mountVents } = await import('./views/feedback.js');
+    const { initChatDrawer, toggleChatDrawer, getUnreadChatCount } = await import('./chatDrawer.js');
+
     const routes = {
       today: { label: '今日動態', icon: '🧭', mount: mountToday },
       schedule: { label: '行事曆', icon: '🗓️', mount: mountSchedule },
       meeting: { label: '月會', icon: '💼', mount: mountMeeting },
+      cases: { label: '例案追蹤', icon: '📌', mount: mountCases },
       simulation: { label: '模擬體驗', icon: '🚲', mount: mountSimulation, permission: 'simulation' },
       dailyReport: { label: '每日回報', icon: '📝', mount: mountDailyReport, permission: 'dailyReport' },
       bulletin: { label: '採購佈告欄', icon: '📢', mount: mountBulletin, permission: 'bulletin' },
+      tools: { label: '實用小工具', icon: '🧰', mount: mountTools, inMoreMenu: true },
+      wishes: { label: '許願池', icon: '🌠', mount: mountWishes, inMoreMenu: true },
+      vents: { label: '意見箱(抱怨箱)', icon: '🗣️', mount: mountVents, inMoreMenu: true },
       admin: { label: '管理', icon: '⚙️', mount: mountAdmin, admin: true },
     };
     const ctx = { month: ymd().slice(0, 7) };
@@ -212,7 +221,11 @@ async function boot() {
           <a class="brand" href="#/today" title="Operations &amp; Collaboration Platform"><span class="brand-mark">${yb.bike(26)}</span><span>經營 Team 營運協同平台</span></a>
           <nav class="tabs" data-tabs></nav>
           <div class="top-actions">
-            <button class="btn guide-btn" data-guide title="系統操作指引">📖 <span class="hide-sm">功能導覽</span></button>
+            <button class="btn ghost chat-top-btn" data-open-chat-top title="開啟團隊即時聊天室" style="position:relative">
+              💬 <span class="hide-sm">聊天室</span>
+              <span class="badge" data-topbar-chat-badge hidden style="position:absolute;top:-5px;right:-5px"></span>
+            </button>
+            <button class="btn guide-btn" data-guide title="系統操作指引">📖 <span class="hide-sm">導覽</span></button>
             <button class="btn primary" data-new>＋ <span class="hide-sm">新增行程</span></button>
             <div class="bell-wrap">
               <button class="icon-btn bell" data-bell aria-label="通知">🔔<span class="badge" data-badge hidden></span></button>
@@ -238,8 +251,13 @@ async function boot() {
     let hasPendingDailyReport = false;
 
     function renderTabs() {
-      $('[data-tabs]').innerHTML = Object.entries(routes)
+      const moreKeys = ['tools', 'wishes', 'vents'];
+      const isMoreActive = moreKeys.includes(currentRoute);
+      const activeMoreLabel = isMoreActive ? routes[currentRoute]?.label : '百寶箱';
+
+      const mainLinksHtml = Object.entries(routes)
         .filter(([, r]) => {
+          if (r.inMoreMenu) return false;
           if (r.admin && !d.isAdmin()) return false;
           if (r.permission && !d.hasModulePermission(d.state.me, r.permission)) return false;
           return true;
@@ -247,7 +265,26 @@ async function boot() {
         .map(([k, r]) => {
           const showDot = k === 'dailyReport' && hasPendingDailyReport;
           return `<a href="#/${k}" class="${k === currentRoute ? 'active' : ''}">${r.label}${showDot ? '<span class="dr-tab-dot" title="今日尚未填寫每日回報"></span>' : ''}</a>`;
-        }).join('');
+        });
+
+      const moreDropdownHtml = `
+        <div class="nav-more-dropdown" tabindex="0">
+          <span class="nav-more-trigger ${isMoreActive ? 'active' : ''}">✨ ${esc(activeMoreLabel)} ▾</span>
+          <div class="nav-more-menu">
+            <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">🧰 實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
+            <a href="#/wishes" class="${currentRoute === 'wishes' ? 'active' : ''}">🌠 團隊許願池 <small>想要的工具 +1 附議</small></a>
+            <a href="#/vents" class="${currentRoute === 'vents' ? 'active' : ''}">🗣️ 意見箱(抱怨箱) <small>100% 匿名吐苦水樹洞</small></a>
+          </div>
+        </div>
+      `;
+
+      // 將「✨ 百寶箱」插在「管理」之前（若管理存在）或最後
+      if (d.isAdmin()) {
+        const adminLink = mainLinksHtml.pop();
+        $('[data-tabs]').innerHTML = [...mainLinksHtml, moreDropdownHtml, adminLink].join('');
+      } else {
+        $('[data-tabs]').innerHTML = [...mainLinksHtml, moreDropdownHtml].join('');
+      }
     }
 
     function route() {
@@ -279,6 +316,8 @@ async function boot() {
 
     $('[data-new]').onclick = () => ef.openEventEditor();
     $('[data-guide]').onclick = () => openGuideModal();
+    $('[data-open-chat-top]').onclick = () => toggleChatDrawer();
+    const destroyChat = initChatDrawer();
 
     // ---- 使用者選單 ----
     const umenu = $('[data-umenu]');
@@ -401,6 +440,7 @@ async function boot() {
       }
       if (!panel.hidden) renderPanel();
       current?.update?.();
+      current?.onData?.();
       // 管理員登入時，自動刪除停用已滿期限的組員（每次登入只檢查一次）
       if (!purgeChecked && d.isAdmin() && d.state.loaded.users) {
         purgeChecked = true;
@@ -435,6 +475,7 @@ async function boot() {
       document.removeEventListener('click', onDocClick);
       clearInterval(meetInterval);
       drWidget?.destroy?.();
+      destroyChat?.();
       offChange?.();
       current?.destroy?.();
     };

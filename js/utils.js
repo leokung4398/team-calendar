@@ -93,7 +93,26 @@ export function toast(msg, type = 'info') {
 }
 
 // ---------- Modal ----------
-export function openModal({ title, body, footer = '', wide = false, onClose, isDirty = null, extraHead = '' }) {
+let lastModalInstance = null;
+export function closeModal() {
+  lastModalInstance?.close?.();
+}
+
+export function openModal(optsOrHtml) {
+  if (typeof optsOrHtml === 'string') {
+    const root = document.getElementById('modal-root');
+    const wrap = document.createElement('div');
+    wrap.className = 'modal-backdrop';
+    wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><div class="modal-body">${optsOrHtml}</div></div>`;
+    root.appendChild(wrap);
+    const modalEl = wrap.querySelector('.modal');
+    const close = () => wrap.remove();
+    wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(); });
+    wrap.addEventListener('click', e => { if (e.target.closest('[data-close]')) { e.preventDefault(); close(); } });
+    lastModalInstance = { el: modalEl, close, setClean: () => {} };
+    return lastModalInstance;
+  }
+  const { title, body, footer = '', wide = false, onClose, isDirty = null, extraHead = '' } = optsOrHtml || {};
   const root = document.getElementById('modal-root');
   const wrap = document.createElement('div');
   wrap.className = 'modal-backdrop';

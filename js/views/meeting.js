@@ -1,5 +1,5 @@
 // 月會專屬視圖：下一場月會卡片、議程與資料連結檢視、開會當天置頂橫幅、會議紀錄
-import { state, myUid, isAdmin, meetingList, updateMeetingAgendaItem } from '../data.js';
+import { state, myUid, isAdmin, meetingList, updateMeetingAgendaItem, caseList } from '../data.js';
 import { esc, fmtMD, weekdayZh, avatar, ymd, parseYmd, timeAgo, toast } from '../utils.js';
 import { openMeetingEditor, openAgendaLinkEditor, openMinutesEditor, openMinutesViewer, openMinutesEmailHelper, copyMinutesToClipboard, getTeamDefaultAgenda } from '../meetingModal.js';
 import { bike } from '../yb.js';
@@ -181,12 +181,14 @@ export function mountMeeting(el) {
     const withLinks = agenda.filter(a => a.links && a.links.length > 0).length;
     const totalAgenda = agenda.length;
 
+    const allCases = caseList();
     const agendaListHtml = totalAgenda ? `
       <div class="agenda-items">
         ${agenda.map((item, idx) => {
           const owner = state.users.get(item.ownerUid);
           const isMyAgenda = item.ownerUid === myUid() || isAdmin();
           const links = item.links || [];
+          const ownerCases = item.ownerUid ? allCases.filter(c => c.status !== 'done' && (c.ownerUids || []).includes(item.ownerUid)) : [];
           return `
             <div class="agenda-item card pad-sm">
               <div class="ai-head">
@@ -201,10 +203,12 @@ export function mountMeeting(el) {
                     ${item.duration ? `<span>約 ${item.duration} 分鐘</span>` : ''}
                   </div>
                 </div>
-                ${isMyAgenda ? `
-                  <button class="btn small ghost" data-edit-agenda-links data-mid="${esc(upcoming.id)}" data-idx="${idx}">
-                    ${links.length ? '編輯資料連結' : '＋ 上傳/貼連結'}
-                  </button>` : ''}
+                <div style="display:flex;gap:6px;align-items:center">
+                  ${isMyAgenda ? `
+                    <button class="btn small ghost" data-edit-agenda-links data-mid="${esc(upcoming.id)}" data-idx="${idx}">
+                      ${links.length ? '編輯連結' : '＋ 貼連結'}
+                    </button>` : ''}
+                </div>
               </div>
               ${links.length ? `
                 <div class="ai-links">
@@ -212,10 +216,20 @@ export function mountMeeting(el) {
                     <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" class="link-chip" title="${esc(l.url)}">
                       📄 ${esc(l.title)}
                     </a>`).join('')}
-                </div>` : `
-                <div class="ai-no-links muted tiny">
-                  尚未附上簡報或數據資料${isMyAgenda ? '（請會前點右方按鈕貼上）' : ''}
-                </div>`}
+                </div>` : ''}
+              ${ownerCases.length > 0 ? `
+                <details style="margin-top:6px;font-size:12px;background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:4px 10px">
+                  <summary style="cursor:pointer;color:var(--primary);font-weight:700;user-select:none">
+                    📌 連動例案進度（${ownerCases.length} 案進行中）▸ 點擊展開
+                  </summary>
+                  <ul style="margin:6px 0 2px;padding-left:16px;color:var(--text);line-height:1.5">
+                    ${ownerCases.map(c => {
+                      const latest = c.timeline?.[0];
+                      return `<li><b>${esc(c.title)}</b>（${c.progress || 0}%）${latest ? ` — <span class="muted">${esc(latest.note)}</span>` : ''}</li>`;
+                    }).join('')}
+                  </ul>
+                </details>
+              ` : ''}
             </div>`;
         }).join('')}
       </div>` : `
@@ -229,14 +243,16 @@ export function mountMeeting(el) {
       : (minutes ? '<span class="badge-tag warn">會議紀錄草稿暫存中</span>' : '');
 
     q('[data-content]').innerHTML = `
-      <div class="meeting-hero card pad">
+      <div class="meeting-hero card pad" style="padding:14px 18px">
         <div class="mh-top">
           <div class="mh-header-left">
-            <div class="mh-eyebrow">📢 下一場月會</div>
-            <h1 class="mh-title">${fmtMD(upcoming.date)}（${weekdayZh(upcoming.date)}）經營組月會 ${countdownTag} ${minutesStatusTag}</h1>
-            <div class="mh-info">
+            <h1 class="mh-title" style="margin:0;font-size:19px">💼 ${fmtMD(upcoming.date)}（${weekdayZh(upcoming.date)}）經營組月會 ${countdownTag} ${minutesStatusTag}</h1>
+            <div class="mh-info" style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
               <span>⏰ ${esc(upcoming.startTime)} – ${esc(upcoming.endTime)}</span>
               <span>📍 ${esc(upcoming.location || '總公司會議室')}</span>
+              <span class="kpi-chip">主持人：<b>${host ? esc(host.displayName) : '未指定'}</b></span>
+              <span class="kpi-chip ${rec?.uid === myUid() ? 'active' : ''}">紀錄人：<b>${rec ? esc(rec.displayName) : '未指定'}</b>${rec?.uid === myUid() ? ' (我)' : ''}</span>
+              <span class="kpi-chip">簡報連結：<b>${withLinks}/${totalAgenda}</b></span>
             </div>
           </div>
           <div class="mh-actions">
@@ -247,39 +263,8 @@ export function mountMeeting(el) {
             ${upcoming.meetUrl ? `
               <a href="${esc(upcoming.meetUrl)}" target="_blank" rel="noopener noreferrer" class="btn primary meet-btn">
                 🎥 加入 Google Meet
-              </a>` : '<span class="muted small-text">無設定 Meet 連結</span>'}
-            ${isAdmin() ? `<button class="btn" data-edit-m="${esc(upcoming.id)}" title="編輯月會資訊">⚙️ 編輯資訊</button>` : ''}
-          </div>
-        </div>
-
-        <div class="mh-duty">
-          <div class="duty-card host">
-            <span class="muted tiny">主持人</span>
-            <div class="duty-person">
-              ${host ? avatar(host, 28) : ''}
-              <b>${host ? esc(host.displayName) : '未指定'}</b>
-            </div>
-          </div>
-          <div class="duty-card recorder ${isRecorder ? 'my-duty-card' : ''}">
-            <span class="muted tiny">本月紀錄人 (輪值)</span>
-            <div class="duty-person">
-              ${rec ? avatar(rec, 28) : ''}
-              <b>${rec ? esc(rec.displayName) : '未指定'}</b>
-              ${rec?.uid === myUid() ? '<span class="me-tag">我（負責記錄）</span>' : ''}
-            </div>
-            ${isRecorder ? `
-              <div class="duty-cta">
-                <button class="btn small ok-btn" data-open-minutes="${esc(upcoming.id)}" style="width:100%; margin-top:8px;">
-                  ✍️ 開啟會議紀錄鍵盤輸入
-                </button>
-              </div>` : ''}
-          </div>
-          <div class="duty-card prep">
-            <span class="muted tiny">簡報資料準備進度</span>
-            <div class="duty-person">
-              <b>${withLinks} / ${totalAgenda}</b>
-              <small class="muted">議題已附連結</small>
-            </div>
+              </a>` : ''}
+            ${isAdmin() ? `<button class="btn" data-edit-m="${esc(upcoming.id)}" title="編輯月會資訊">⚙️</button>` : ''}
           </div>
         </div>
       </div>

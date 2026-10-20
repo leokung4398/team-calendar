@@ -286,51 +286,38 @@ export function mountSimulation(el, ctx = {}) {
         </div>
       </div>
 
-      <!-- 2026 全年度月份快速切換列（1月～12月，對應試算表所有月份） -->
-      <div id="sim-year-month-bar" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:12px; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-        <span style="font-size:12px; font-weight:700; color:#475569; margin-right:4px;">📅 2026 年度月份：</span>
-        ${SIMULATION_2026_MONTHS.slice(0, 11).map(mKey => {
-          const mNum = Number(mKey.slice(5, 7));
-          const isCur = mKey === curMonth && activeSubTab !== 'annual';
-          const isOctNov = mKey === '2026-10' || mKey === '2026-11';
-          return `
-            <button type="button" data-quick-month="${mKey}" style="border:1px solid ${isCur ? '#2563eb' : (isOctNov ? '#93c5fd' : '#cbd5e1')}; background:${isCur ? '#2563eb' : (isOctNov ? '#eff6ff' : '#fff')}; color:${isCur ? '#fff' : (isOctNov ? '#1d4ed8' : '#334155')}; font-weight:${isCur || isOctNov ? '700' : '600'}; font-size:12px; padding:4px 10px; border-radius:6px; cursor:pointer; transition:all .15s;">
-              ${mNum}月${mKey === '2026-10' ? ' (本月)' : ''}
-            </button>
-          `;
-        }).join('')}
-        <div style="margin-left:auto; display:flex; align-items:center; gap:6px;">
-          <button type="button" data-quick-annual style="border:1px solid ${activeSubTab === 'annual' ? '#b45309' : '#fcd34d'}; background:${activeSubTab === 'annual' ? '#d97706' : '#fef3c7'}; color:${activeSubTab === 'annual' ? '#fff' : '#92400e'}; font-weight:700; font-size:12px; padding:4px 12px; border-radius:6px; cursor:pointer;">
-            📈 2026年度全覽 & 母體總數表
-          </button>
+      <!-- 圖1 輕量化：2026 全年度月份選擇器（預設縮起為單一膠囊，滑鼠移過或點擊向右滑出 1~11 月） -->
+      <div id="sim-year-month-bar" class="month-expander-bar">
+        <div class="month-expander-trigger" tabindex="0">
+          <span class="month-trigger-label">📅 ${yStr}年 · <b>${Number(mStr)}月${curMonth === '2026-10' ? ' (本月)' : ''}</b></span>
+          <span class="month-trigger-hint">▸ 切換月份</span>
+          <div class="month-expander-ZeroDrawer">
+            ${SIMULATION_2026_MONTHS.slice(0, 11).map(mKey => {
+              const mNum = Number(mKey.slice(5, 7));
+              const isCur = mKey === curMonth && activeSubTab !== 'annual';
+              return `
+                <button type="button" class="month-pill-item ${isCur ? 'active' : ''}" data-quick-month="${mKey}">
+                  ${mNum}月${mKey === '2026-10' ? '(本月)' : ''}
+                </button>
+              `;
+            }).join('')}
+          </div>
         </div>
-      </div>
 
-      <!-- 頂部獨立功能子分頁（Sub-tabs，對應 Excel 的 6 個工作表關聯） -->
-      <div class="sim-tabs-header" style="margin-bottom:16px;">
-        <div class="sim-nav-pills" style="flex-wrap:wrap;">
+        <!-- 頂部獨立功能子分頁（與月份膠囊同行排列，大幅節省垂直空間） -->
+        <div class="sim-nav-pills" style="flex-wrap:wrap; margin-left:4px;">
           <button type="button" class="sim-pill-btn ${activeSubTab === 'matrix' ? 'active tab-matrix' : ''}" data-tab="matrix">
-            <span>📊 當月配額與排班矩陣 (${Number(mStr)}月)</span>
+            <span>📊 排班矩陣 (${Number(mStr)}月)</span>
           </button>
           <button type="button" class="sim-pill-btn ${activeSubTab === 'north' ? 'active tab-north' : ''}" data-tab="north">
-            <span>🧭 北區每日品管巡檢 (Leo / Hao)</span>
+            <span>🧭 北區巡檢 (Leo/Hao)</span>
           </button>
           <button type="button" class="sim-pill-btn ${activeSubTab === 'south' ? 'active tab-south' : ''}" data-tab="south">
-            <span>🌴 南區每日品管巡檢 (Chun 陸逸群)</span>
+            <span>🌴 南區巡檢 (Chun)</span>
           </button>
-          <button type="button" class="sim-pill-btn ${activeSubTab === 'annual' ? 'active tab-matrix' : ''}" data-tab="annual">
-            <span>📈 2026年度總覽 & 🔒 母體總數表</span>
+          <button type="button" class="sim-pill-btn ${activeSubTab === 'annual' ? 'active tab-matrix' : ''}" data-tab="annual" data-quick-annual>
+            <span>📈 年度總覽 & 母體表</span>
           </button>
-        </div>
-
-        <div style="font-size:12px; color:#64748b;">
-          ${activeSubTab === 'matrix'
-            ? '⚡ 含 Excel「出差日期」列、外縣市天數與北/南區巡檢雙向核對'
-            : activeSubTab === 'north'
-            ? '📍 雙北行政區、外縣市出差與出差單規則（支援 9～11 月切換）'
-            : activeSubTab === 'south'
-            ? '📍 高雄、台南三線、屏東、台東出差與巡檢排程（支援 9～11 月切換）'
-            : '📈 完整重現 Excel「2026年度 (1~11月垂直總表)」與「🔒 總數表 (母體配額試算)」'}
         </div>
       </div>
 
@@ -357,66 +344,50 @@ export function mountSimulation(el, ctx = {}) {
 
     // --- 子分頁 1：當月配額與排班矩陣 ('matrix') ---
     tabRoot.innerHTML = `
-      <div class="sim-container" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="sim-container" style="display:flex; flex-direction:column; gap:12px;">
         
-        <!-- 頂部概況數據指標 -->
-        <div class="card pad sim-overview-card" style="background:linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%); border-left:4px solid var(--yb, #f5a623);">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-              <div style="font-size:12px; font-weight:700; color:#475569; text-transform:uppercase;">經營TEAM 品質檢驗指標（${MONTH_ZH_NAMES[curMonth] || curMonth}）</div>
-              <h3 style="margin:4px 0 0 0; font-size:18px;">${yStr} 年 ${Number(mStr)} 月 模擬體驗抽驗目標：<b>${totalCheckCountSum.toLocaleString()}</b> 台</h3>
-            </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap;">
-              <div class="sim-kpi-chip" style="background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1;">
-                <span class="muted tiny" style="display:block;">當月工作天</span>
-                <b style="font-size:15px; color:#1e293b;">${workDays} 天</b>
-              </div>
-              <div class="sim-kpi-chip" style="background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1;">
-                <span class="muted tiny" style="display:block;">外縣市出差天</span>
-                <b style="font-size:15px; color:#2563eb;">${travelDays} 天</b>
-              </div>
-              <div class="sim-kpi-chip" style="background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; cursor:pointer;" data-goto-master title="點擊查看 🔒 母體總數表計算來源">
-                <span class="muted tiny" style="display:block;">全台 2.0 車輛總數 ↗</span>
-                <b style="font-size:15px; color:#eab308;">${totalV20Vehicles}</b>
-              </div>
-              <div class="sim-kpi-chip" style="background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; cursor:pointer;" data-goto-master title="點擊查看 🔒 母體總數表計算來源">
-                <span class="muted tiny" style="display:block;">全台 2.0E 電輔車 ↗</span>
-                <b style="font-size:15px; color:#ec4899;">${totalV20eVehicles}</b>
-              </div>
-              <div class="sim-kpi-chip" style="background:#fff; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1;">
-                <span class="muted tiny" style="display:block;">已分配 / 目標人天</span>
-                <b style="font-size:15px; color:${totalAssignedDaysSum === totalTargetDaysSum ? '#16a34a' : '#ea580c'};">
-                  ${totalAssignedDaysSum} / ${totalTargetDaysSum} 人天
-                </b>
-              </div>
-            </div>
+        <!-- 輕量化單行指標條 + 圖2 外勤三人連動極簡膠囊（移上去或點擊才展開詳細日期） -->
+        <div class="card sim-compact-bar">
+          <div class="sim-compact-metrics">
+            <span class="sim-metric-main">🎯 <b>${Number(mStr)}月</b>抽驗目標 <strong>${totalCheckCountSum.toLocaleString()}</strong> 台</span>
+            <span class="sim-metric-pill">工作天 <b>${workDays}</b>d</span>
+            <span class="sim-metric-pill">出差天 <b style="color:#2563eb">${travelDays}</b>d</span>
+            <span class="sim-metric-pill clickable" data-goto-master title="點擊查看母體總數表">2.0母體 <b style="color:#b45309">${totalV20Vehicles}</b> ↗</span>
+            <span class="sim-metric-pill clickable" data-goto-master title="點擊查看母體總數表">2.0E <b style="color:#be123c">${totalV20eVehicles}</b> ↗</span>
+            <span class="sim-metric-pill">已排人天 <b style="color:${totalAssignedDaysSum === totalTargetDaysSum ? '#16a34a' : '#ea580c'}">${totalAssignedDaysSum}/${totalTargetDaysSum}</b></span>
           </div>
 
-          <!-- 與「北區 / 南區每日巡檢表」連動核對橫幅（若有該月日曆資料則顯示） -->
           ${(crossCheck.Leo?.totalOutDays || crossCheck.Hao?.totalOutDays || crossCheck.Chun?.totalOutDays) ? `
-            <div style="margin-top:12px; padding-top:10px; border-top:1px dashed #cbd5e1; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:12px;">
-              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                <span style="font-weight:700; color:#0369a1;">🔗 與【北區 / 南區每日巡檢月曆】外縣市排程即時連動：</span>
-                ${['Leo', 'Hao', 'Chun'].map(k => {
-                  const cc = crossCheck[k];
-                  if (!cc || !cc.totalOutDays) return '';
-                  const zoneTab = k === 'Chun' ? 'south' : 'north';
-                  return `
-                    <span style="background:#fff; border:1px solid #bae6fd; padding:2px 8px; border-radius:999px; color:#0c4a6e; cursor:pointer;" data-jump-zone="${zoneTab}" title="點擊跳轉至${k === 'Chun' ? '南區' : '北區'}每日巡檢月曆：${esc(cc.outCities.join('、'))}">
-                      <b>${k}</b> 月曆已排外縣市 <b>${cc.totalOutDays}</b> 天（${esc(cc.outCities.slice(0, 4).join('、'))}${cc.outCities.length > 4 ? '…' : ''}）↗
+            <div class="sim-crosscheck-compact">
+              <span class="crosscheck-label">🔗 外縣市月曆連動：</span>
+              ${['Leo', 'Hao', 'Chun'].map(k => {
+                const cc = crossCheck[k];
+                if (!cc || !cc.totalOutDays) return '';
+                const zoneTab = k === 'Chun' ? 'south' : 'north';
+                return `
+                  <div class="crosscheck-badge-wrap" tabindex="0">
+                    <span class="crosscheck-mini-pill" data-jump-zone="${zoneTab}">
+                      <b>${k}</b> · ${cc.totalOutDays}天 ▾
                     </span>
-                  `;
-                }).join('')}
-              </div>
+                    <div class="crosscheck-popover">
+                      <div style="font-weight:700;margin-bottom:4px;color:#0369a1">${k} 當月已排外縣市（共 ${cc.totalOutDays} 天）</div>
+                      <div style="font-size:12px;line-height:1.5;color:#334155">${esc(cc.outCities.join('、'))}</div>
+                      <div style="margin-top:6px;font-size:11px;color:#2563eb;font-weight:600" data-jump-zone="${zoneTab}">👉 點擊跳轉至${k === 'Chun' ? '南區' : '北區'}巡檢月曆 ↗</div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
             </div>
           ` : ''}
         </div>
 
         <!-- 核心排班矩陣表格（完整包含 Excel 第 1~2 列「出差日期」與「外縣市天數」） -->
         <div class="card pad" style="overflow-x:auto;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-            <h3 style="font-size:16px; margin:0;">📋 各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
-            <span class="muted small-text">💡 點選上方「出差日期」可記錄幾號出差（例：15, 16）；點選下方格子可直接編輯排班次數</span>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px">
+              <h3 style="font-size:15.5px; margin:0;">📋 各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
+              <span class="info-pill-tip" title="點選上方粉紅列『出差日期』可記錄幾號出差（例：15, 16）；點選下方格子可直接編輯排班次數">ⓘ 操作提示</span>
+            </div>
           </div>
 
           <table class="sim-matrix-table" style="width:100%; border-collapse:collapse; min-width:980px; font-size:13px; text-align:center;">

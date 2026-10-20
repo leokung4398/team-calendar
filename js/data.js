@@ -32,7 +32,13 @@ export const state = {
   eventsFrom: null,
   dailyInspections: new Map(),
   dailyReports: new Map(), // date (YYYY-MM-DD) -> { id, isTyphoonDay, typhoonNote, reports: { [uid]: {...} } }
-  loaded: { users: false, types: false, events: false, meetings: false, simulationDuties: false, dailyInspections: false, dailyReports: false, permissions: false },
+  cases: new Map(),        // id -> case tracking item
+  wishes: new Map(),       // id -> wish item
+  vents: new Map(),        // id -> vent (anonymous/named complaint) item
+  chatMessages: [],        // sorted array of chat messages
+  vibeShared: new Map(),   // id -> shared bike news / jokes / votes
+  toolsData: new Map(),    // id -> shared bookmarks / tool settings
+  loaded: { users: false, types: false, events: false, meetings: false, simulationDuties: false, dailyInspections: false, dailyReports: false, permissions: false, cases: false, wishes: false, vents: false, chat: false },
 };
 
 const listeners = new Set();
@@ -467,6 +473,40 @@ export function startSync(fatalHandler) {
     state.loaded.dailyReports = true;
     emit();
   }, fail('dailyReports')));
+
+  unsubs.push(onSnapshot(groupCol('cases'), s => {
+    state.cases = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }]));
+    state.loaded.cases = true;
+    emit();
+  }, fail('cases')));
+
+  unsubs.push(onSnapshot(groupCol('wishes'), s => {
+    state.wishes = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }]));
+    state.loaded.wishes = true;
+    emit();
+  }, fail('wishes')));
+
+  unsubs.push(onSnapshot(groupCol('vents'), s => {
+    state.vents = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }]));
+    state.loaded.vents = true;
+    emit();
+  }, fail('vents')));
+
+  unsubs.push(onSnapshot(query(groupCol('chatMessages'), orderBy('createdAt', 'desc'), limit(150)), s => {
+    state.chatMessages = s.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) })).reverse();
+    state.loaded.chat = true;
+    emit();
+  }, fail('chatMessages')));
+
+  unsubs.push(onSnapshot(groupCol('vibeShared'), s => {
+    state.vibeShared = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }]));
+    emit();
+  }, fail('vibeShared')));
+
+  unsubs.push(onSnapshot(groupCol('toolsData'), s => {
+    state.toolsData = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }]));
+    emit();
+  }, fail('toolsData')));
 }
 
 /** 確保已同步「結束日 >= from」的所有行程（往前翻月份時會擴大範圍） */
@@ -1088,3 +1128,340 @@ export async function acknowledgeDailyReport(dateStr, targetUid, { ack = true, m
     updatedAt: serverTimestamp(),
   }, { merge: true });
 }
+
+// ============================================================
+// 📌 例案追蹤（長期專案進度管理）CRUD
+// ============================================================
+export function caseList() {
+  return [...state.cases.values()].sort((a, b) => {
+    const pOrder = { high: 0, medium: 1, low: 2 };
+    const sOrder = { blocked: 0, active: 1, planning: 2, done: 3 };
+    const sa = sOrder[a.status || 'active'] ?? 1;
+    const sb = sOrder[b.status || 'active'] ?? 1;
+    if (sa !== sb) return sa - sb;
+    const pa = pOrder[a.priority || 'medium'] ?? 1;
+    const pb = pOrder[b.priority || 'medium'] ?? 1;
+    if (pa !== pb) return pa - pb;
+    return String(b.updatedAtIso || '').localeCompare(String(a.updatedAtIso || ''));
+  });
+}
+
+export async function saveCaseItem(data, prev = null) {
+  const me = myUid();
+  const nowIso = new Date().toISOString();
+  const id = prev?.id || ('case_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6));
+  const payload = {
+    ...(prev || {}),
+    ...data,
+    id,
+    createdBy: prev?.createdBy || me,
+    createdAtIso: prev?.createdAtIso || nowIso,
+    updatedBy: me,
+    updatedAtIso: nowIso,
+  };
+  if (demo) {
+    state.cases = new Map(state.cases).set(id, payload);
+    emit();
+    return id;
+  }
+  await setDoc(groupDoc('cases', id), {
+    ...payload,
+    updatedAt: serverTimestamp(),
+    ...(prev ? {} : { createdAt: serverTimestamp() }),
+  }, { merge: true });
+  return id;
+}
+
+export async function appendCaseTimeline(caseId, { note, progress, status }) {
+  const me = myUid();
+  const meName = state.me?.displayName || '組員';
+  const existing = state.cases.get(caseId);
+  if (!existing) return;
+  const nowIso = new Date().toISOString();
+  const timeline = Array.isArray(existing.timeline) ? [...existing.timeline] : [];
+  timeline.unshift({
+    id: 'tl_' + Date.now().toString(36),
+    uid: me,
+    authorName: meName,
+    note: String(note || '').trim(),
+    progress: progress !== undefined ? Number(progress) : existing.progress,
+    status: status || existing.status,
+    at: nowIso,
+  });
+  const patch = {
+    timeline: timeline.slice(0, 60),
+    progress: progress !== undefined ? Number(progress) : (existing.progress || 0),
+    status: status || existing.status || 'active',
+    updatedBy: me,
+    updatedAtIso: nowIso,
+  };
+  return saveCaseItem(patch, existing);
+}
+
+export async function deleteCaseItem(caseId) {
+  if (demo) {
+    const m = new Map(state.cases);
+    m.delete(caseId);
+    state.cases = m;
+    emit();
+    return;
+  }
+  await deleteDoc(groupDoc('cases', caseId));
+}
+
+// ============================================================
+// 🌠 許願池（具名提議與 +1 附議）CRUD
+// ============================================================
+export function wishList() {
+  return [...state.wishes.values()].sort((a, b) => {
+    const va = Array.isArray(a.votes) ? a.votes.length : 0;
+    const vb = Array.isArray(b.votes) ? b.votes.length : 0;
+    if (vb !== va) return vb - va;
+    return String(b.createdAtIso || '').localeCompare(String(a.createdAtIso || ''));
+  });
+}
+
+export async function saveWishItem(data, prev = null) {
+  const me = myUid();
+  const meName = state.me?.displayName || '組員';
+  const nowIso = new Date().toISOString();
+  const id = prev?.id || ('wish_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6));
+  const payload = {
+    ...(prev || {}),
+    ...data,
+    id,
+    createdBy: prev?.createdBy || me,
+    authorName: prev?.authorName || meName,
+    votes: prev?.votes || [me],
+    status: data.status || prev?.status || 'open', // open | reviewing | building | done
+    comments: prev?.comments || [],
+    createdAtIso: prev?.createdAtIso || nowIso,
+    updatedAtIso: nowIso,
+  };
+  if (demo) {
+    state.wishes = new Map(state.wishes).set(id, payload);
+    emit();
+    return id;
+  }
+  await setDoc(groupDoc('wishes', id), {
+    ...payload,
+    updatedAt: serverTimestamp(),
+    ...(prev ? {} : { createdAt: serverTimestamp() }),
+  }, { merge: true });
+  return id;
+}
+
+export async function toggleWishVote(wishId) {
+  const me = myUid();
+  const w = state.wishes.get(wishId);
+  if (!w || !me) return;
+  const votes = new Set(Array.isArray(w.votes) ? w.votes : []);
+  if (votes.has(me)) votes.delete(me);
+  else votes.add(me);
+  await saveWishItem({ votes: [...votes] }, w);
+}
+
+export async function deleteWishItem(wishId) {
+  if (demo) {
+    const m = new Map(state.wishes);
+    m.delete(wishId);
+    state.wishes = m;
+    emit();
+    return;
+  }
+  await deleteDoc(groupDoc('wishes', wishId));
+}
+
+// ============================================================
+// 🗣️ 意見箱 / 抱怨箱（支援完全匿名吐苦水與打氣）CRUD
+// ============================================================
+export function ventList() {
+  return [...state.vents.values()].sort((a, b) =>
+    String(b.createdAtIso || '').localeCompare(String(a.createdAtIso || ''))
+  );
+}
+
+export async function createVentItem({ content, category = 'general', isAnonymous = true, mood = '😤' }) {
+  const me = myUid();
+  const meName = state.me?.displayName || '組員';
+  const nowIso = new Date().toISOString();
+  const id = 'vent_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+  // 匿名模式：完全不寫入真實姓名與真實 createdBy UID（僅標記 'anonymous'），連管理員與資料庫都無法反查是誰寫的，確保 100% 安心吐苦水！
+  const aliases = ['匿名單車客 🚲', '微笑小騎士 ヘルメット', '夜騎追風者 🌙', '補胎小精靈 🔧', '滿站守護者 🚏', '茶水間觀察家 ☕'];
+  const randomAlias = aliases[Math.floor(Math.random() * aliases.length)];
+  const payload = {
+    id,
+    content: String(content || '').trim(),
+    category,
+    mood,
+    isAnonymous: !!isAnonymous,
+    createdBy: isAnonymous ? 'anonymous' : me,
+    authorName: isAnonymous ? randomAlias : meName,
+    reactions: { hug: [], cry: [], cheer: [] },
+    replies: [],
+    createdAtIso: nowIso,
+  };
+  if (demo) {
+    state.vents = new Map(state.vents).set(id, payload);
+    emit();
+    return id;
+  }
+  await setDoc(groupDoc('vents', id), {
+    ...payload,
+    createdAt: serverTimestamp(),
+  });
+  return id;
+}
+
+export async function toggleVentReaction(ventId, type = 'hug') {
+  const me = myUid();
+  const v = state.vents.get(ventId);
+  if (!v || !me) return;
+  const reactions = { hug: [], cry: [], cheer: [], ...(v.reactions || {}) };
+  const arr = new Set(Array.isArray(reactions[type]) ? reactions[type] : []);
+  if (arr.has(me)) arr.delete(me);
+  else arr.add(me);
+  reactions[type] = [...arr];
+  const next = { ...v, reactions };
+  if (demo) {
+    state.vents = new Map(state.vents).set(ventId, next);
+    emit();
+    return;
+  }
+  await setDoc(groupDoc('vents', ventId), { reactions }, { merge: true });
+}
+
+export async function addVentReply(ventId, { text, isAnonymous = true }) {
+  const me = myUid();
+  const meName = state.me?.displayName || '組員';
+  const v = state.vents.get(ventId);
+  if (!v || !text.trim()) return;
+  const replies = Array.isArray(v.replies) ? [...v.replies] : [];
+  replies.push({
+    id: 'vr_' + Date.now().toString(36),
+    authorName: isAnonymous ? '匿名夥伴 🤝' : meName,
+    isAnonymous: !!isAnonymous,
+    text: text.trim(),
+    at: new Date().toISOString(),
+  });
+  if (demo) {
+    state.vents = new Map(state.vents).set(ventId, { ...v, replies });
+    emit();
+    return;
+  }
+  await setDoc(groupDoc('vents', ventId), { replies }, { merge: true });
+}
+
+export async function deleteVentItem(ventId) {
+  if (demo) {
+    const m = new Map(state.vents);
+    m.delete(ventId);
+    state.vents = m;
+    emit();
+    return;
+  }
+  await deleteDoc(groupDoc('vents', ventId));
+}
+
+// ============================================================
+// 💬 團隊即時聊天室 CRUD
+// ============================================================
+export async function sendChatMessage({ channel = 'general', text = '', imageData = '', replyTo = null, mentions = [], sticker = '' }) {
+  const me = myUid();
+  const meObj = state.me || {};
+  const id = 'msg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+  const nowIso = new Date().toISOString();
+  const payload = {
+    id,
+    channel,
+    uid: me,
+    authorName: meObj.displayName || '組員',
+    photoURL: meObj.photoURL || '',
+    text: String(text || '').trim(),
+    imageData: imageData || '',
+    sticker: sticker || '',
+    replyTo: replyTo || null,
+    mentions: Array.isArray(mentions) ? mentions : [],
+    reactions: {},
+    createdAtIso: nowIso,
+  };
+  if (demo) {
+    state.chatMessages = [...state.chatMessages, payload];
+    emit();
+    return id;
+  }
+  const b = writeBatch(db);
+  b.set(groupDoc('chatMessages', id), {
+    ...payload,
+    createdAt: serverTimestamp(),
+  });
+  // 若有 @標註組員，發送個人通知
+  for (const targetUid of payload.mentions) {
+    if (!targetUid || targetUid === me) continue;
+    b.set(doc(collection(db, 'users', targetUid, 'notifications')), {
+      kind: 'chat_mention',
+      actorUid: me,
+      summary: `💬 ${payload.authorName} 在聊天室標註了你：「${payload.text.slice(0, 35)}」`,
+      read: false,
+      createdAt: serverTimestamp(),
+    });
+  }
+  await b.commit();
+  return id;
+}
+
+export async function toggleChatReaction(msgId, emoji) {
+  const me = myUid();
+  const msg = state.chatMessages.find(m => m.id === msgId);
+  if (!msg || !me) return;
+  const reactions = { ...(msg.reactions || {}) };
+  const list = new Set(Array.isArray(reactions[emoji]) ? reactions[emoji] : []);
+  if (list.has(me)) list.delete(me);
+  else list.add(me);
+  reactions[emoji] = [...list];
+  if (demo) {
+    msg.reactions = reactions;
+    emit();
+    return;
+  }
+  await setDoc(groupDoc('chatMessages', msgId), { reactions }, { merge: true });
+}
+
+export async function deleteChatMessage(msgId) {
+  if (demo) {
+    state.chatMessages = state.chatMessages.filter(m => m.id !== msgId);
+    emit();
+    return;
+  }
+  await deleteDoc(groupDoc('chatMessages', msgId));
+}
+
+// ============================================================
+// ☕ 晨間補給站（延伸話題分享 / 笑話投稿與投票）& 🧰 小工具共用書籤
+// ============================================================
+export async function saveVibeDoc(docId, data) {
+  if (demo) {
+    const prev = state.vibeShared.get(docId) || { id: docId };
+    state.vibeShared = new Map(state.vibeShared).set(docId, { ...prev, ...data });
+    emit();
+    return;
+  }
+  await setDoc(groupDoc('vibeShared', docId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+
+export async function saveToolsDoc(docId, data) {
+  if (demo) {
+    const prev = state.toolsData.get(docId) || { id: docId };
+    state.toolsData = new Map(state.toolsData).set(docId, { ...prev, ...data });
+    emit();
+    return;
+  }
+  await setDoc(groupDoc('toolsData', docId), {
+    ...data,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+}
+

@@ -339,29 +339,30 @@ export function mountDailyReport(root) {
 
     root.innerHTML = `
       <div class="daily-report-page">
-        <!-- 頂部橫幅與快速操作 -->
-        <section class="card dr-hero-card">
-          <div class="dr-hero-top">
-            <div>
-              <div class="dr-eyebrow">📝 DAILY PROGRESS &amp; LINE REPORT HELPER</div>
-              <h1 class="dr-title">每日工作進度回報中心</h1>
-              <p class="dr-subtitle">
-                <strong>🏢 內勤同仁（6位）</strong>填寫今日工作進度（比照 LINE 群組做法，全體組員皆可查看）；<strong>🚲 外勤品管同仁（3位）</strong>制式回報「地區、稽查場站數、2.0與2.0E數量」（僅代理副理 <strong>徐嘉鴻</strong>、外勤代理人 <strong>包于巧</strong> 與本人可見）。<br>
-                🔒 <strong>防代填保護</strong>：每個人僅能填寫或修改自己的回報。
-              </p>
+        <!-- 輕量化頂部標題與快速操作 -->
+        <section class="card dr-hero-card" style="padding:14px 18px">
+          <div class="dr-hero-top" style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <h1 class="dr-title" style="margin:0;font-size:19px">📝 每日工作進度回報</h1>
+              <span class="info-pill-tip" title="🏢 內勤同仁填寫今日工作進度（全員可見，每月支援外勤日可切換外勤回報分頁）；🚲 外勤三人制式回報 3 題（僅副理徐嘉鴻、代理人包于巧與本人可見）。🔒 嚴格防代填保護。">ⓘ 規則說明</span>
+              <div class="compact-kpi-strip">
+                <span class="kpi-chip" style="background:#F0FDF4;border-color:#BBF7D0;color:#166534">✅ 已回報 <b>${submittedCount}/${allReporters.length}</b></span>
+                <span class="kpi-chip ${pendingCount > 0 ? 'danger' : ''}">⏳ 待回報 <b>${pendingCount}</b></span>
+                ${exemptCount > 0 ? `<span class="kpi-chip">🏖️ 免回報 <b>${exemptCount}</b></span>` : ''}
+              </div>
             </div>
             <div class="dr-hero-actions">
-              <button type="button" class="btn ghost guide-btn" data-open-dr-tour style="font-weight:700; color:#0f766e; background:#ccfbf1; border-color:#99f6e4;" title="啟動每日回報 6 步實景聚焦導覽">
-                🎯 每日回報導覽
+              <button type="button" class="btn sm ghost guide-btn" data-open-dr-tour title="啟動每日回報 6 步實景聚焦導覽">
+                🎯 導覽
               </button>
               ${!isSup ? `
-                <button class="btn primary dr-quick-btn" data-open-quick="${esc(selectedDate)}">
-                  ✍️ ${mySubmitted ? '修改我的今日回報' : '立即填寫今日回報'}
+                <button class="btn sm primary dr-quick-btn" data-open-quick="${esc(selectedDate)}">
+                  ✍️ ${mySubmitted ? '修改我的回報' : '填寫今日回報'}
                 </button>
               ` : ''}
               ${mySubmitted ? `
-                <button class="btn dr-copy-mine-btn" data-copy-personal="${esc(myId)}">
-                  📋 複製我的 LINE 回報
+                <button class="btn sm dr-copy-mine-btn" data-copy-personal="${esc(myId)}">
+                  📋 複製 LINE 格式
                 </button>
               ` : ''}
             </div>
@@ -370,27 +371,27 @@ export function mountDailyReport(root) {
           <!-- 模式切換與日期導覽列 -->
           <div class="dr-toolbar">
             <div class="dr-view-tabs">
-              <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">📅 單日全員看板</button>
-              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 歷史回報紀錄檢索</button>
+              <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">📅 單日看板</button>
+              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 歷史檢索</button>
             </div>
 
             ${viewMode === 'daily' ? `
               <div class="dr-date-nav">
-                <button class="btn sm" data-shift-day="-1" title="前一天">‹ 前一天</button>
+                <button class="btn sm" data-shift-day="-1" title="前一天">‹</button>
                 <input type="date" class="dr-date-input" data-pick-date value="${esc(selectedDate)}">
                 <span class="dr-date-label">
-                  ${esc(fmtMD(selectedDate))}（週${esc(weekdayZh(selectedDate))}）
+                  ${esc(fmtMD(selectedDate))}（${esc(weekdayZh(selectedDate))}）
                   ${selectedDate === today ? '<span class="dr-today-pill">今天</span>' : ''}
                   ${info.off ? `<span class="dr-holiday-pill">🎉 ${esc(info.name || '例假日')}</span>` : ''}
                 </span>
-                <button class="btn sm" data-shift-day="1" title="後一天">後一天 ›</button>
-                ${selectedDate !== today ? `<button class="btn sm" data-go-today>回到今天</button>` : ''}
+                <button class="btn sm" data-shift-day="1" title="後一天">›</button>
+                ${selectedDate !== today ? `<button class="btn sm" data-go-today>今天</button>` : ''}
               </div>
             ` : ''}
 
             <div class="dr-typhoon-ctrl">
               <button class="btn sm ${doc.isTyphoonDay ? 'dr-typhoon-active' : ''}" data-toggle-typhoon>
-                🌀 ${doc.isTyphoonDay ? '已啟用颱風天免回報（點擊取消）' : '設為颱風天免回報'}
+                🌀 ${doc.isTyphoonDay ? '取消颱風免回報' : '颱風免回報'}
               </button>
             </div>
           </div>
@@ -398,10 +399,7 @@ export function mountDailyReport(root) {
           ${doc.isTyphoonDay ? `
             <div class="dr-typhoon-banner">
               <span class="dr-typhoon-icon">🌀</span>
-              <div>
-                <strong>${esc(doc.typhoonNote || '今日為颱風停班停課日 — 全體內外勤同仁今日免回報')}</strong>
-                <div class="muted" style="font-size:12.5px">系統已自動暫停今日 17:30 下班回報提醒；若有居家辦公或緊急出勤進度仍可自由填寫紀錄。</div>
-              </div>
+              <div><strong>${esc(doc.typhoonNote || '今日為颱風停班停課日 — 全體同仁免回報')}</strong></div>
             </div>
           ` : ''}
         </section>
@@ -417,42 +415,15 @@ export function mountDailyReport(root) {
   }
 
   function renderDailyBoard({
-    selectedDate, doc, officeMembers, fieldMembers, allReporters, supervisors,
-    statuses, submittedCount, exemptCount, pendingCount, me, myId, isSup, isDesigner, canManage,
+    selectedDate, doc, officeMembers, fieldMembers, supervisors,
+    myId, isSup, isDesigner, canManage,
   }) {
     return `
-      <!-- 當日回報進度總覽（全體 9 位：內勤 6 + 外勤 3） -->
-      <section class="dr-stats-grid">
-        <div class="card dr-stat-card ok">
-          <div class="dr-stat-num">${submittedCount} <span class="dr-stat-unit">/ ${allReporters.length} 人</span></div>
-          <div class="dr-stat-label">✅ 今日已完成回報（內勤＋外勤）</div>
-          <div class="dr-stat-pills">
-            ${statuses.filter(x => x.st.code === 'submitted').map(x => `<span class="dr-mini-pill ok">${esc(x.user.displayName)}</span>`).join('') || '<span class="muted">尚無回報</span>'}
-          </div>
-        </div>
-
-        <div class="card dr-stat-card ${pendingCount > 0 ? 'warn' : 'ok'}">
-          <div class="dr-stat-num">${pendingCount} <span class="dr-stat-unit">人</span></div>
-          <div class="dr-stat-label">⏳ 今日待回報</div>
-          <div class="dr-stat-pills">
-            ${statuses.filter(x => x.st.code === 'pending').map(x => `<span class="dr-mini-pill pending">${esc(x.user.displayName)}</span>`).join('') || '<span class="dr-mini-pill ok">🎉 今日全組應回報同仁已全數完成！</span>'}
-          </div>
-        </div>
-
-        <div class="card dr-stat-card neutral">
-          <div class="dr-stat-num">${exemptCount} <span class="dr-stat-unit">人</span></div>
-          <div class="dr-stat-label">🏖️ 休假 / 🌀 颱風 / 🎉 例假日免回報</div>
-          <div class="dr-stat-pills">
-            ${statuses.filter(x => ['typhoon_exempt', 'leave_exempt', 'holiday_exempt'].includes(x.st.code)).map(x => `<span class="dr-mini-pill leave">${esc(x.user.displayName)}（${esc(x.st.label.replace(/（.*）/, ''))}）</span>`).join('') || '<span class="muted">今日全員正常出勤</span>'}
-          </div>
-        </div>
-      </section>
-
       <!-- 外勤品管 3 位同仁制式回報區 -->
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
-          <h2>🚲 外勤品管同仁每日稽查回報（${fieldMembers.length} 位｜制式 3 題：地區・場站數・2.0/2.0E 台數）</h2>
-          <span class="muted" style="font-size:13px">🔒 外勤回報內容僅代理副理（徐嘉鴻）、代理人（包于巧）與本人可見</span>
+          <h2>🚲 外勤品管稽查回報（${fieldMembers.length} 位）</h2>
+          <span class="info-pill-tip" title="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見">🔒 權限保護</span>
         </div>
         <div class="dr-cards-grid">
           ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -462,8 +433,8 @@ export function mountDailyReport(root) {
       <!-- 內勤 6 位組員每日回報卡片區 -->
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
-          <h2>🏢 內勤同仁每日工作進度（${officeMembers.length} 位）</h2>
-          <span class="muted" style="font-size:13px">👥 內勤工作進度全體組員皆可公開查看（僅限本人填寫）</span>
+          <h2>🏢 內勤同仁工作進度（${officeMembers.length} 位）</h2>
+          <span class="info-pill-tip" title="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『🚲 外勤支援回報』分頁">👥 全員公開</span>
         </div>
         <div class="dr-cards-grid">
           ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -826,27 +797,55 @@ export function mountDailyReport(root) {
     `;
   }
 
-  /** 內勤已填寫內容顯示區（全體組員皆可查看） */
+  /** 內勤已填寫內容顯示區（全體組員皆可查看，預設顯示精簡摘要，若有明日預計或備註則可展開） */
   function renderOfficeReportBody(rep) {
-    return `
-      <div class="dr-report-body">
-        <div class="dr-block">
-          <div class="dr-block-title">✅ 今日完成事項</div>
-          <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
-        </div>
-        ${rep.tomorrowTasks ? `
+    const lines = String(rep.todayTasks || '').trim().split('\n').filter(Boolean);
+    const hasExtra = !!(rep.tomorrowTasks || rep.notes || lines.length > 3);
+    const previewLines = lines.slice(0, 3).join('\n');
+
+    if (!hasExtra) {
+      return `
+        <div class="dr-report-body">
           <div class="dr-block">
-            <div class="dr-block-title">📅 明日預計 / 待辦</div>
-            <div class="dr-block-text">${esc(rep.tomorrowTasks).replace(/\n/g, '<br>')}</div>
+            <div class="dr-block-title">✅ 今日完成</div>
+            <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
           </div>
-        ` : ''}
-        ${rep.notes ? `
-          <div class="dr-block note">
-            <div class="dr-block-title">💡 備註 / 需協助事項</div>
-            <div class="dr-block-text">${esc(rep.notes)}</div>
+        </div>
+      `;
+    }
+
+    return `
+      <details class="dr-report-body dr-collapsible-report">
+        <summary class="dr-collapsible-summary">
+          <div class="dr-block" style="margin:0;flex:1">
+            <div class="dr-block-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span>✅ 今日完成（共 ${lines.length} 項）</span>
+              <span class="dr-expand-hint">▸ 點擊展開完整內容</span>
+            </div>
+            <div class="dr-block-text">${esc(previewLines).replace(/\n/g, '<br>')}${lines.length > 3 ? '<span class="muted"> …</span>' : ''}</div>
           </div>
-        ` : ''}
-      </div>
+        </summary>
+        <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)">
+          ${lines.length > 3 ? `
+            <div class="dr-block">
+              <div class="dr-block-title">✅ 完整今日完成事項</div>
+              <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
+            </div>
+          ` : ''}
+          ${rep.tomorrowTasks ? `
+            <div class="dr-block">
+              <div class="dr-block-title">📅 明日預計 / 待辦</div>
+              <div class="dr-block-text">${esc(rep.tomorrowTasks).replace(/\n/g, '<br>')}</div>
+            </div>
+          ` : ''}
+          ${rep.notes ? `
+            <div class="dr-block note">
+              <div class="dr-block-title">💡 備註 / 需協助事項</div>
+              <div class="dr-block-text">${esc(rep.notes)}</div>
+            </div>
+          ` : ''}
+        </div>
+      </details>
     `;
   }
 
