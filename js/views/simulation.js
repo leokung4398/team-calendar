@@ -286,17 +286,19 @@ export function mountSimulation(el, ctx = {}) {
         </div>
       </div>
 
-      <!-- 圖1 輕量化：2026 全年度月份選擇器（預設縮起為單一膠囊，滑鼠移過或點擊向右滑出 1~11 月） -->
-      <div id="sim-year-month-bar" class="month-expander-bar">
-        <div class="month-expander-trigger" tabindex="0">
-          <span class="month-trigger-label">📅 ${yStr}年 · <b>${Number(mStr)}月${curMonth === '2026-10' ? ' (本月)' : ''}</b></span>
-          <span class="month-trigger-hint">▸ 切換月份</span>
+      <!-- 圖1 輕量化：2026 全年度月份選擇器（預設縮起為單一膠囊，滑鼠移入月份膠囊時才輕柔向右浮出 1~11 月，絕不推擠右側子分頁） -->
+      <div id="sim-year-month-bar" class="sim-top-control-row">
+        <div class="month-expander-bar" tabindex="0">
+          <div class="month-expander-trigger">
+            <span class="month-trigger-label">📅 ${yStr}年 · <b>${Number(mStr)}月${curMonth === '2026-10' ? ' (本月)' : ''}</b></span>
+            <span class="month-trigger-hint">▸ 切換月份</span>
+          </div>
           <div class="month-expander-ZeroDrawer">
             ${SIMULATION_2026_MONTHS.slice(0, 11).map(mKey => {
               const mNum = Number(mKey.slice(5, 7));
               const isCur = mKey === curMonth && activeSubTab !== 'annual';
               return `
-                <button type="button" class="month-pill-item ${isCur ? 'active' : ''}" data-quick-month="${mKey}">
+                <button type="button" class="month-pill-item ${isCur ? 'active' : ''} ${mKey === '2026-10' ? 'is-current' : ''}" data-quick-month="${mKey}">
                   ${mNum}月${mKey === '2026-10' ? '(本月)' : ''}
                 </button>
               `;
@@ -304,8 +306,8 @@ export function mountSimulation(el, ctx = {}) {
           </div>
         </div>
 
-        <!-- 頂部獨立功能子分頁（與月份膠囊同行排列，大幅節省垂直空間） -->
-        <div class="sim-nav-pills" style="flex-wrap:wrap; margin-left:4px;">
+        <!-- 頂部獨立功能子分頁（固定於右側，不受月份展開推擠） -->
+        <div class="sim-nav-pills">
           <button type="button" class="sim-pill-btn ${activeSubTab === 'matrix' ? 'active tab-matrix' : ''}" data-tab="matrix">
             <span>📊 排班矩陣 (${Number(mStr)}月)</span>
           </button>
