@@ -6,6 +6,7 @@ import { esc, ymd, addDays, fmtMD, weekdayZh, nowMinutes, avatar, minToHM } from
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { bike, dock, rideBar } from '../yb.js';
 import { renderDailyVibeBar } from './vibeBar.js';
+import { renderStickyHub } from './stickyHub.js';
 
 export function mountToday(el) {
   let day = ymd();
@@ -24,25 +25,30 @@ export function mountToday(el) {
     </div>
     <div data-vibe></div>
     <div data-banner></div>
-    <div data-ride></div>
-    <section class="station detail card" data-detail>
-      <div class="st-head st-toggle" data-toggle role="button" tabindex="0" aria-expanded="false">
-        <span class="st-title">${dock(16)} 經營 Team ・詳細資料</span>
-        <span class="st-tools">
-          <span class="st-sum" data-sum></span>
-          <span class="seg small on-dark" data-filter>
-            <label><input type="radio" name="tf" value="all" checked><span>全部</span></label>
-            <label><input type="radio" name="tf" value="out"><span>不在辦公室</span></label>
-          </span>
-          <span class="st-chev"><span data-chev-text>展開</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-        </span>
+    <div class="today-bento-layout">
+      <div class="today-main-col">
+        <div data-ride></div>
+        <section class="station detail card" data-detail>
+          <div class="st-head st-toggle" data-toggle role="button" tabindex="0" aria-expanded="false">
+            <span class="st-title">${dock(16)} 經營 Team ・詳細資料</span>
+            <span class="st-tools">
+              <span class="st-sum" data-sum></span>
+              <span class="seg small on-dark" data-filter>
+                <label><input type="radio" name="tf" value="all" checked><span>全部</span></label>
+                <label><input type="radio" name="tf" value="out"><span>不在辦公室</span></label>
+              </span>
+              <span class="st-chev"><span data-chev-text>展開</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </span>
+          </div>
+          <div class="st-collapse"><div class="st-collapse-in">
+            <div class="st-detail-body"><div class="member-grid" data-grid></div></div>
+          </div></div>
+        </section>
       </div>
-      <div class="st-collapse"><div class="st-collapse-in">
-        <div class="st-detail-body"><div class="member-grid" data-grid></div></div>
-      </div></div>
-    </section>`;
+      <aside class="today-side-col" data-sticky-hub></aside>
+    </div>`;
 
   const q = s => el.querySelector(s);
   const go = d => { day = d; ensureEventsFrom(d); ensureRange(d, d).then(render); render(); };
@@ -101,6 +107,7 @@ export function mountToday(el) {
 
   function render() {
     renderDailyVibeBar(q('[data-vibe]'), () => renderDailyVibeBar(q('[data-vibe]')));
+    renderStickyHub(q('[data-sticky-hub]'), day, () => renderStickyHub(q('[data-sticky-hub]'), day));
     const isToday = day === ymd();
     const now = nowMinutes();
     const events = eventList();
