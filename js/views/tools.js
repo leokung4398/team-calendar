@@ -236,7 +236,7 @@ const DEFAULT_BOOKMARKS = [
   { id: 'bm_windy', title: 'Windy 颱風路徑與風場動態', url: 'https://www.windy.com/?25.000,121.483,5', tag: '颱風假觀測', icon: '🌀', builtinTab: 'weather', builtinCwaMap: 'windy' },
   { id: 'bm_3', title: '台鐵列車時刻／誤點即時查詢', url: 'https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime', tag: '交通時刻', icon: '🚆', builtinTab: 'rail' },
   { id: 'bm_4', title: '台灣高鐵時刻表與票價查詢', url: 'https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c', tag: '交通時刻', icon: '🚄', builtinTab: 'rail' },
-  { id: 'bm_5', title: '1968 高速公路即時路況影像', url: 'https://1968.freeway.gov.tw/', tag: '外勤路況', icon: '🛣️', builtinTab: 'freeway' },
+  { id: 'bm_5', title: '1968 高速公路即時路況影像', url: 'https://1968.freeway.gov.tw/roadcctv', tag: '外勤路況', icon: '🛣️', builtinTab: 'freeway' },
 ];
 
 let weatherCache = new Map();
@@ -651,7 +651,8 @@ export function mountTools(el) {
               <div class="muted tiny" style="margin-top:3px">點選左側外勤常走國道區段，右側地圖立即切換顯示該走廊最新車流路況與行車時間</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <a href="https://1968.freeway.gov.tw/n_what" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">📹 1968 即時路況影像 ↗</a>
+              <a href="https://1968.freeway.gov.tw/roadcctv" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">📹 1968 即時路況影像 ↗</a>
+              <a href="https://1968.freeway.gov.tw/n_speed" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🚗 國道各段車速 ↗</a>
               <a href="https://1968.freeway.gov.tw/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">1968 官網 ↗</a>
             </div>
           </div>
