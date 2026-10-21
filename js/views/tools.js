@@ -679,13 +679,12 @@ export function mountTools(el) {
             </div>
 
             <div class="freeway-map-box">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-shrink:0">
                 <strong style="font-size:13px;color:#0F172A">🗺️ 即時路況導航預覽：${esc(activeCorridor.route)}</strong>
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeCorridor.mapQuery)}" target="_blank" rel="noopener" class="link tiny">全螢幕路況 ↗</a>
               </div>
               <iframe
                 src="https://maps.google.com/maps?q=${encodeURIComponent(activeCorridor.mapQuery)}&t=m&z=11&output=embed&hl=zh-TW"
-                style="width:100%;height:290px;border:1px solid #CBD5E1;border-radius:10px;display:block;background:#F8FAFC"
                 loading="lazy"
                 title="國道即時路況地圖"
               ></iframe>

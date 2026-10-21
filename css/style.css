@@ -5299,9 +5299,9 @@ th.has-meeting { position: relative; }
 /* 4. 🛣️ 1968 國道五大走廊即時路況 */
 .freeway-bento-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) minmax(300px, 1.15fr);
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.25fr);
   gap: 14px;
-  align-items: start;
+  align-items: stretch;
 }
 @media (max-width: 920px) {
   .freeway-bento-grid {
@@ -5311,7 +5311,24 @@ th.has-meeting { position: relative; }
 .freeway-corridor-list {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
+}
+.freeway-map-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 410px;
+  height: 100%;
+}
+.freeway-map-box iframe {
+  flex: 1;
+  width: 100%;
+  min-height: 380px;
+  height: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  display: block;
+  background: #f8fafc;
 }
 .fw-corridor-card {
   background: #f8fafc;
