@@ -8,26 +8,38 @@ const WEATHER_REGIONS = [
     id: 'north', label: '雙北基宜',
     cities: [
       { name: '台北市・信義/大安', lat: 25.0330, lon: 121.5654 },
+      { name: '台北市・中正/萬華', lat: 25.0324, lon: 121.5080 },
+      { name: '台北市・內湖/南港', lat: 25.0689, lon: 121.5909 },
       { name: '新北市・板橋/新莊', lat: 25.0120, lon: 121.4657 },
-      { name: '新北市・中和/新店', lat: 24.9900, lon: 121.5100 },
-      { name: '基隆市・市區', lat: 25.1276, lon: 121.7392 },
+      { name: '新北市・中和/永和', lat: 24.9994, lon: 121.5063 },
+      { name: '新北市・新店/淡水', lat: 24.9783, lon: 121.5395 },
+      { name: '新北市・三重/蘆洲', lat: 25.0615, lon: 121.4867 },
+      { name: '基隆市・市區/七堵', lat: 25.1276, lon: 121.7392 },
     ],
   },
   {
     id: 'taoyuan', label: '桃竹苗',
     cities: [
       { name: '桃園市・桃園/龜山', lat: 24.9936, lon: 121.3010 },
-      { name: '桃園市・中壢/青埔', lat: 24.9537, lon: 121.2258 },
+      { name: '桃園市・中壢/平鎮', lat: 24.9537, lon: 121.2258 },
+      { name: '桃園市・蘆竹/大園', lat: 25.0453, lon: 121.2964 },
+      { name: '桃園市・八德/龍潭', lat: 24.9298, lon: 121.2845 },
       { name: '新竹市・東區/竹科', lat: 24.8138, lon: 120.9675 },
-      { name: '新竹縣・竹北', lat: 24.8383, lon: 121.0089 },
+      { name: '新竹市・北區/香山', lat: 24.8190, lon: 120.9502 },
+      { name: '新竹縣・竹北/湖口', lat: 24.8383, lon: 121.0089 },
       { name: '苗栗縣・苗栗/竹南', lat: 24.5602, lon: 120.8214 },
     ],
   },
   {
     id: 'central', label: '中彰投',
     cities: [
-      { name: '台中市・西屯/市政', lat: 24.1618, lon: 120.6469 },
-      { name: '台中市・大甲/豐原', lat: 24.3486, lon: 120.6224 },
+      { name: '台中市・西屯/南屯', lat: 24.1618, lon: 120.6469 },
+      { name: '台中市・北屯/北區', lat: 24.1823, lon: 120.6863 },
+      { name: '台中市・西區/中區', lat: 24.1417, lon: 120.6710 },
+      { name: '台中市・豐原/后里', lat: 24.2543, lon: 120.7208 },
+      { name: '台中市・大甲/清水', lat: 24.3486, lon: 120.6224 },
+      { name: '台中市・大里/太平', lat: 24.0996, lon: 120.6776 },
+      { name: '台中市・烏日/高鐵', lat: 24.1087, lon: 120.6143 },
       { name: '彰化縣・彰化/員林', lat: 24.0518, lon: 120.5161 },
       { name: '南投縣・南投/草屯', lat: 23.9610, lon: 120.6860 },
     ],
@@ -36,18 +48,32 @@ const WEATHER_REGIONS = [
     id: 'south1', label: '雲嘉南',
     cities: [
       { name: '雲林縣・斗六/虎尾', lat: 23.7092, lon: 120.4313 },
-      { name: '嘉義市・東區/西區', lat: 23.4801, lon: 120.4491 },
+      { name: '嘉義市・東區/火車站', lat: 23.4801, lon: 120.4491 },
+      { name: '嘉義市・西區/文化路', lat: 23.4791, lon: 120.4322 },
+      { name: '嘉義縣・太保/高鐵', lat: 23.4593, lon: 120.3233 },
+      { name: '嘉義縣・民雄/朴子', lat: 23.5515, lon: 120.4286 },
       { name: '台南市・中西/安平', lat: 22.9997, lon: 120.2270 },
-      { name: '台南市・永康/南科', lat: 23.0260, lon: 120.2560 },
+      { name: '台南市・東區/北區', lat: 22.9841, lon: 120.2263 },
+      { name: '台南市・永康/新市', lat: 23.0260, lon: 120.2560 },
+      { name: '台南市・善化/南科', lat: 23.1322, lon: 120.2965 },
+      { name: '台南市・仁德/歸仁', lat: 22.9248, lon: 120.2857 },
+      { name: '台南市・新營/鹽水', lat: 23.3103, lon: 120.3168 },
     ],
   },
   {
     id: 'south2', label: '高屏台東',
     cities: [
-      { name: '高雄市・左營/三民', lat: 22.6690, lon: 120.3030 },
+      { name: '高雄市・左營/楠梓', lat: 22.6690, lon: 120.3030 },
+      { name: '高雄市・三民/鼓山', lat: 22.6483, lon: 120.3018 },
       { name: '高雄市・前鎮/苓雅', lat: 22.6150, lon: 120.3080 },
-      { name: '屏東縣・屏東/潮州', lat: 22.6761, lon: 120.4929 },
-      { name: '台東縣・台東市區', lat: 22.7583, lon: 121.1444 },
+      { name: '高雄市・新興/前金', lat: 22.6314, lon: 120.3005 },
+      { name: '高雄市・鳳山/大寮', lat: 22.6269, lon: 120.3578 },
+      { name: '高雄市・小港/林園', lat: 22.5654, lon: 120.3539 },
+      { name: '高雄市・岡山/路竹', lat: 22.7960, lon: 120.2957 },
+      { name: '屏東縣・屏東市區', lat: 22.6761, lon: 120.4929 },
+      { name: '屏東縣・潮州/東港', lat: 22.5503, lon: 120.5414 },
+      { name: '屏東縣・恆春/墾丁', lat: 22.0042, lon: 120.7439 },
+      { name: '台東縣・台東/卑南', lat: 22.7583, lon: 121.1444 },
     ],
   },
 ];
@@ -496,11 +522,11 @@ export function mountTools(el) {
                   ${WEATHER_REGIONS.map(r => `<button type="button" class="${r.id === activeRegionId ? 'active' : ''}" data-w-region="${r.id}">${esc(r.label)}</button>`).join('')}
                 </div>
               </div>
-              <div class="weather-cards-row" style="grid-template-columns:repeat(auto-fill, minmax(175px, 1fr));gap:10px">
+              <div class="weather-cards-row" style="grid-template-columns:repeat(auto-fill, minmax(195px, 1fr));gap:10px">
                 ${region.cities.map(c => {
                   const w = weatherCache.get(c.name);
                   if (!w) {
-                    return `<div class="weather-mini-card"><div style="font-weight:700">${esc(c.name)}</div><div class="muted" style="font-size:12px;margin-top:8px">載入即時氣象中…</div></div>`;
+                    return `<div class="weather-mini-card" style="text-align:left;padding:10px 12px"><div style="font-weight:700">${esc(c.name)}</div><div class="muted" style="font-size:12px;margin-top:8px">載入即時氣象中…</div></div>`;
                   }
                   const cur = w.current || {};
                   const daily = w.daily || {};
@@ -512,20 +538,20 @@ export function mountTools(el) {
                   const feel = Math.round(cur.apparent_temperature ?? cur.temperature_2m ?? 25);
                   const wind = Math.round(cur.wind_speed_10m ?? 5);
                   return `
-                    <div class="weather-mini-card" style="text-align:left;padding:10px 12px">
-                      <div style="display:flex;justify-content:space-between;align-items:center">
-                        <strong style="font-size:13.5px;color:#0F172A">${esc(c.name)}</strong>
-                        <span style="font-size:20px">${wc.icon}</span>
+                    <div class="weather-mini-card" style="text-align:left;padding:11px 13px;display:flex;flex-direction:column;justify-content:space-between;gap:5px">
+                      <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
+                        <strong style="font-size:13.5px;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</strong>
+                        <span style="font-size:20px;line-height:1;flex-shrink:0">${wc.icon}</span>
                       </div>
-                      <div style="font-size:21px;font-weight:800;margin:4px 0;color:var(--text)">
-                        ${Math.round(cur.temperature_2m ?? 24)}°C
-                        <span style="font-size:11.5px;font-weight:600;color:var(--muted)">(${esc(wc.text)} · 體感 ${feel}°)</span>
+                      <div>
+                        <div style="font-size:23px;font-weight:800;line-height:1.15;color:var(--text)">${Math.round(cur.temperature_2m ?? 24)}°C</div>
+                        <div style="font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px;white-space:nowrap">(${esc(wc.text)} · 體感 ${feel}°C)</div>
                       </div>
-                      <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:3px">
+                      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);white-space:nowrap;margin-top:2px">
                         <span>🌡️ 今日 ${Math.round(tMin)}°~${Math.round(tMax)}°</span>
                         <span style="color:${pop >= 50 ? '#DC2626' : '#0284C7'};font-weight:800">☔ 今降雨 ${pop}%</span>
                       </div>
-                      <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748B;border-top:1px dashed #CBD5E1;padding-top:4px;margin-top:4px">
+                      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748B;border-top:1px dashed #CBD5E1;padding-top:5px;white-space:nowrap">
                         <span>💨 風速 ${wind} km/h</span>
                         <span>明日降雨 ${popTom}%</span>
                       </div>
