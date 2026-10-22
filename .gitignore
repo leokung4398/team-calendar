@@ -17,5 +17,7 @@ _selfcheck.html
 # 內部會議紀錄參考資料與獨立採購佈告欄子倉庫目錄，避免誤推上公開 GitHub
 會議記錄參考資料/
 bulletin/
+*.pdf
+
 
 

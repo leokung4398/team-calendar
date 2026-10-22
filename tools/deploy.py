@@ -30,8 +30,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 API = "https://firebasehosting.googleapis.com/v1beta1"
 
 # 只部署這些檔案（相對於專案根目錄）
-INCLUDE = ["index.html", "css/**/*", "js/**/*"]
-ALLOWED_EXT = {".html", ".css", ".js", ".json", ".svg", ".png", ".jpg", ".ico", ".webmanifest", ".txt"}
+INCLUDE = ["index.html", "css/**/*", "js/**/*", "assets/**/*"]
+ALLOWED_EXT = {".html", ".css", ".js", ".json", ".svg", ".png", ".jpg", ".jpeg", ".webp", ".ico", ".webmanifest", ".txt"}
 
 
 def collect_files():

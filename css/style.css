@@ -5382,6 +5382,172 @@ th.has-meeting { position: relative; }
   font-weight: 600;
 }
 
+/* 5. 💡 改善提案作業管理辦法（視覺化圖卡 & 對照表） */
+.kaizen-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 1100px) {
+  .kaizen-cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  .kaizen-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.kaizen-info-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.kaizen-info-card:hover {
+  transform: translateY(-2px);
+  border-color: #fbbf24;
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.12);
+}
+.kaizen-img-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #f8fafc;
+  overflow: hidden;
+  cursor: zoom-in;
+  border-bottom: 1px solid #f1f5f9;
+}
+.kaizen-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+.kaizen-img-wrap:hover img {
+  transform: scale(1.03);
+}
+.kaizen-badge-pill {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #fde047;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+.kaizen-zoom-pill {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.kaizen-card-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.kaizen-card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.kaizen-card-title-row h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+}
+.kaizen-hl-tag {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.kaizen-bullet-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #334155;
+}
+.kaizen-bullet-list li b {
+  color: #0f172a;
+}
+.kaizen-table-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+.kaizen-tier-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.kaizen-tier-table th,
+.kaizen-tier-table td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 6px;
+}
+.kaizen-tier-table thead th {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 12px;
+}
+.kaizen-tier-table tbody th {
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 800;
+  width: 88px;
+  white-space: nowrap;
+}
+.kz-grade-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+.kz-grade-chip.g1 { background: #fef3c7; color: #b45309; border: 1px solid #fcd34d; }
+.kz-grade-chip.g2 { background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc; }
+.kz-grade-chip.g3 { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+.kz-grade-chip.g4 { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+.kz-grade-chip.g5,
+.kz-grade-chip.g6,
+.kz-grade-chip.g7 { background: #f1f5f9; color: #334155; }
+.kz-grade-chip.g8 { background: #f8fafc; color: #94a3b8; }
+
+
 
 
 
