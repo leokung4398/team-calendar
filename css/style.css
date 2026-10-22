@@ -6909,6 +6909,569 @@ th.has-meeting { position: relative; }
   animation: wfCardPulse 1.8s ease-out;
 }
 
+/* ============================================================
+   👾 外勤品管遊戲化：月度區域魔王部位破壞系統（連動模擬體驗排班矩陣）
+   - 雙北 920 台平分 / 高雄 265 台 ＝ 🧠 魔王大腦 & 🫀 魔王身體核心
+   - 外縣市出差配額 ＝ 🦾🦿 魔王四肢部位
+   ============================================================ */
+.dr-raid-world-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #312e81 100%);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.22);
+}
+
+.dr-rwb-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 420px;
+}
+
+.dr-rwb-icon {
+  font-size: 30px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(251, 191, 36, 0.16);
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 18px rgba(251, 191, 36, 0.25);
+}
+
+.dr-rwb-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.dr-rwb-title strong {
+  color: #fde047;
+  letter-spacing: 0.3px;
+}
+
+.dr-rwb-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.14);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.dr-rwb-link:hover {
+  background: rgba(56, 189, 248, 0.25);
+  color: #e0f2fe;
+}
+
+.dr-rwb-desc {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.dr-rwb-desc b {
+  color: #fff;
+}
+
+.dr-rwb-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dr-rwb-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dr-rwb-stat span {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.dr-rwb-stat strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.dr-rwb-stat strong small {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.dr-rwb-stat.dealt strong {
+  color: #fbbf24;
+}
+
+.dr-rwb-stat .today-hit {
+  font-style: normal;
+  font-size: 12px;
+  color: #4ade80;
+}
+
+.dr-rwb-mini-bar {
+  width: 90px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dr-rwb-mini-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #22c55e 100%);
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 個人卡片內的魔王競技場面板 */
+.dr-boss-arena {
+  position: relative;
+  margin: 10px 0 12px;
+  padding: 14px;
+  border-radius: 14px;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 20px rgba(15, 23, 42, 0.18);
+  overflow: hidden;
+}
+
+.dr-boss-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.dr-boss-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dr-boss-avatar-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dr-boss-avatar-wrap.hit-today {
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.45);
+}
+
+.dr-boss-emoji {
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.dr-boss-hit-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: linear-gradient(135deg, #dc2626, #ea580c);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid #fef08a;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.dr-boss-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 3px;
+}
+
+.dr-boss-month-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.dr-boss-phase-pill {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.2);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.dr-boss-phase-pill.tone-damaged {
+  background: rgba(250, 204, 21, 0.2);
+  color: #fde047;
+  border-color: rgba(250, 204, 21, 0.45);
+}
+
+.dr-boss-phase-pill.tone-critical {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.dr-boss-phase-pill.tone-clear {
+  background: rgba(16, 185, 129, 0.28);
+  color: #6ee7b7;
+  border-color: #34d399;
+}
+
+.dr-boss-name {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.dr-boss-total-hp-box {
+  text-align: right;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dr-boss-hp-label {
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.dr-boss-hp-numbers {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.dr-boss-remain-num {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fde047;
+  line-height: 1.15;
+}
+
+.dr-boss-max-num {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+.dr-boss-dealt-sub {
+  font-size: 10.5px;
+  color: #cbd5e1;
+}
+
+.dr-boss-dealt-sub b {
+  color: #fb923c;
+}
+
+/* 魔王主血條 */
+.dr-boss-main-bar-wrap {
+  margin-bottom: 10px;
+}
+
+.dr-boss-main-bar-track {
+  width: 100%;
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  padding: 1px;
+}
+
+.dr-boss-main-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 45%, #22c55e 100%);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dr-boss-main-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #cbd5e1;
+  margin-top: 4px;
+}
+
+.dr-boss-main-bar-meta b {
+  color: #fde047;
+}
+
+/* 解剖式部位血條（大腦/身體核心 + 四肢部位） */
+.dr-boss-anatomy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.16);
+}
+
+.dr-boss-part-group {
+  background: rgba(15, 23, 42, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.dr-bpg-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #e2e8f0;
+  margin-bottom: 6px;
+}
+
+.dr-bpg-title small {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.dr-bpg-title small b {
+  color: #fde047;
+}
+
+.dr-boss-parts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.dr-boss-part-card {
+  background: rgba(30, 41, 59, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.dr-boss-part-card.core {
+  border-color: rgba(96, 165, 250, 0.4);
+  background: linear-gradient(180deg, rgba(30, 58, 138, 0.45) 0%, rgba(15, 23, 42, 0.75) 100%);
+}
+
+.dr-boss-part-card.limb {
+  border-color: rgba(251, 191, 36, 0.35);
+  background: linear-gradient(180deg, rgba(120, 53, 15, 0.35) 0%, rgba(15, 23, 42, 0.75) 100%);
+}
+
+.dr-boss-part-card.is-broken {
+  border-color: rgba(52, 211, 153, 0.65);
+  background: linear-gradient(180deg, rgba(6, 78, 59, 0.55) 0%, rgba(15, 23, 42, 0.8) 100%);
+}
+
+.dr-bp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 11.5px;
+}
+
+.dr-bp-slot {
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.dr-bp-status {
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+.dr-bp-status b {
+  color: #fde047;
+  font-size: 12px;
+}
+
+.dr-bp-status small {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.dr-bp-status.broken {
+  color: #6ee7b7;
+  font-weight: 800;
+}
+
+.dr-bp-region {
+  font-size: 10.5px;
+  color: #93c5fd;
+  font-weight: 600;
+  margin: 2px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dr-boss-part-card.limb .dr-bp-region {
+  color: #fcd34d;
+}
+
+.dr-bp-hp-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.85);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 3px;
+}
+
+.dr-bp-hp-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.45s ease;
+}
+
+.dr-bp-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.dr-bp-foot b {
+  color: #fb923c;
+}
+
+.dr-boss-privacy-note {
+  font-size: 11px;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.45);
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.dr-combo-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 800;
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  margin-left: 4px;
+}
+
+/* 儲存回報時的斬擊震動與浮動爆擊數字動畫 */
+.dr-boss-arena.boss-hit-shake {
+  animation: drBossHitShake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes drBossHitShake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-6px) rotate(-0.8deg); filter: brightness(1.25); }
+  30%, 60%, 90% { transform: translateX(6px) rotate(0.8deg); }
+}
+
+.dr-boss-floating-dmg {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 2px solid #fde047;
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.65);
+  pointer-events: none;
+  z-index: 30;
+  white-space: nowrap;
+  animation: drBossFloatDmg 1.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dr-boss-floating-dmg span {
+  color: #fde047;
+  font-size: 22px;
+  margin-left: 4px;
+}
+
+@keyframes drBossFloatDmg {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 10px) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -15px) scale(1.15);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -35px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -55px) scale(0.9);
+  }
+}
+
+
 
 
 

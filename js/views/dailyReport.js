@@ -13,6 +13,7 @@ import { eventsOfUserOn } from '../schedule.js';
 import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, avatar, toast, ymd, addDays, fmtMD, weekdayZh, nowMinutes } from '../utils.js';
 import { startInteractiveDailyReportSpotlightTour } from '../guideModal.js';
+import { getMergedMonthSimulationData } from './simulation.js';
 
 // 內勤各職務專屬的「常用工作快選膠囊」
 const ROLE_QUICK_CHIPS = {
@@ -297,6 +298,479 @@ export function evaluateMemberReportStatus(u, dateStr) {
 }
 
 // ============================================================
+// 👾 外勤品管遊戲化：月度區域魔王部位破壞系統（連動模擬體驗排班矩陣）
+// - 雙北 920 台（孔令淳 & 葉爵豪平分各 460 HP）與 高雄 265 台（陸逸群 265 HP）設定於魔王「🧠 大腦 / 🫀 身體核心」
+// - 外縣市出差配額（桃園、新竹縣市、苗栗、台中、嘉義、台南、屏東、台東）設定於魔王「💪 四肢部位（左臂、右臂、左腿、右腿）」
+// ============================================================
+const FIELD_BOSS_META = {
+  'Leo': {
+    bossName: '北境魔甲泰坦・鏽蝕巨獸',
+    bossTitle: '雙北核心與中北遠征守護魔王',
+    avatarEmoji: '🤖',
+    themeColor: '#3b82f6',
+    themeBg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #1e3a8a 100%)',
+    accentColor: '#60a5fa',
+  },
+  'Hao': {
+    bossName: '雷霆鋼鐵機神・疾風巨像',
+    bossTitle: '雙北核心與桃竹中遠征魔王',
+    avatarEmoji: '👾',
+    themeColor: '#8b5cf6',
+    themeBg: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 55%, #4c1d95 100%)',
+    accentColor: '#a78bfa',
+  },
+  'Chun': {
+    bossName: '南境熔岩巨龍・烈日霸主',
+    bossTitle: '高雄核心與雲嘉南東遠征魔王',
+    avatarEmoji: '🐲',
+    themeColor: '#f97316',
+    themeBg: 'linear-gradient(135deg, #18181b 0%, #27120b 55%, #7c2d12 100%)',
+    accentColor: '#fb923c',
+  },
+};
+
+function getFieldNick(u) {
+  const name = u?.displayName || '';
+  if (name.includes('孔令淳')) return 'Leo';
+  if (name.includes('葉爵豪')) return 'Hao';
+  if (name.includes('陸逸群')) return 'Chun';
+  return name;
+}
+
+/** 將每日回報填寫的「1️⃣ 地區」文字（例如：新北市（板橋區）、桃園市（中壢區））解析為對應的排班矩陣縣市 */
+export function matchRegionToQuotaKey(regionText, nick) {
+  const txt = String(regionText || '').trim();
+  if (!txt) return nick === 'Chun' ? '高雄' : '雙北';
+  const matched = [];
+  if (/雙北|新北|台北|臺北/.test(txt)) matched.push('雙北');
+  if (/桃園/.test(txt)) matched.push('桃園');
+  if (/新竹/.test(txt)) matched.push('新竹縣市');
+  if (/苗栗/.test(txt)) matched.push('苗栗');
+  if (/台中|臺中/.test(txt)) matched.push('台中');
+  if (/嘉義/.test(txt)) matched.push('嘉義');
+  if (/台南|臺南/.test(txt)) matched.push('台南');
+  if (/屏東/.test(txt)) matched.push('屏東');
+  if (/台東|臺東/.test(txt)) matched.push('台東');
+  if (/高雄/.test(txt)) matched.push('高雄');
+  if (!matched.length) {
+    matched.push(nick === 'Chun' ? '高雄' : '雙北');
+  }
+  return matched;
+}
+
+/**
+ * 計算指定外勤人員在該月份（YYYY-MM）的「魔王部位血量（大腦/身體核心 ＋ 四肢外縣市）」與累積扣血進度
+ * 直接與 `simulation.js` 的當月各縣市配額與組員排班矩陣 100% 即時連動！
+ */
+export function computeFieldBossStatus(u, dateStr) {
+  const monthKey = String(dateStr || ymd()).slice(0, 7);
+  const nick = getFieldNick(u);
+  const meta = FIELD_BOSS_META[nick] || FIELD_BOSS_META['Leo'];
+  const { quotas, assignments } = getMergedMonthSimulationData(monthKey);
+
+  // 1. 建立「🧠 大腦 + 🫀 身體核心」與「💪 四肢部位」目標血量（Max HP）
+  const parts = [];
+  const LIMB_SLOTS = [
+    { slotKey: 'left_arm', slotLabel: '🦾 左臂裝甲', icon: '🦾' },
+    { slotKey: 'right_arm', slotLabel: '⚔️ 右臂巨刃', icon: '⚔️' },
+    { slotKey: 'left_leg', slotLabel: '🦿 左腿推進器', icon: '🦿' },
+    { slotKey: 'right_leg', slotLabel: '🛡️ 右腿護脛', icon: '🛡️' },
+    { slotKey: 'wing', slotLabel: '🪽 背部雙翼', icon: '🪽' },
+  ];
+
+  if (nick === 'Leo' || nick === 'Hao') {
+    const taipeiQ = quotas.find(q => q.region === '雙北');
+    const taipeiTotal = Number(taipeiQ?.totalVehicles) || 920;
+    const myShare = Math.round(taipeiTotal / 2); // 雙北兩人 920 平分 = 460 HP
+    // 拆分為「🧠 魔王大腦（台北市核心 230 HP）」與「🫀 魔王身體（新北市核心 230 HP）」，總和為雙北 460 HP
+    const brainHp = Math.round(myShare / 2);
+    const bodyHp = myShare - brainHp;
+    parts.push({
+      id: 'core_taipei',
+      regionKey: '雙北',
+      subMatch: '台北',
+      partType: 'core',
+      slotLabel: '🧠 魔王大腦',
+      regionLabel: '雙北平分・大腦中樞',
+      maxHp: brainHp,
+      damage: 0,
+      v20Dmg: 0,
+      v20eDmg: 0,
+      daysAssigned: '常態',
+    });
+    parts.push({
+      id: 'core_newtaipei',
+      regionKey: '雙北',
+      subMatch: '新北',
+      partType: 'core',
+      slotLabel: '🫀 魔王身體',
+      regionLabel: '雙北平分・身體核心',
+      maxHp: bodyHp,
+      damage: 0,
+      v20Dmg: 0,
+      v20eDmg: 0,
+      daysAssigned: '常態',
+    });
+  } else if (nick === 'Chun') {
+    const kaoQ = quotas.find(q => q.region === '高雄');
+    const kaoTotal = (Number(kaoQ?.v20) || 0) + (Number(kaoQ?.v20e) || 0) || Number(kaoQ?.totalVehicles) || 265;
+    const brainHp = Math.round(kaoTotal * 0.4);
+    const bodyHp = kaoTotal - brainHp;
+    parts.push({
+      id: 'core_kao_brain',
+      regionKey: '高雄',
+      subMatch: '高雄_大腦',
+      partType: 'core',
+      slotLabel: '🧠 魔王大腦',
+      regionLabel: '高雄駐地・大腦中樞',
+      maxHp: brainHp,
+      damage: 0,
+      v20Dmg: 0,
+      v20eDmg: 0,
+      daysAssigned: '常態',
+    });
+    parts.push({
+      id: 'core_kao_body',
+      regionKey: '高雄',
+      subMatch: '高雄_身體',
+      partType: 'core',
+      slotLabel: '🫀 魔王身體',
+      regionLabel: '高雄駐地・身體核心',
+      maxHp: bodyHp,
+      damage: 0,
+      v20Dmg: 0,
+      v20eDmg: 0,
+      daysAssigned: '常態',
+    });
+  }
+
+  // 2. 掃描排班矩陣中的外縣市配額，掛載至「魔王四肢部位」
+  let limbIdx = 0;
+  quotas.forEach(q => {
+    if (q.region === '雙北' || q.region === '高雄') return;
+    const d = (assignments[q.region] && (assignments[q.region][nick] || assignments[q.region][u.displayName] || assignments[q.region][u.uid])) || 0;
+    const count = Number(d) || 0;
+    if (count <= 0) return;
+
+    let partMaxHp = 0;
+    if (nick === 'Chun' && ['嘉義', '台南', '屏東', '台東'].includes(q.region)) {
+      const regTargetDays = Number(q.targetDays) || 1;
+      const regTotalVehicles = Number(q.totalVehicles) || ((Number(q.v20) || 0) + (Number(q.v20e) || 0));
+      partMaxHp = Math.round((regTotalVehicles / regTargetDays) * count);
+    } else {
+      const perDay = (Number(q.v20) || 0) + (Number(q.v20e) || 0);
+      partMaxHp = count * perDay;
+    }
+
+    const slot = LIMB_SLOTS[limbIdx % LIMB_SLOTS.length];
+    limbIdx++;
+    parts.push({
+      id: `limb_${q.region}`,
+      regionKey: q.region,
+      partType: 'limb',
+      slotLabel: slot.slotLabel,
+      regionLabel: `${q.region}（${count}趟）`,
+      maxHp: partMaxHp,
+      damage: 0,
+      v20Dmg: 0,
+      v20eDmg: 0,
+      daysAssigned: count,
+    });
+  });
+
+  // 3. 彙整該月份（YYYY-MM-01 ~ YYYY-MM-31）所有已提交的每日回報，自動扣除對應部位 HP！
+  let totalStationsMonth = 0;
+  let totalReportDays = 0;
+  let todayDamage = 0;
+  let todayRegionText = '';
+  const battleLogs = [];
+
+  const sortedDates = [...state.dailyReports.keys()]
+    .filter(d => d.startsWith(monthKey))
+    .sort((a, b) => a.localeCompare(b));
+
+  for (const d of sortedDates) {
+    const rDoc = state.dailyReports.get(d);
+    const rep = rDoc?.reports?.[u.uid];
+    if (!rep || !isReportSubmitted(rep, u)) continue;
+    const v20 = Number(rep.fieldV20) || 0;
+    const v20e = Number(rep.fieldV20E) || 0;
+    const dmg = v20 + v20e;
+    const stCount = Number(rep.fieldStations) || 0;
+    totalStationsMonth += stCount;
+    totalReportDays += 1;
+
+    if (d === dateStr) {
+      todayDamage = dmg;
+      todayRegionText = rep.fieldRegion || '';
+    }
+
+    if (dmg <= 0) continue;
+
+    const regText = String(rep.fieldRegion || '');
+    const matchedRegions = matchRegionToQuotaKey(regText, nick);
+    // 平均分配當日傷害給所選的縣市部位
+    const dmgPerRegion = dmg / matchedRegions.length;
+
+    matchedRegions.forEach(rKey => {
+      if (rKey === '雙北' && (nick === 'Leo' || nick === 'Hao')) {
+        const brainPart = parts.find(p => p.id === 'core_taipei');
+        const bodyPart = parts.find(p => p.id === 'core_newtaipei');
+        const hasTaipei = /台北|臺北/.test(regText);
+        const hasNewTaipei = /新北/.test(regText);
+        if (hasTaipei && !hasNewTaipei && brainPart) {
+          brainPart.damage += dmgPerRegion;
+          // 若大腦已破部位（HP 歸零），溢傷自動貫穿至身體核心！
+          if (brainPart.damage > brainPart.maxHp && bodyPart) {
+            const overflow = brainPart.damage - brainPart.maxHp;
+            brainPart.damage = brainPart.maxHp;
+            bodyPart.damage += overflow;
+          }
+        } else if (hasNewTaipei && !hasTaipei && bodyPart) {
+          bodyPart.damage += dmgPerRegion;
+          if (bodyPart.damage > bodyPart.maxHp && brainPart) {
+            const overflow = bodyPart.damage - bodyPart.maxHp;
+            bodyPart.damage = bodyPart.maxHp;
+            brainPart.damage += overflow;
+          }
+        } else if (brainPart && bodyPart) {
+          // 同時包含或統稱雙北：先削大腦再削身體，或對半削血
+          const half = dmgPerRegion / 2;
+          brainPart.damage += half;
+          bodyPart.damage += (dmgPerRegion - half);
+        }
+      } else if (rKey === '高雄' && nick === 'Chun') {
+        const brainPart = parts.find(p => p.id === 'core_kao_brain');
+        const bodyPart = parts.find(p => p.id === 'core_kao_body');
+        if (brainPart && bodyPart) {
+          // 先攻擊大腦中樞，擊破後貫穿至身體核心
+          const brainRemain = Math.max(0, brainPart.maxHp - brainPart.damage);
+          if (dmgPerRegion <= brainRemain) {
+            brainPart.damage += dmgPerRegion;
+          } else {
+            brainPart.damage += brainRemain;
+            bodyPart.damage += (dmgPerRegion - brainRemain);
+          }
+        }
+      } else {
+        // 四肢外縣市部位
+        let limbPart = parts.find(p => p.regionKey === rKey && p.partType === 'limb');
+        if (!limbPart) {
+          // 若當月臨時跨區支援原本不在矩陣上的縣市，傷害直接貫穿至魔王身體核心
+          limbPart = parts.find(p => p.partType === 'core') || parts[0];
+        }
+        if (limbPart) {
+          limbPart.damage += dmgPerRegion;
+        }
+      }
+    });
+
+    battleLogs.push({
+      date: d,
+      region: regText,
+      stations: stCount,
+      v20,
+      v20e,
+      dmg,
+    });
+  }
+
+  // 4. 結算各部位剩餘血量與總血量（用「剩餘 HP 扣減法」呈現）
+  let totalMaxHp = 0;
+  let totalDamageDealt = 0;
+
+  parts.forEach(p => {
+    p.damage = Math.round(p.damage);
+    p.remainHp = Math.max(0, p.maxHp - p.damage);
+    p.overkill = Math.max(0, p.damage - p.maxHp);
+    p.hpPct = p.maxHp > 0 ? Math.max(0, Math.min(100, Math.round((p.remainHp / p.maxHp) * 100))) : 0;
+    p.isBroken = p.remainHp === 0 && p.maxHp > 0;
+    totalMaxHp += p.maxHp;
+    totalDamageDealt += p.damage;
+  });
+
+  const totalRemainHp = Math.max(0, totalMaxHp - totalDamageDealt);
+  const totalOverkill = Math.max(0, totalDamageDealt - totalMaxHp);
+  const bossHpPct = totalMaxHp > 0 ? Math.max(0, Math.min(100, Math.round((totalRemainHp / totalMaxHp) * 100))) : 0;
+
+  let bossPhase = { label: '🟢 裝甲完好', tone: 'full', desc: '蓄勢待發，每一台品管都在削弱魔王護甲！' };
+  if (totalRemainHp === 0 && totalMaxHp > 0) {
+    bossPhase = { label: '🏆 部位全破・討伐成功！', tone: 'clear', desc: `本月配額已全數擊破！目前累積超額爆擊 +${totalOverkill} HP！` };
+  } else if (bossHpPct <= 25) {
+    bossPhase = { label: '🔴 瀕死斬殺期', tone: 'critical', desc: '魔王血量見底，即將完成本月討伐！' };
+  } else if (bossHpPct <= 65) {
+    bossPhase = { label: '🟡 護甲碎裂期', tone: 'damaged', desc: '持續穩定削血中，多部位護甲已出現裂痕！' };
+  }
+
+  const coreParts = parts.filter(p => p.partType === 'core');
+  const limbParts = parts.filter(p => p.partType === 'limb');
+
+  return {
+    monthKey,
+    nick,
+    meta,
+    totalMaxHp,
+    totalDamageDealt,
+    totalRemainHp,
+    totalOverkill,
+    bossHpPct,
+    bossPhase,
+    parts,
+    coreParts,
+    limbParts,
+    totalStationsMonth,
+    totalReportDays,
+    todayDamage,
+    todayRegionText,
+    battleLogs: battleLogs.slice(-5).reverse(),
+  };
+}
+
+/** 渲染外勤人員卡片內的「👾 專屬區域魔王・部位破壞討伐戰（大腦/身體核心 ＋ 四肢地區）」面板 */
+function renderFieldBossWidget(u, dateStr, canSeeDetails) {
+  const bs = computeFieldBossStatus(u, dateStr);
+  const [yStr, mStr] = bs.monthKey.split('-');
+  const coreMaxSum = bs.coreParts.reduce((s, p) => s + p.maxHp, 0);
+  const coreRemainSum = bs.coreParts.reduce((s, p) => s + p.remainHp, 0);
+
+  // 輔助渲染單一部位卡片（大腦 / 身體 / 左臂 / 右臂 / 左腿 / 右腿）
+  const renderPartBox = (p) => {
+    const barColor = p.isBroken
+      ? 'linear-gradient(90deg, #10b981, #34d399)'
+      : (p.hpPct <= 30 ? 'linear-gradient(90deg, #ef4444, #f97316)' : (p.partType === 'core' ? 'linear-gradient(90deg, #3b82f6, #60a5fa)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)'));
+    return `
+      <div class="dr-boss-part-card ${p.partType} ${p.isBroken ? 'is-broken' : ''}" title="${esc(p.slotLabel)}｜${esc(p.regionLabel)}：總血量 ${p.maxHp} HP，已扣 ${p.damage} HP，剩餘 ${p.remainHp} HP">
+        <div class="dr-bp-top">
+          <span class="dr-bp-slot">${esc(p.slotLabel)}</span>
+          <span class="dr-bp-status ${p.isBroken ? 'broken' : ''}">
+            ${p.isBroken ? `💥 已擊破!${p.overkill > 0 ? ` (+${p.overkill})` : ''}` : `剩 <b>${p.remainHp}</b> <small>/${p.maxHp}</small>`}
+          </span>
+        </div>
+        <div class="dr-bp-region">${esc(p.regionLabel)}</div>
+        <div class="dr-bp-hp-track">
+          <div class="dr-bp-hp-fill" style="width:${p.isBroken ? 100 : p.hpPct}%; background:${barColor};"></div>
+        </div>
+        <div class="dr-bp-foot">
+          <span>已削血 <b>-${p.damage}</b> HP</span>
+          <span>${p.isBroken ? '0% (CLEAR)' : `殘血 ${p.hpPct}%`}</span>
+        </div>
+      </div>
+    `;
+  };
+
+  return `
+    <div class="dr-boss-arena" data-boss-arena="${esc(u.uid)}" style="background:${bs.meta.themeBg};">
+      <div class="dr-boss-header">
+        <div class="dr-boss-identity">
+          <div class="dr-boss-avatar-wrap ${bs.todayDamage > 0 ? 'hit-today' : ''}">
+            <span class="dr-boss-emoji">${bs.meta.avatarEmoji}</span>
+            ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">⚔️ 今日 -${bs.todayDamage} HP!</span>` : ''}
+          </div>
+          <div>
+            <div class="dr-boss-title-row">
+              <span class="dr-boss-month-tag">🗓️ ${Number(mStr)}月討伐目標（連動排班矩陣）</span>
+              <span class="dr-boss-phase-pill tone-${bs.bossPhase.tone}">${bs.bossPhase.label}</span>
+            </div>
+            <h4 class="dr-boss-name">${esc(bs.meta.bossName)}</h4>
+          </div>
+        </div>
+
+        <div class="dr-boss-total-hp-box">
+          <div class="dr-boss-hp-label">🩸 魔王剩餘總血量（扣減法）</div>
+          <div class="dr-boss-hp-numbers">
+            <strong class="dr-boss-remain-num">${bs.totalRemainHp}</strong>
+            <span class="dr-boss-max-num">/ ${bs.totalMaxHp} HP</span>
+          </div>
+          <div class="dr-boss-dealt-sub">累計已擊削 <b>-${bs.totalDamageDealt} HP</b>${bs.totalOverkill > 0 ? `（超額爆擊 +${bs.totalOverkill}）` : ''}</div>
+        </div>
+      </div>
+
+      <!-- 魔王總血條（由滿血 100% 往左扣減） -->
+      <div class="dr-boss-main-bar-wrap">
+        <div class="dr-boss-main-bar-track">
+          <div class="dr-boss-main-bar-fill" style="width:${bs.bossHpPct}%;"></div>
+        </div>
+        <div class="dr-boss-main-bar-meta">
+          <span>💡 概念轉換：不看單日是否滿 40 台，每查 1 台車就削掉魔王 1 點血量！</span>
+          <span>剩餘 <b>${bs.bossHpPct}%</b> HP</span>
+        </div>
+      </div>
+
+      ${canSeeDetails ? `
+        <!-- 解剖式部位血條：大腦 & 身體核心（雙北 920 平分 / 高雄常態） ＋ 四肢部位（外縣市出差配額） -->
+        <div class="dr-boss-anatomy">
+          <div class="dr-boss-part-group core-group">
+            <div class="dr-bpg-title">
+              <span>🧠🫀 魔王中樞部位（${bs.nick === 'Chun' ? '高雄駐地 265 台核心' : '雙北 920 台兩人平分＝460 HP 核心'}）</span>
+              <small>中樞剩餘 <b>${coreRemainSum}</b> / ${coreMaxSum} HP</small>
+            </div>
+            <div class="dr-boss-parts-grid cols-2">
+              ${bs.coreParts.map(renderPartBox).join('')}
+            </div>
+          </div>
+
+          <div class="dr-boss-part-group limbs-group">
+            <div class="dr-bpg-title">
+              <span>🦾🦿 魔王四肢部位（外縣市出差配額連動）</span>
+              <small>依回報「1️⃣ 地區」自動精準扣除對應部位血量</small>
+            </div>
+            <div class="dr-boss-parts-grid cols-${Math.min(4, Math.max(2, bs.limbParts.length))}">
+              ${bs.limbParts.length ? bs.limbParts.map(renderPartBox).join('') : `<div class="muted" style="font-size:12px;color:#94a3b8;">本月無外縣市四肢部位配額</div>`}
+            </div>
+          </div>
+        </div>
+      ` : `
+        <div class="dr-boss-privacy-note">
+          🔒 各部位詳細配額與當日回報明細僅代理副理、代理人與本人可見（上方總血條與模擬體驗排班矩陣同步連動）
+        </div>
+      `}
+    </div>
+  `;
+}
+
+/** 渲染外勤專區頂部的「⚔️ 模擬體驗連動・外勤三人月度魔王討伐總覽橫幅」 */
+function renderFieldRaidBanner(fieldMembers, selectedDate) {
+  const statuses = fieldMembers.map(u => computeFieldBossStatus(u, selectedDate));
+  const grandMaxHp = statuses.reduce((s, x) => s + x.totalMaxHp, 0);
+  const grandRemainHp = statuses.reduce((s, x) => s + x.totalRemainHp, 0);
+  const grandDealt = statuses.reduce((s, x) => s + x.totalDamageDealt, 0);
+  const grandToday = statuses.reduce((s, x) => s + x.todayDamage, 0);
+  const grandPct = grandMaxHp > 0 ? Math.max(0, Math.min(100, Math.round((grandRemainHp / grandMaxHp) * 100))) : 0;
+  const monthKey = String(selectedDate || ymd()).slice(0, 7);
+  const [yStr, mStr] = monthKey.split('-');
+
+  return `
+    <div class="dr-raid-world-banner">
+      <div class="dr-rwb-left">
+        <span class="dr-rwb-icon">⚔️</span>
+        <div>
+          <div class="dr-rwb-title">
+            <strong>${yStr} 年 ${Number(mStr)} 月《外勤品管魔王討伐戰》・扣血減壓模式</strong>
+            <a href="#/simulation" class="dr-rwb-link" title="前往模擬體驗排班矩陣查看各縣市配額">🔗 已連動模擬體驗排班矩陣 ↗</a>
+          </div>
+          <div class="dr-rwb-desc">
+            🧠🫀 <b>魔王大腦＆身體</b>＝雙北 920 台平分（各 460 HP）／高雄 265 HP；🦾🦿 <b>魔王四肢</b>＝外縣市出差配額。每回報 1 台車即扣除 1 HP，無須焦慮單日是否滿 40 台！
+          </div>
+        </div>
+      </div>
+      <div class="dr-rwb-right">
+        <div class="dr-rwb-stat">
+          <span>三人魔王總剩餘 HP</span>
+          <strong>${grandRemainHp.toLocaleString()} <small>/ ${grandMaxHp.toLocaleString()}</small></strong>
+        </div>
+        <div class="dr-rwb-stat dealt">
+          <span>本月累計已削血</span>
+          <strong>-${grandDealt.toLocaleString()} HP ${grandToday > 0 ? `<em class="today-hit">（今日 -${grandToday}）</em>` : ''}</strong>
+        </div>
+        <div class="dr-rwb-mini-bar">
+          <div class="dr-rwb-mini-fill" style="width:${grandPct}%"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
 // 主畫面：📝 每日回報（#/dailyReport）
 // ============================================================
 export function mountDailyReport(root) {
@@ -419,12 +893,13 @@ export function mountDailyReport(root) {
     myId, isSup, isDesigner, canManage,
   }) {
     return `
-      <!-- 外勤品管 3 位同仁制式回報區 -->
+      <!-- 外勤品管 3 位同仁制式回報區（連動模擬體驗排班矩陣・魔王部位扣血減壓系統） -->
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
           <h2>🚲 外勤品管稽查回報（${fieldMembers.length} 位）</h2>
-          <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見">🔒 權限保護</span>
+          <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見；魔王血量與模擬體驗各縣市配額矩陣即時連動">🔒 權限保護 ＆ ⚔️ 魔王扣血減壓</span>
         </div>
+        ${renderFieldRaidBanner(fieldMembers, selectedDate)}
         <div class="dr-cards-grid">
           ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
         </div>
@@ -528,6 +1003,8 @@ export function mountDailyReport(root) {
             🏖️ 行事曆已登記休假：<strong>${esc(st.leaveEv.reason || '休假')}</strong>（今日免回報）
           </div>
         ` : ''}
+
+        ${isField ? renderFieldBossWidget(u, dateStr, canSeeDetails) : ''}
 
         ${isEditing ? (
           activeEditorMode === 'field'
@@ -701,7 +1178,10 @@ export function mountDailyReport(root) {
         </div>
 
         <div class="dr-bike-sum-bar" data-bike-sum="${esc(u.uid)}">
-          🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${total} 台</strong>（2.0：${Number(v20) || 0} 台 ＋ 2.0E：${Number(v20e) || 0} 台）
+          <div>🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${total} 台</strong>（🗡️ 2.0 斬擊：${Number(v20) || 0} 台 ＋ ⚡ 2.0E 雷擊：${Number(v20e) || 0} 台）</div>
+          <div class="dr-bike-damage-preview" style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">
+            ⚔️ 預計對魔王造成 <b>-${total} HP</b> 傷害（自動依「1️⃣ 地區」精準扣除大腦/身體核心或四肢部位血量！）
+          </div>
         </div>
 
         <label class="dr-field">
@@ -769,22 +1249,23 @@ export function mountDailyReport(root) {
   function renderFieldReportBody(rep, isOfficeSupport = false) {
     const v20 = Number(rep.fieldV20) || 0;
     const v20e = Number(rep.fieldV20E) || 0;
+    const stations = Number(rep.fieldStations) || 0;
     const total = v20 + v20e;
     return `
       <div class="dr-report-body field-summary">
         ${isOfficeSupport ? `<div style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:6px;">🚲 當日支援外勤（模擬體驗）稽查回報</div>` : ''}
         <div class="dr-field-metrics">
           <div class="dr-f-metric">
-            <span class="dr-fm-label">📍 地區</span>
+            <span class="dr-fm-label">📍 攻擊部位 / 地區</span>
             <strong class="dr-fm-val">${esc(rep.fieldRegion || '—')}</strong>
           </div>
           <div class="dr-f-metric">
-            <span class="dr-fm-label">🚏 稽查場站數</span>
-            <strong class="dr-fm-val">${esc(String(rep.fieldStations ?? 0))} 站</strong>
+            <span class="dr-fm-label">🚏 推進據點（場站數）</span>
+            <strong class="dr-fm-val">${esc(String(stations))} 站 ${stations >= 4 ? '<span class="dr-combo-tag">🌪️ 疾風連擊!</span>' : ''}</strong>
           </div>
           <div class="dr-f-metric wide">
-            <span class="dr-fm-label">🚲 2.0 與 2.0E 的數量</span>
-            <strong class="dr-fm-val">2.0：${v20} 台 ／ 2.0E：${v20e} 台 <span class="dr-fm-total">（合計 ${total} 台）</span></strong>
+            <span class="dr-fm-label">⚔️ 今日傷害輸出（2.0 斬擊 ＋ 2.0E 雷擊）</span>
+            <strong class="dr-fm-val">🗡️ 2.0：${v20} 台 ／ ⚡ 2.0E：${v20e} 台 <span class="dr-fm-total">（💥 魔王扣血 -${total} HP）</span></strong>
           </div>
         </div>
         ${rep.notes ? `
@@ -1074,6 +1555,7 @@ export function mountDailyReport(root) {
         const regIn = root.querySelector(`[data-f-region="${uid}"]`);
         if (!citySel || !regIn) return;
         regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, dist);
+        updateFieldBikeSum(uid);
       };
     });
 
@@ -1086,6 +1568,7 @@ export function mountDailyReport(root) {
         const regIn = root.querySelector(`[data-f-region="${uid}"]`);
         if (!citySel || !regIn) return;
         regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, distSel?.value || '');
+        updateFieldBikeSum(uid);
         regIn.focus();
       };
     });
@@ -1096,22 +1579,33 @@ export function mountDailyReport(root) {
         const regIn = root.querySelector(`[data-f-region="${uid}"]`);
         if (regIn) {
           regIn.value = '';
+          updateFieldBikeSum(uid);
           regIn.focus();
         }
       };
     });
 
-    // 外勤品管：即時計算 2.0 + 2.0E 總台數
+    // 外勤品管：即時計算 2.0 + 2.0E 總台數與預計扣血部位
     function updateFieldBikeSum(uid) {
       const v20 = Number(root.querySelector(`[data-f-v20="${uid}"]`)?.value) || 0;
       const v20e = Number(root.querySelector(`[data-f-v20e="${uid}"]`)?.value) || 0;
+      const regText = root.querySelector(`[data-f-region="${uid}"]`)?.value || '';
       const sumEl = root.querySelector(`[data-bike-sum="${uid}"]`);
+      const u = state.users.get(uid);
+      const nick = getFieldNick(u);
+      const matched = matchRegionToQuotaKey(regText, nick);
+      const partHint = matched.map(r => (r === '雙北' || r === '高雄') ? `🧠🫀 ${r}核心（大腦/身體）` : `🦾 ${r}（四肢部位）`).join('、');
       if (sumEl) {
-        sumEl.innerHTML = `🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${v20 + v20e} 台</strong>（2.0：${v20} 台 ＋ 2.0E：${v20e} 台）`;
+        sumEl.innerHTML = `
+          <div>🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${v20 + v20e} 台</strong>（🗡️ 2.0 斬擊：${v20} 台 ＋ ⚡ 2.0E 雷擊：${v20e} 台）</div>
+          <div class="dr-bike-damage-preview" style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">
+            ⚔️ 預計對【${esc(partHint)}】造成 <b>-${v20 + v20e} HP</b> 傷害！
+          </div>
+        `;
       }
     }
-    root.querySelectorAll('[data-f-v20], [data-f-v20e]').forEach(inp => {
-      inp.oninput = () => updateFieldBikeSum(inp.dataset.fV20 || inp.dataset.fV20e);
+    root.querySelectorAll('[data-f-v20], [data-f-v20e], [data-f-region]').forEach(inp => {
+      inp.oninput = () => updateFieldBikeSum(inp.dataset.fV20 || inp.dataset.fV20e || inp.dataset.fRegion);
     });
 
     // 內勤：自動整理 1. 2. 3. 編號
@@ -1220,6 +1714,27 @@ export function mountDailyReport(root) {
         toast('✅ 已儲存每日工作進度回報');
       }
       render();
+
+      // 若為外勤模式且有輸出傷害，觸發魔王卡片斬擊震動與浮動扣血特效！
+      if (isFieldMode) {
+        const dmg = (Number(payload.fieldV20) || 0) + (Number(payload.fieldV20E) || 0);
+        if (dmg > 0) {
+          requestAnimationFrame(() => {
+            const arenaEl = root.querySelector(`[data-boss-arena="${uid}"]`);
+            if (arenaEl) {
+              arenaEl.classList.add('boss-hit-shake');
+              const floatEl = document.createElement('div');
+              floatEl.className = 'dr-boss-floating-dmg';
+              floatEl.innerHTML = `⚔️ CRITICAL! <span>-${dmg} HP!</span>`;
+              arenaEl.appendChild(floatEl);
+              setTimeout(() => {
+                arenaEl.classList.remove('boss-hit-shake');
+                floatEl.remove();
+              }, 1800);
+            }
+          });
+        }
+      }
     }
 
     root.querySelectorAll('[data-save-only]').forEach(btn => {
@@ -1541,18 +2056,21 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       distSel.onchange = () => {
         if (!distSel.value) return;
         regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, distSel.value);
+        updateSheetSum();
       };
     }
 
     if (addBtn && citySel) {
       addBtn.onclick = () => {
         regIn.value = appendCityDistrictToRegionText(regIn.value, citySel.value, distSel?.value || '');
+        updateSheetSum();
       };
     }
 
     if (clrBtn) {
       clrBtn.onclick = () => {
         regIn.value = '';
+        updateSheetSum();
         regIn.focus();
       };
     }
@@ -1560,12 +2078,20 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
     const updateSheetSum = () => {
       const a = Number(v20In?.value) || 0;
       const b = Number(v20eIn?.value) || 0;
+      const rTxt = regIn?.value || '';
+      const nick = getFieldNick(me);
+      const matched = matchRegionToQuotaKey(rTxt, nick);
+      const partHint = matched.map(r => (r === '雙北' || r === '高雄') ? `🧠🫀 ${r}核心（大腦/身體）` : `🦾 ${r}（四肢部位）`).join('、');
       if (sumEl) {
-        sumEl.innerHTML = `🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${a + b} 台</strong>（2.0：${a} 台 ＋ 2.0E：${b} 台）`;
+        sumEl.innerHTML = `
+          <div>🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${a + b} 台</strong>（🗡️ 2.0：${a} 台 ＋ ⚡ 2.0E：${b} 台）</div>
+          <div style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">⚔️ 預計對【${esc(partHint)}】造成 <b>-${a + b} HP</b> 傷害！</div>
+        `;
       }
     };
     v20In?.addEventListener('input', updateSheetSum);
     v20eIn?.addEventListener('input', updateSheetSum);
+    regIn?.addEventListener('input', updateSheetSum);
 
     const prevBtn = backdrop.querySelector('[data-sheet-import-prev]');
     if (prevBtn && prevEntry) {
