@@ -92,6 +92,82 @@ const KAIZEN_TIERS = [
   { scoreMin: 0, scoreMax: 30, range: '0 ~ 30 分', grade: '8 等', prize: 0, prizeText: '再接再厲 ($0)', points: 0, approver: 'Y職：主任/授權者 ／ U職：處長/Team 主管（不列入目標件數）', badgeBg: '#F8FAFC', badgeColor: '#94A3B8' },
 ];
 
+// 2026 通膨優化調整建議對比圖卡（8 張視覺化 Before vs. After 圖卡 ＋ 下方「為什麼這樣改？（管理效益）」說明）
+const VS_COMPARISON_CARDS = [
+  {
+    id: 'vs_1',
+    badge: '對比 01 · 基層日常改善',
+    title: '💸 基層單件獎金（5~7 等日常改善）',
+    img: 'assets/kaizen/vs1_basic_bonus.jpg',
+    oldSummary: '7等 $100 (1點) · 6等 $200 (2點) · 5等 $300 (3點)',
+    newSummary: '7等 $300 (1點) · 6等 $500 (2點) · 5等 $800 (3點)',
+    whyChange: '反映 2026 物價水準，只要通過立案（7等）至少有 <b>$300 元</b>（約一頓簡餐＋手搖飲），徹底消除同仁「先實作改善、拍照、算效益、寫半天表單卻只領 100 元（連便當都買不起）」的剝奪感，讓基層與外勤真正願意動腦提報日常微改善！',
+  },
+  {
+    id: 'vs_2',
+    badge: '對比 02 · 中高階重大改善',
+    title: '🚀 中高階單件獎金（1~4 等重大改善）',
+    img: 'assets/kaizen/vs2_high_bonus.jpg',
+    oldSummary: '4等 $1,000 (5點) · 3等 $5,000 (10點) · 2等 $10,000 (15點) · 1等 $20,000 (30點)',
+    newSummary: '4等 $2,000 (6點) · 3等 $6,000 (12點) · 2等 $12,000 (20點) · 1等 $25,000 (30點)',
+    whyChange: '平滑補齊 <b>5等($800) ➔ 4等($2,000) ➔ 3等($6,000)</b> 的階梯感，不再出現原本「5等 $300 跳 4等 $1,000（3.3倍）、再跳 3等 $5,000（5倍）」的斷崖式落差；並同步微調 2~4 等考績點數（6點/12點/20點），讓年度積分大獎更容易銜接達成。',
+  },
+  {
+    id: 'vs_3',
+    badge: '對比 03 · 消除主管壓分效應',
+    title: '🔓 高等案件審查會門檻（解決壓分問題）',
+    img: 'assets/kaizen/vs3_review_gate.jpg',
+    oldSummary: '4 等 (51分 / $1,000) 以上就要召開 3 位處長/經理級高等審查會',
+    newSummary: '4 等由處長/Team 主管直接核定！改為 3 等 (61分 / $6,000) 以上才召開高等審查會',
+    whyChange: '現行為了 $1,000 元獎金就要召集 3 位處長開會，會議時間成本遠超獎金本身，更導致單位主管「為了怕麻煩或怕跨處審查，下意識把好案子壓在 50 分（5等 $300）以下」。釋放 4 等核決權給處長/Team 主管，才能真正解放中階優質提案！',
+  },
+  {
+    id: 'vs_4',
+    badge: '對比 04 · 部門同儕激勵',
+    title: '🧋 部門每半年推行活動費（參與率 ≥ 80%）',
+    img: 'assets/kaizen/vs4_dept_fee.jpg',
+    oldSummary: '參與率 ≥ 80%，每半年發給「部門人數 × $50 元」（憑發票報銷）',
+    newSummary: '參與率 ≥ 80% 發給「人數 × $200 元」；若達 100% 全員提案加碼為「人數 × $300 元」',
+    whyChange: '2026 年手搖飲一杯 $70、雞排 $100，現行一人半年 $50 元連一杯珍奶都買不起，還要開發票報銷（行政成本比獎金還貴）。調升至每人 <b>$200~$300 元</b>才夠部門買披薩＋飲料辦下午茶，真正發揮「部門主管催件、同儕互相激勵」的團隊凝聚效果！',
+  },
+  {
+    id: 'vs_5',
+    badge: '對比 05 · 年度提案王榮譽',
+    title: '🏅 個人年度「採納最多獎」（全年達 6 件↑）',
+    img: 'assets/kaizen/vs5_most_cases.jpg',
+    oldSummary: '門檻 6 件↑，第 1~5 名：$5,000 / $4,000 / $3,000 / $2,000 / $1,000',
+    newSummary: '門檻維持 6 件↑，第 1~5 名調升為：$8,000 / $6,000 / $4,000 / $3,000 / $2,000',
+    whyChange: '全年度能通過 6 件（含）以上 7~1 等提案，代表同仁平均每兩個月就主動發掘並落實一項工作改善。將全公司年度第一名獎金調升至 <b>$8,000 元</b>、第五名保底 <b>$2,000 元</b>，才配得上全公司「年度提案王」的實質貢獻與榮譽感。',
+  },
+  {
+    id: 'vs_6',
+    badge: '對比 06 · 打破看得到吃不到',
+    title: '💎 個人年度「點數積分獎」門檻下修與分級',
+    img: 'assets/kaizen/vs6_points_threshold.jpg',
+    oldSummary: '鑽石 50點 / 金 40點 / 銀 35點 / 銅 35點 / 優秀 25點（銀銅同分卡死、門檻極高）',
+    newSummary: '合理下修門檻：鑽石 40點 / 金 32點 / 銀 25點 / 銅 18點 / 優秀 12點',
+    whyChange: '現行一般同仁一年提 2 件日常改善僅 4~6 點，要摸到最低「優秀獎 25 點（且含 4 等以上 15 點）」幾乎不可能，且銀獎與銅獎都卡在 35 點。下修並拉開階梯（<b>12點 / 18點 / 25點 / 32點 / 40點</b>），讓一年認真提 3~4 件好案子的同仁真的摸得到獎！',
+  },
+  {
+    id: 'vs_7',
+    badge: '對比 07 · 大小部門公平競爭',
+    title: '⚖️ 單位年度表彰（團體總錦標）改看人均點數',
+    img: 'assets/kaizen/vs7_team_award.jpg',
+    oldSummary: '依「部門年度總點數」計算 · 第 1 名 $3,000、第 2 名 $2,000',
+    newSummary: '改依「部門人均點數」評比 · 第 1 名 $10,000、第 2 名 $6,000',
+    whyChange: '過去比「部門總點數」，30 人大部門一人湊 2 點就贏過 8 人精實小部門；且全公司第一名部門只領 $3,000（比單件 3 等獎 $5,000 還少）。<b>改看「部門人均點數」才能讓像經營 Team 這樣精實的單位公平競爭</b>，且萬元級團體獎金才具冠軍榮譽感！',
+  },
+  {
+    id: 'vs_8',
+    badge: '對比 08 · 跨班協作與數位化',
+    title: '📸 小團體人數上限放寬 ＆ 快速微改善通道',
+    img: 'assets/kaizen/vs8_group_fasttrack.jpg',
+    oldSummary: '小團體硬性限定「2 人以下」· 所有案件皆須填寫傳統長篇表單',
+    newSummary: '放寬為「2 ～ 4 人」團隊協作 · 6~7 等增設「Before/After 隨手拍」快速通道',
+    whyChange: 'YouBike 場站調度、維修動線或系統改善常需 3~4 人（如早晚班、外勤＋內勤）協作，放寬至 2~4 人才能讓協力夥伴共同掛名；同時增設「<b>改善前後照片＋50字說明</b>」線上快速提案通道，大幅降低基層文書門檻，讓參與率自然衝破 90%！',
+  },
+];
+
 // 2026 修訂建議對照方案（讓同仁與長官自由觀看、按讚共鳴與留言發酵）
 const REFORM_TOPICS = [
   {
@@ -234,20 +310,24 @@ export function mountKaizen(el) {
         </div>
       </div>
 
-      <!-- 頂部三大模式切換導覽列 -->
+      <!-- 頂部四大模式切換導覽列 -->
       <div class="tools-sys-nav" style="margin-bottom:14px">
         <button type="button" class="tools-sys-tab ${activeTab === 'guide' ? 'active' : ''}" data-kz-tab="guide">
           📘 現行辦法圖文懶人包 (6張小卡＆試算)
+        </button>
+        <button type="button" class="tools-sys-tab ${activeTab === 'vs_cards' ? 'active' : ''}" data-kz-tab="vs_cards">
+          📊 2023 vs 2026 優化對比圖卡 <span class="kz-nav-count warm">8張圖卡</span>
         </button>
         <button type="button" class="tools-sys-tab ${activeTab === 'form' ? 'active' : ''}" data-kz-tab="form">
           📝 線上提案登錄表＆點子庫 <span class="kz-nav-count">${proposals.length}</span>
         </button>
         <button type="button" class="tools-sys-tab ${activeTab === 'reform' ? 'active' : ''}" data-kz-tab="reform">
-          🌱 2026 修訂建議對照＆共鳴投票 <span class="kz-nav-count warm">${totalReformVotes + reformData.comments.length}</span>
+          🌱 修訂痛點對照＆共鳴投票 <span class="kz-nav-count warm">${totalReformVotes + reformData.comments.length}</span>
         </button>
       </div>
 
       ${activeTab === 'guide' ? renderGuideSection({ curKzTier, kzRatePct, kzDeptEligible, kzDeptBonus, displayPrizeText, perPersonFee }) : ''}
+      ${activeTab === 'vs_cards' ? renderVsCardsSection(reformData) : ''}
       ${activeTab === 'form' ? renderFormSection(proposals) : ''}
       ${activeTab === 'reform' ? renderReformSection(reformData) : ''}
     `;
@@ -391,6 +471,67 @@ export function mountKaizen(el) {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderVsCardsSection(reformData) {
+    return `
+      <div class="card pad tools-builtin-card" style="margin-bottom:16px">
+        <div class="tools-card-header">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <h3 style="margin:0;font-size:16.5px">📊 符合 2026 通膨程度的優化調整建議（8 大對比圖卡 ＆ 管理效益解析）</h3>
+              <span class="tools-live-badge" style="background:#ECFDF5;color:#047857;border-color:#6EE7B7">🚀 專供主管與經營層一眼看懂「2023 現行 vs 2026 建議優化」</span>
+            </div>
+            <div class="muted tiny" style="margin-top:4px">
+              每張對比圖卡左方為「<b>2023 現行規定</b>」，右方為「<b>2026 建議優化方案</b>」，並在圖卡正下方詳列「<b>💡 為什麼這樣改？（管理效益）</b>」；點擊任一圖卡可全螢幕放大簡報檢視！
+            </div>
+          </div>
+          <button type="button" class="btn sm ghost" data-kz-tab="reform">前往投票與留言共鳴 ➔</button>
+        </div>
+
+        <div class="kaizen-vs-cards-grid">
+          ${VS_COMPARISON_CARDS.map((vc, idx) => {
+            const voters = Array.isArray(reformData.votes[vc.id]) ? reformData.votes[vc.id] : [];
+            const hasVoted = voters.includes(myUid());
+            return `
+              <div class="kaizen-info-card vs-card">
+                <div class="kaizen-img-wrap" data-vs-zoom="${idx}" title="點擊放大檢視《${esc(vc.title)}》高解析對比圖卡">
+                  <img src="${esc(vc.img)}" alt="${esc(vc.title)}" loading="lazy">
+                  <span class="kaizen-badge-pill">${esc(vc.badge)}</span>
+                  <span class="kaizen-zoom-pill">🔍 點擊放大對比圖卡</span>
+                </div>
+                <div class="kaizen-card-body" style="gap:10px">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                    <h4 style="margin:0;font-size:15px;font-weight:800;color:#0F172A">${esc(vc.title)}</h4>
+                    <button type="button" class="btn sm ${hasVoted ? 'primary' : 'ghost'}" data-vote-reform="${vc.id}" style="padding:3px 10px;font-size:11.5px;font-weight:800">
+                      ${hasVoted ? '🔥 已贊同此優化' : '👍 贊同此優化'} (${voters.length})
+                    </button>
+                  </div>
+
+                  <!-- 2023 vs 2026 一行對比膠囊 -->
+                  <div class="vs-summary-pills">
+                    <div class="vs-sum-row old">
+                      <span class="vs-tag old">2023 現行</span>
+                      <span>${esc(vc.oldSummary)}</span>
+                    </div>
+                    <div class="vs-sum-row new">
+                      <span class="vs-tag new">2026 建議</span>
+                      <strong>${esc(vc.newSummary)}</strong>
+                    </div>
+                  </div>
+
+                  <!-- 圖卡下方：為什麼這樣改？（管理效益） -->
+                  <div class="vs-why-box">
+                    <div class="vs-why-title">💡 為什麼這樣改？（管理效益）</div>
+                    <div class="vs-why-text">${vc.whyChange}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -572,11 +713,19 @@ export function mountKaizen(el) {
       };
     });
 
-    // 6 張圖卡點擊放大
+    // 6 張現行圖卡點擊放大
     el.querySelectorAll('[data-kz-zoom]').forEach(wrap => {
       wrap.onclick = () => {
         const idx = Number(wrap.dataset.kzZoom) || 0;
         openKaizenLightboxModal(idx);
+      };
+    });
+
+    // 8 張 2023 vs 2026 對比圖卡點擊放大
+    el.querySelectorAll('[data-vs-zoom]').forEach(wrap => {
+      wrap.onclick = () => {
+        const idx = Number(wrap.dataset.vsZoom) || 0;
+        openVsComparisonLightboxModal(idx);
       };
     });
 
@@ -943,4 +1092,61 @@ function openKaizenLightboxModal(startIdx = 0) {
     }
   }
   renderLightbox();
+}
+
+function openVsComparisonLightboxModal(startIdx = 0) {
+  let idx = startIdx;
+  function renderVsLightbox() {
+    const vc = VS_COMPARISON_CARDS[idx] || VS_COMPARISON_CARDS[0];
+    openModal(`
+      <div class="modal-head">
+        <div>
+          <span class="kaizen-hl-tag" style="margin-right:6px;background:#ECFDF5;color:#047857;border-color:#6EE7B7">${esc(vc.badge)}</span>
+          <strong style="font-size:16px">${esc(vc.title)}</strong>
+        </div>
+        <button class="icon-btn" data-close>✕</button>
+      </div>
+      <div style="background:#0F172A;padding:12px;border-radius:12px;text-align:center;position:relative">
+        <img src="${esc(vc.img)}" alt="${esc(vc.title)}" style="max-width:100%;max-height:60vh;border-radius:8px;display:block;margin:0 auto">
+      </div>
+      <div class="vs-summary-pills" style="margin-top:10px">
+        <div class="vs-sum-row old">
+          <span class="vs-tag old">2023 現行規定</span>
+          <span>${esc(vc.oldSummary)}</span>
+        </div>
+        <div class="vs-sum-row new">
+          <span class="vs-tag new">2026 建議優化</span>
+          <strong>${esc(vc.newSummary)}</strong>
+        </div>
+      </div>
+      <div class="vs-why-box" style="margin-top:8px">
+        <div class="vs-why-title">💡 為什麼這樣改？（管理效益）</div>
+        <div class="vs-why-text">${vc.whyChange}</div>
+      </div>
+      <div class="modal-foot" style="justify-content:space-between">
+        <div style="display:flex;gap:6px">
+          <button type="button" class="btn sm ghost" data-vs-prev>◀ 上一張對比圖卡</button>
+          <span class="muted tiny" style="align-self:center">第 ${idx + 1} / ${VS_COMPARISON_CARDS.length} 張</span>
+          <button type="button" class="btn sm ghost" data-vs-next>下一張對比圖卡 ▶</button>
+        </div>
+        <button type="button" class="btn primary" data-close>關閉</button>
+      </div>
+    `, { wide: true });
+
+    const prevBtn = document.querySelector('[data-vs-prev]');
+    const nextBtn = document.querySelector('[data-vs-next]');
+    if (prevBtn) {
+      prevBtn.onclick = () => {
+        idx = (idx - 1 + VS_COMPARISON_CARDS.length) % VS_COMPARISON_CARDS.length;
+        renderVsLightbox();
+      };
+    }
+    if (nextBtn) {
+      nextBtn.onclick = () => {
+        idx = (idx + 1) % VS_COMPARISON_CARDS.length;
+        renderVsLightbox();
+      };
+    }
+  }
+  renderVsLightbox();
 }

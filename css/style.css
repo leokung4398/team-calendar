@@ -5719,6 +5719,75 @@ th.has-meeting { position: relative; }
   }
 }
 
+/* 📊 2023 vs 2026 優化對比圖卡 2 欄大卡 Grid 與管理效益說明 */
+.kaizen-vs-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 960px) {
+  .kaizen-vs-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.vs-summary-pills {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+}
+.vs-sum-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+.vs-sum-row.old {
+  background: #f1f5f9;
+  color: #475569;
+}
+.vs-sum-row.new {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+}
+.vs-tag {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.vs-tag.old {
+  background: #cbd5e1;
+  color: #1e293b;
+}
+.vs-tag.new {
+  background: #059669;
+  color: #ffffff;
+}
+.vs-why-box {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  padding: 10px 13px;
+}
+.vs-why-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #b45309;
+  margin-bottom: 4px;
+}
+.vs-why-text {
+  font-size: 12.5px;
+  line-height: 1.58;
+  color: #334155;
+}
+.vs-why-text b {
+  color: #92400e;
+}
+
 
 
 
