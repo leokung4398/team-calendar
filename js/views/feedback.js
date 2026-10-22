@@ -874,6 +874,14 @@ export function mountVents(el) {
       return `<span class="wf-firefly" style="left:${left}%;top:${top}%;width:${size}px;height:${size}px;animation-delay:${delay}s"></span>`;
     }).join('');
 
+    // 右下角森林螢光溪流順流而下的水紋星光粒子
+    const streamFlowHtml = Array.from({ length: 14 }, (_, i) => {
+      const startLeft = 78 + (i % 5) * 3.2;
+      const startTop = 70 + (i % 4) * 3.5;
+      const delay = (i * 0.4).toFixed(2);
+      return `<span class="th-stream-flow-dot" style="left:${startLeft}%;top:${startTop}%;animation-delay:${delay}s"></span>`;
+    }).join('');
+
     // 將每一篇吐苦水化為古樹枝頭懸掛的一盞「微光祈福燈籠」
     const canopyLanternsHtml = vents.map((v, idx) => {
       const cat = VENT_CATEGORIES.find(c => c.id === v.category) || VENT_CATEGORIES[0];
@@ -953,15 +961,19 @@ export function mountVents(el) {
           <!-- 第 1 層：千年古樹洞高解析實景底圖 -->
           <div class="th-bg-still"></div>
 
-          <!-- 第 2 層：左下營火與右下螢光溪流動態折射層 -->
+          <!-- 第 2A 層：右下角螢光溪流河道專屬水波流動折射層 -->
           <div class="th-bg-stream-ripple"></div>
+
+          <!-- 第 2B 層：左下角石圈營火專屬火焰熱氣搖曳層 -->
+          <div class="th-bg-fire-shimmer"></div>
 
           <!-- 第 3 層：中央樹洞溫暖琥珀光呼吸層 -->
           <div class="th-hollow-warm-glow"></div>
 
-          <!-- 第 4 層：森林夜間螢火蟲與流星 -->
+          <!-- 第 4 層：森林夜間螢火蟲、溪流漂流光點與流星 -->
           <div class="wf-stars">
             ${firefliesHtml}
+            ${streamFlowHtml}
             <div class="wf-shooting-star"></div>
           </div>
 
