@@ -636,35 +636,380 @@ function openWishAdminModal(w, onDone) {
 }
 
 // ============================================================
-// 🗣️ 意見箱（抱怨箱）：支援「完全匿名」吐苦水與打氣互動
+// 🌲 意見箱（秘境森林解憂古樹洞）：支援「完全匿名」吐苦水、紙飛機入樹洞、枝頭微光燈籠與營火焚毀鳥事
 // ============================================================
+
+// 森林空靈風鈴共鳴音效（紙飛機飛入樹洞／點亮燈籠）
+function playForestChimeSound() {
+  if (!isWishSoundEnabled()) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!wfAudioCtx) wfAudioCtx = new AudioCtx();
+    if (wfAudioCtx.state === 'suspended') wfAudioCtx.resume();
+    const now = wfAudioCtx.currentTime;
+
+    // 空靈五聲音階和弦泛音 (C5 - E5 - G5 - B5)
+    [523.25, 659.25, 783.99, 987.77].forEach((freq, i) => {
+      const osc = wfAudioCtx.createOscillator();
+      const gain = wfAudioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.07);
+      gain.gain.setValueAtTime(0.001, now + i * 0.07);
+      gain.gain.exponentialRampToValueAtTime(0.11, now + i * 0.07 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.07 + 0.75);
+      osc.connect(gain);
+      gain.connect(wfAudioCtx.destination);
+      osc.start(now + i * 0.07);
+      osc.stop(now + i * 0.07 + 0.78);
+    });
+  } catch (_) {}
+}
+
+// 營火烈焰燃燒與柴火噼啪聲（把煩惱紙條丟進營火燒成灰燼）
+function playCampfireBurnSound() {
+  if (!isWishSoundEnabled()) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!wfAudioCtx) wfAudioCtx = new AudioCtx();
+    if (wfAudioCtx.state === 'suspended') wfAudioCtx.resume();
+    const now = wfAudioCtx.currentTime;
+
+    // 火焰轟鳴低頻噪音 + 噼啪高頻火花
+    const duration = 1.4;
+    const bufferSize = Math.floor(wfAudioCtx.sampleRate * duration);
+    const buffer = wfAudioCtx.createBuffer(1, bufferSize, wfAudioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const env = Math.sin((i / bufferSize) * Math.PI);
+      const crackle = Math.random() > 0.985 ? (Math.random() * 2 - 1) * 2.5 : 0;
+      data[i] = ((Math.random() * 2 - 1) * 0.45 * env) + crackle;
+    }
+    const noise = wfAudioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = wfAudioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(620, now);
+    filter.frequency.linearRampToValueAtTime(1400, now + 0.5);
+    filter.frequency.linearRampToValueAtTime(380, now + duration);
+
+    const gain = wfAudioCtx.createGain();
+    gain.gain.setValueAtTime(0.22, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(wfAudioCtx.destination);
+    noise.start(now);
+  } catch (_) {}
+}
+
+// 計算古樹枝頭每一盞「解憂微光燈籠」的自然懸掛位置（避開中央樹洞，分佈在左右上方的樹冠枝幹）
+function getCanopyLanternPosition(id, idx) {
+  // 預設 14 個順著左右樹枝分佈的精準座標點 (left%, top%)
+  const branchAnchors = [
+    { left: 23, top: 27 }, { left: 32, top: 24 }, { left: 17, top: 34 },
+    { left: 75, top: 28 }, { left: 66, top: 23 }, { left: 82, top: 33 },
+    { left: 38, top: 31 }, { left: 61, top: 31 }, { left: 27, top: 39 },
+    { left: 71, top: 38 }, { left: 43, top: 21 }, { left: 57, top: 21 },
+    { left: 14, top: 25 }, { left: 85, top: 24 },
+  ];
+  let hash = 0;
+  const s = String(id || idx);
+  for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) % 1000;
+  const base = branchAnchors[idx % branchAnchors.length];
+  const jitterX = ((hash % 9) - 4) * 0.7;
+  const jitterY = (((hash >> 3) % 9) - 4) * 0.6;
+  return {
+    left: Math.max(10, Math.min(90, base.left + jitterX)).toFixed(1),
+    top: Math.max(16, Math.min(44, base.top + jitterY)).toFixed(1),
+  };
+}
+
+// 觸發「3D 發光紙飛機／森林信箋飛入中央古樹洞」動畫
+function triggerPaperPlaneToHollow(rootEl, opts = {}) {
+  const fxLayer = rootEl?.querySelector('[data-th-fx]');
+  if (!fxLayer) return Promise.resolve();
+
+  const targetLeftPct = Number(opts.leftPct ?? 50);
+  const targetTopPct = Number(opts.topPct ?? 54);
+  const labelText = opts.text || '✈️ 樹洞已溫柔收下您的心聲！';
+  const symbol = opts.symbol || '✈️';
+
+  const sceneRect = fxLayer.getBoundingClientRect();
+  const w = sceneRect.width || 900;
+  const h = sceneRect.height || 500;
+
+  const endX = ((targetLeftPct - 50) / 100) * w;
+  const endY = -((100 - targetTopPct) / 100) * h;
+  const startX = (Math.random() - 0.5) * 180;
+
+  playForestChimeSound();
+
+  const wrap = document.createElement('div');
+  wrap.className = 'th-flying-plane-x';
+  wrap.style.setProperty('--start-x', `${startX.toFixed(0)}px`);
+  wrap.style.setProperty('--end-x', `${endX.toFixed(0)}px`);
+
+  const body = document.createElement('div');
+  body.className = 'th-flying-plane-y';
+  body.style.setProperty('--end-y', `${endY.toFixed(0)}px`);
+  body.textContent = symbol;
+  wrap.appendChild(body);
+  fxLayer.appendChild(wrap);
+
+  return new Promise(resolve => {
+    setTimeout(() => {
+      // 樹洞琥珀金光共鳴波紋
+      [0, 140].forEach(delay => {
+        setTimeout(() => {
+          const ring = document.createElement('div');
+          ring.className = 'th-hollow-ring';
+          ring.style.left = `${targetLeftPct}%`;
+          ring.style.top = `${targetTopPct}%`;
+          fxLayer.appendChild(ring);
+          setTimeout(() => ring.remove(), 1200);
+        }, delay);
+      });
+
+      // 森林星塵粒子爆發
+      for (let i = 0; i < 14; i++) {
+        const drop = document.createElement('div');
+        drop.className = `wf-splash-drop ${i % 2 === 0 ? 'gold' : ''}`;
+        drop.style.left = `${targetLeftPct}%`;
+        drop.style.top = `${targetTopPct}%`;
+        const angle = (Math.PI * 2 * i) / 14;
+        const dist = 28 + Math.random() * 38;
+        drop.style.setProperty('--dx', `${(Math.cos(angle) * dist).toFixed(1)}px`);
+        drop.style.setProperty('--dy', `${(Math.sin(angle) * dist - 12).toFixed(1)}px`);
+        fxLayer.appendChild(drop);
+        setTimeout(() => drop.remove(), 780);
+      }
+
+      const floatToast = document.createElement('div');
+      floatToast.className = 'wf-float-toast';
+      floatToast.style.left = `${targetLeftPct}%`;
+      floatToast.style.top = `${targetTopPct}%`;
+      floatToast.textContent = labelText;
+      fxLayer.appendChild(floatToast);
+      setTimeout(() => floatToast.remove(), 1550);
+    }, 820);
+
+    setTimeout(() => {
+      wrap.remove();
+      resolve();
+    }, 950);
+  });
+}
+
+// 🔥 壓箱寶動畫：把煩惱紙條丟進左下角營火中燃燒殆盡、化為漫天火星灰燼（不留資料庫）
+function triggerBurnWorryInCampfire(rootEl, worryText = '煩惱退散！') {
+  const fxLayer = rootEl?.querySelector('[data-th-fx]');
+  if (!fxLayer) return;
+
+  const fireLeftPct = 26;
+  const fireTopPct = 81;
+
+  playCampfireBurnSound();
+
+  const paper = document.createElement('div');
+  paper.className = 'th-burn-paper';
+  paper.style.left = `${fireLeftPct}%`;
+  paper.style.top = `${fireTopPct}%`;
+  paper.textContent = `📜 ${worryText}`;
+  fxLayer.appendChild(paper);
+
+  // 營火竄出 24 顆沖天火星與灰燼
+  setTimeout(() => {
+    for (let i = 0; i < 24; i++) {
+      setTimeout(() => {
+        const ember = document.createElement('div');
+        ember.className = 'th-ember-spark';
+        ember.style.left = `${fireLeftPct + (Math.random() - 0.5) * 6}%`;
+        ember.style.top = `${fireTopPct + (Math.random() - 0.5) * 4}%`;
+        const ex = (Math.random() - 0.5) * 110;
+        const ey = -(70 + Math.random() * 140);
+        ember.style.setProperty('--ex', `${ex.toFixed(0)}px`);
+        ember.style.setProperty('--ey', `${ey.toFixed(0)}px`);
+        fxLayer.appendChild(ember);
+        setTimeout(() => ember.remove(), 1400);
+      }, i * 35);
+    }
+  }, 420);
+
+  setTimeout(() => {
+    const floatToast = document.createElement('div');
+    floatToast.className = 'wf-float-toast';
+    floatToast.style.left = `${fireLeftPct}%`;
+    floatToast.style.top = `${fireTopPct - 12}%`;
+    floatToast.style.borderColor = '#fb923c';
+    floatToast.textContent = '🔥 鳥事已化為灰燼隨風消散！不留半點痕跡！';
+    fxLayer.appendChild(floatToast);
+    setTimeout(() => floatToast.remove(), 1700);
+  }, 1150);
+
+  setTimeout(() => paper.remove(), 2000);
+}
+
 export function mountVents(el) {
   const expandedReplyIds = new Set();
+  let pendingPlaneOpts = null;
 
   function render() {
     const vents = ventList();
     const uid = myUid();
+    const soundOn = isWishSoundEnabled();
+    const totalReactions = vents.reduce((acc, v) => {
+      const rx = v.reactions || {};
+      return acc + (rx.hug?.length || 0) + (rx.cry?.length || 0) + (rx.cheer?.length || 0);
+    }, 0);
+
+    // 森林夜間流螢與溪流星光
+    const firefliesHtml = Array.from({ length: 22 }, (_, i) => {
+      const left = ((i * 39 + 7) % 90) + 5;
+      const top = ((i * 27 + 9) % 78) + 8;
+      const delay = ((i * 0.42) % 5.5).toFixed(2);
+      const size = i % 3 === 0 ? 5.5 : 4;
+      return `<span class="wf-firefly" style="left:${left}%;top:${top}%;width:${size}px;height:${size}px;animation-delay:${delay}s"></span>`;
+    }).join('');
+
+    // 將每一篇吐苦水化為古樹枝頭懸掛的一盞「微光祈福燈籠」
+    const canopyLanternsHtml = vents.map((v, idx) => {
+      const cat = VENT_CATEGORIES.find(c => c.id === v.category) || VENT_CATEGORIES[0];
+      const rx = { hug: [], cry: [], cheer: [], ...(v.reactions || {}) };
+      const rxCount = (rx.hug || []).length + (rx.cry || []).length + (rx.cheer || []).length;
+      const pos = getCanopyLanternPosition(v.id, idx);
+      const delay = ((idx * 0.43) % 3.8).toFixed(2);
+      return `
+        <div class="th-spirit-lantern cat-${esc(v.category || 'work')}"
+             data-tree-lantern="${esc(v.id)}"
+             style="left:${pos.left}%;top:${pos.top}%;animation-delay:${delay}s;z-index:${12 + idx}">
+          <div class="th-lantern-body">
+            <span>${esc(v.mood || '😤')}</span>
+            ${rxCount > 0 ? `<span class="th-lantern-rx-badge">🫂${rxCount}</span>` : ''}
+          </div>
+          <div class="th-lantern-pop">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:4px">
+              <span style="color:#6ee7b7;font-weight:800">${esc(cat.label)}</span>
+              <span style="color:#fda4af;font-size:10.5px">🫂 ${rxCount} 拍拍打氣</span>
+            </div>
+            <div style="font-weight:700;color:#fff;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(v.content)}</div>
+            <div style="color:#cbd5e1;font-size:10.5px">${esc(v.authorName || '匿名單車客 🚲')}（點擊燈籠送出 🫂 拍拍）</div>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     el.innerHTML = `
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 class="view-title" style="margin:0">🗣️ 意見箱（吐苦水樹洞）</h2>
+          <h2 class="view-title" style="margin:0">🌲 意見箱（秘境森林解憂樹洞）</h2>
           <span class="info-pill-tip" data-tip="選擇『🥷 完全匿名』發表時，系統連資料庫都不會寫入您的真實帳號 UID，管理員與任何人都無法反查身分，請安心抒發！">🛡️ 100% 零追蹤匿名保護</span>
+          <div class="compact-kpi-strip">
+            <span class="kpi-chip">🏮 枝頭心聲燈籠 <b>${vents.length}</b></span>
+            <span class="kpi-chip">🫂 累計溫暖拍拍 <b>${totalReactions}</b></span>
+          </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
           <a href="#/wishes" class="btn sm ghost" style="text-decoration:none">🌠 切換至許願池</a>
-          <button class="btn primary sm" data-new-vent>＋ 我要吐苦水／提意見</button>
+          <button class="btn primary sm" data-new-vent>✈️ 摺紙飛機吐苦水</button>
         </div>
       </div>
 
-      ${vents.length === 0 ? `
-        <div class="card pad empty" style="padding:48px 20px;text-align:center">
-          <div style="font-size:40px;margin-bottom:8px">🗣️</div>
-          <h3 style="margin:0 0 6px">樹洞裡目前風平浪靜</h3>
-          <p class="muted" style="margin:0 0 16px">工作遇到委屈、制度卡關或想大吐苦水？開啟「🥷 完全匿名模式」放心說出來，讓夥伴們給你拍拍打氣！</p>
-          <button class="btn primary" data-new-vent>＋ 匿名吐苦水</button>
+      <!-- 🌲 電影級秘境森林千年發光古樹洞 ＆ 療癒營火舞台 -->
+      <div class="th-hero-stage" data-th-stage>
+        <!-- 隱藏的 SVG 溪流與營火熱氣搖曳光學濾鏡 -->
+        <svg width="0" height="0" style="position:absolute;pointer-events:none;overflow:hidden" aria-hidden="true">
+          <defs>
+            <filter id="thForestStreamFilter" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.016 0.045" numOctaves="2" seed="11" result="streamNoise">
+                <animate attributeName="baseFrequency" dur="9s" values="0.016 0.045;0.024 0.062;0.016 0.045" repeatCount="indefinite" />
+              </feTurbulence>
+              <feDisplacementMap in="SourceGraphic" in2="streamNoise" scale="9" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+          </defs>
+        </svg>
+
+        <div class="wf-hero-topbar">
+          <div class="wf-hero-title-box">
+            <span class="wf-hero-badge" style="border-color:rgba(52,211,153,0.6);color:#6ee7b7">🌲 秘境森林千年解憂古樹洞</span>
+            <span class="wf-hero-sub">把委屈摺成紙飛機射入樹洞化為枝頭暖燈，或丟進左下角營火燒成灰燼（純發洩不留存）！</span>
+          </div>
+          <div class="wf-hero-actions">
+            <button type="button" class="wf-sound-btn" data-th-sound-toggle title="切換森林風鈴與營火音效">
+              ${soundOn ? '🔊 音效開啟' : '🔇 音效靜音'}
+            </button>
+            <button type="button" class="wf-toss-demo-btn" data-th-burn-btn style="background:linear-gradient(135deg,#fb923c 0%,#ea580c 50%,#dc2626 100%);color:#fff;border-color:#fed7aa;box-shadow:0 4px 18px rgba(234,88,12,0.6)" title="純發洩不存檔！寫張紙條丟進營火燒成灰燼">
+              🔥 燒毀煩惱紙條
+            </button>
+            <button type="button" class="wf-toss-demo-btn" data-new-vent style="background:linear-gradient(135deg,#34d399 0%,#059669 100%);color:#022c22;border-color:#a7f3d0;box-shadow:0 4px 18px rgba(16,185,129,0.55)">
+              ✈️ 匿名投遞樹洞
+            </button>
+          </div>
         </div>
-      ` : `
+
+        <div class="th-scene" data-th-scene>
+          <!-- 第 1 層：千年古樹洞高解析實景底圖 -->
+          <div class="th-bg-still"></div>
+
+          <!-- 第 2 層：左下營火與右下螢光溪流動態折射層 -->
+          <div class="th-bg-stream-ripple"></div>
+
+          <!-- 第 3 層：中央樹洞溫暖琥珀光呼吸層 -->
+          <div class="th-hollow-warm-glow"></div>
+
+          <!-- 第 4 層：森林夜間螢火蟲與流星 -->
+          <div class="wf-stars">
+            ${firefliesHtml}
+            <div class="wf-shooting-star"></div>
+          </div>
+
+          <!-- 第 5 層：樹冠枝頭懸掛「微光心聲燈籠」互動層 -->
+          <div class="th-canopy-bed">
+            ${canopyLanternsHtml}
+          </div>
+
+          <!-- 第 6 層：中央古樹洞互動入口 -->
+          <div class="th-hollow-portal" data-new-vent title="點擊將心聲或建議摺成紙飛機投入古樹洞">
+            <span class="th-hollow-portal-tag">✈️ 點擊樹洞傾訴心聲</span>
+          </div>
+
+          <!-- 第 7 層：左下角療癒營火互動區（純發洩燒紙條） -->
+          <div class="th-campfire-zone" data-th-burn-btn title="不想留下記錄？點此寫張紙條直接丟進營火燒成灰燼！">
+            <span class="th-campfire-tag">🔥 點擊營火燒毀鳥事</span>
+          </div>
+
+          ${vents.length === 0 ? `
+            <div class="wf-empty-floating-cta" style="bottom:8%;border-color:rgba(52,211,153,0.55)">
+              <span style="font-size:24px">🌲</span>
+              <div style="text-align:left">
+                <div style="font-size:13.5px;font-weight:800;color:#6ee7b7">古樹洞裡目前風平浪靜，枝頭還沒有心聲燈籠</div>
+                <div style="font-size:11.5px;color:#cbd5e1">開啟「🥷 完全匿名模式」把委屈或建議射進樹洞，或點左下角「🔥 營火」把鳥事燒成灰燼！</div>
+              </div>
+              <button type="button" class="wf-toss-demo-btn" data-new-vent style="background:linear-gradient(135deg,#34d399 0%,#059669 100%);color:#022c22;border-color:#a7f3d0">✈️ 投遞第一架紙飛機</button>
+            </div>
+          ` : ''}
+
+          <!-- 第 8 層：紙飛機飛行與營火灰燼粒子動畫層 -->
+          <div class="wf-fx-layer" data-th-fx></div>
+        </div>
+
+        <div class="wf-hero-foot" style="border-top-color:rgba(52,211,153,0.25)">
+          <div class="wf-legend-list">
+            <span style="font-weight:800;color:#6ee7b7">🏮 枝頭心聲燈籠：</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b"></i> 💼 工作制度 (${vents.filter(v => (v.category || 'work') === 'work').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#10b981;box-shadow:0 0 8px #10b981"></i> 🚲 外勤辛酸 (${vents.filter(v => v.category === 'field').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#0ea5e9;box-shadow:0 0 8px #0ea5e9"></i> 📞 跨部門溝通 (${vents.filter(v => v.category === 'comm').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#c084fc;box-shadow:0 0 8px #c084fc"></i> ☕ 心情抒發 (${vents.filter(v => v.category === 'life').length})</span>
+          </div>
+          <div style="color:#fed7aa;font-weight:700">
+            🔥 解壓秘技：點左下角「營火」可寫紙條直接燒成灰燼（100% 不留存）；點枝頭燈籠可幫夥伴拍拍打氣！
+          </div>
+        </div>
+      </div>
+
+      ${vents.length > 0 ? `
         <div class="vent-list-grid">
           ${vents.map(v => {
             const cat = VENT_CATEGORIES.find(c => c.id === v.category) || VENT_CATEGORIES[0];
@@ -677,7 +1022,7 @@ export function mountVents(el) {
             const canDel = (!v.isAnonymous && v.createdBy === uid) || isAdmin();
 
             return `
-              <div class="card pad vent-card">
+              <div class="card pad vent-card" data-vent-card="${esc(v.id)}">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
                   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <span style="font-size:20px">${esc(v.mood || '😤')}</span>
@@ -725,18 +1070,104 @@ export function mountVents(el) {
             `;
           }).join('')}
         </div>
-      `}
+      ` : ''}
     `;
 
-    el.querySelectorAll('[data-new-vent]').forEach(btn => {
-      btn.onclick = () => openNewVentModal(render);
+    if (pendingPlaneOpts) {
+      const opts = pendingPlaneOpts;
+      pendingPlaneOpts = null;
+      setTimeout(() => triggerPaperPlaneToHollow(el, opts), 60);
+    }
+
+    // 音效開關
+    const soundBtn = el.querySelector('[data-th-sound-toggle]');
+    if (soundBtn) {
+      soundBtn.onclick = () => {
+        const nextMuted = isWishSoundEnabled() ? '1' : '0';
+        localStorage.setItem('wf_sound_muted', nextMuted);
+        if (nextMuted === '0') playForestChimeSound();
+        render();
+      };
+    }
+
+    // 🔥 燒毀煩惱紙條（純發洩不存檔）
+    el.querySelectorAll('[data-th-burn-btn]').forEach(btn => {
+      btn.onclick = e => {
+        e.stopPropagation();
+        openBurnWorryModal(text => {
+          triggerBurnWorryInCampfire(el, text);
+        });
+      };
     });
+
+    // 點擊枝頭微光燈籠：送出「🫂 拍拍」並飛入暖心光點
+    el.querySelectorAll('[data-tree-lantern]').forEach(lantern => {
+      lantern.onclick = async e => {
+        e.stopPropagation();
+        const vid = lantern.dataset.treeLantern;
+        pendingPlaneOpts = {
+          leftPct: 50,
+          topPct: 53,
+          text: '🫂 已為夥伴送上溫暖拍拍與打氣星光！',
+          symbol: '🫂',
+        };
+        await toggleVentReaction(vid, 'hug');
+        render();
+
+        const card = el.querySelector(`[data-vent-card="${CSS.escape(vid)}"]`);
+        if (card) {
+          card.classList.remove('th-card-highlight');
+          void card.offsetWidth;
+          card.classList.add('th-card-highlight');
+        }
+      };
+    });
+
+    // 點擊樹洞背景空白處也可試射一架森林紙飛機
+    const thScene = el.querySelector('[data-th-scene]');
+    if (thScene) {
+      thScene.onclick = e => {
+        if (e.target.closest('[data-tree-lantern],[data-new-vent],[data-th-burn-btn]')) return;
+        triggerPaperPlaneToHollow(el, {
+          leftPct: 50,
+          topPct: 53,
+          text: '✈️ 點擊中央「古樹洞」寫下心聲，或點左下「營火」燒掉鳥事！',
+          symbol: '🍃',
+        });
+      };
+    }
+
+    el.querySelectorAll('[data-new-vent]').forEach(btn => {
+      btn.onclick = e => {
+        e.stopPropagation();
+        openNewVentModal(() => {
+          pendingPlaneOpts = {
+            leftPct: 50,
+            topPct: 53,
+            text: '✈️ 心聲已飛入千年樹洞，並化為枝頭暖燈！',
+            symbol: '✈️',
+          };
+          render();
+        });
+      };
+    });
+
     el.querySelectorAll('[data-vent-rx]').forEach(btn => {
       btn.onclick = async () => {
-        await toggleVentReaction(btn.dataset.ventRx, btn.dataset.rxType);
+        const rxType = btn.dataset.rxType;
+        const emojiMap = { hug: '🫂', cry: '😭', cheer: '💪' };
+        el.querySelector('[data-th-stage]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        pendingPlaneOpts = {
+          leftPct: 50,
+          topPct: 53,
+          text: `${emojiMap[rxType] || '🫂'} 溫暖打氣已傳遞至古樹洞！`,
+          symbol: emojiMap[rxType] || '🫂',
+        };
+        await toggleVentReaction(btn.dataset.ventRx, rxType);
         render();
       };
     });
+
     el.querySelectorAll('[data-toggle-vreply]').forEach(btn => {
       btn.onclick = () => {
         const id = btn.dataset.toggleVreply;
@@ -745,6 +1176,7 @@ export function mountVents(el) {
         render();
       };
     });
+
     el.querySelectorAll('[data-vreply-form]').forEach(form => {
       form.onsubmit = async e => {
         e.preventDefault();
@@ -753,10 +1185,11 @@ export function mountVents(el) {
         const isAnon = form.anon.checked;
         if (!text) return;
         await addVentReply(vid, { text, isAnonymous: isAnon });
-        toast('已送出留言！');
+        toast('已送出暖心留言！');
         render();
       };
     });
+
     el.querySelectorAll('[data-del-vent]').forEach(btn => {
       btn.onclick = async () => {
         const vid = btn.dataset.delVent;
@@ -772,46 +1205,102 @@ export function mountVents(el) {
   return { onData: render };
 }
 
+// 🔥 壓箱寶彈窗：純發洩、不進資料庫的「把煩惱丟進營火燒成灰燼」
+function openBurnWorryModal(onBurn) {
+  openModal(`
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fb923c 0%,#dc2626 100%);display:grid;place-items:center;font-size:21px;box-shadow:0 4px 12px rgba(220,38,38,0.3);flex-shrink:0">🔥</div>
+        <div style="min-width:0">
+          <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">把鳥事丟進營火燒成灰燼</h3>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">100% 純發洩解壓 · 絕不寫入資料庫 · 燒完隨風消散</div>
+        </div>
+      </div>
+      <button type="button" class="icon-btn" data-close style="flex-shrink:0">✕</button>
+    </div>
+
+    <form class="form" id="burn-worry-form" style="gap:16px">
+      <div style="display:flex;align-items:flex-start;gap:10px;background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:1px solid #fed7aa;color:#9a3412;padding:11px 14px;border-radius:12px;font-size:12.5px;line-height:1.55">
+        <span style="font-size:18px;line-height:1.2">🔥</span>
+        <div>有些話只想痛快罵出來、不想留在版上？寫在這張森林羊皮紙上，按下「<b>丟進營火燒毀</b>」，它會在營火中化為灰燼與漫天火星徹底消失！</div>
+      </div>
+
+      <div class="field">
+        <span>📜 想燒掉的鳥事、委屈或怒氣 <em>*</em></span>
+        <textarea name="worry" rows="4" required placeholder="盡情把今天遇到的雷包、鳥事或壞心情寫下來，寫完直接丟進火裡燒掉…" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical;line-height:1.55;background:#fffbeb;border-color:#fcd34d"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
+        <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;background:linear-gradient(135deg,#f97316,#dc2626);border-color:#ea580c;color:#fff;box-shadow:0 4px 14px rgba(220,38,38,0.35)">🔥 丟進營火燒成灰燼</button>
+      </div>
+    </form>
+  `);
+
+  document.getElementById('burn-worry-form').onsubmit = e => {
+    e.preventDefault();
+    const text = e.target.worry.value.trim();
+    closeModal();
+    onBurn?.(text.slice(0, 18));
+  };
+}
+
 function openNewVentModal(onDone) {
   const moods = ['😤', '😮‍💨', '🤯', '🌧️', '🫠', '🤬', '🙏', '💡'];
   openModal(`
-    <div class="modal-head">
-      <h3>🗣️ 發表意見／大吐苦水</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
-    <form class="form" id="vent-form">
-      <div style="background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.5">
-        🛡️ <b>隱私保證：</b>勾選「🥷 完全匿名發表」時，系統會隨機分配一個單車代號（如：匿名單車客 🚲），且<b>連資料庫都不會記錄您的 UID</b>，任何人與管理員皆無法得知您的身分。
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#34d399 0%,#059669 100%);display:grid;place-items:center;font-size:21px;box-shadow:0 4px 12px rgba(16,185,129,0.3);flex-shrink:0">✈️</div>
+        <div style="min-width:0">
+          <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">向古樹洞傾訴心聲／提意見</h3>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">100% 零追蹤匿名保護 · 化為枝頭暖燈讓夥伴拍拍打氣</div>
+        </div>
       </div>
-      <div class="grid2">
-        <label>發表身分
-          <select name="isAnonymous">
+      <button type="button" class="icon-btn" data-close style="flex-shrink:0">✕</button>
+    </div>
+
+    <form class="form" id="vent-form" style="gap:16px">
+      <div style="display:flex;align-items:flex-start;gap:10px;background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;padding:11px 14px;border-radius:12px;font-size:12.5px;line-height:1.55">
+        <span style="font-size:18px;line-height:1.2">🛡️</span>
+        <div><b>隱私保證：</b>勾選「🥷 完全匿名發表」時，系統會隨機分配一個單車代號（如：匿名單車客 🚲），且<b>連資料庫都不會記錄您的 UID</b>，任何人與管理員皆無法得知您的身分。</div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <span>🙋 發表身分</span>
+          <select name="isAnonymous" style="width:100%;padding:9px 12px;border-radius:10px">
             <option value="1" selected>🥷 完全匿名發表（隨機單車代號）</option>
             <option value="0">🙋‍♂️ 具名發表（顯示我的名字）</option>
           </select>
-        </label>
-        <label>主題分類
-          <select name="category">
+        </div>
+        <div class="field">
+          <span>🏷️ 主題分類</span>
+          <select name="category" style="width:100%;padding:9px 12px;border-radius:10px">
             ${VENT_CATEGORIES.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
           </select>
-        </label>
+        </div>
       </div>
-      <label>當下心情圖示
-        <div class="chips" style="padding:4px 0">
+
+      <div class="field">
+        <span>🎭 當下心情圖示（將顯示於古樹枝頭燈籠上）</span>
+        <div class="chips" style="padding:4px 0;display:flex;gap:8px;flex-wrap:wrap">
           ${moods.map((m, idx) => `
-            <label class="chip-check">
+            <label class="chip-check" style="cursor:pointer">
               <input type="radio" name="mood" value="${m}" ${idx === 0 ? 'checked' : ''}>
-              <span style="font-size:18px">${m}</span>
+              <span style="font-size:19px;padding:4px 8px">${m}</span>
             </label>
           `).join('')}
         </div>
-      </label>
-      <label>想吐的苦水或建議內容 <span class="req">*</span>
-        <textarea name="content" rows="5" required placeholder="把在職場上遇到的鳥事、跨部門卡關、外勤委屈或真心建議暢快寫下來吧…"></textarea>
-      </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">送出到樹洞</button>
+      </div>
+
+      <div class="field">
+        <span>💬 想吐的苦水或建議內容 <em>*</em></span>
+        <textarea name="content" rows="4" required placeholder="把在職場上遇到的鳥事、跨部門卡關、外勤委屈或真心建議暢快寫下來吧…" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical;line-height:1.55"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
+        <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;box-shadow:0 4px 14px rgba(245,172,0,0.35)">✈️ 摺成紙飛機送入樹洞</button>
       </div>
     </form>
   `);
@@ -828,7 +1317,7 @@ function openNewVentModal(onDone) {
       mood,
     });
     closeModal();
-    toast(isAnonymous ? '🥷 已完全匿名送出！辛苦了，給你一個擁抱 🫂' : '意見已發布！');
+    toast(isAnonymous ? '🥷 已完全匿名射入古樹洞！辛苦了，給你一個擁抱 🫂' : '✈️ 心聲已射入古樹洞並化為枝頭暖燈！');
     onDone?.();
   };
 }
