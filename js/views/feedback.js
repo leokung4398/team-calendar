@@ -263,7 +263,10 @@ export function mountWishes(el) {
     el.innerHTML = `
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 class="view-title" style="margin:0">🌠 團隊許願池</h2>
+          <div style="display:inline-flex;background:#e2e8f0;padding:3px;border-radius:11px;gap:3px">
+            <a href="#/wishes" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:800;background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.1)">⛲ 皇家許願噴泉（許願池）</a>
+            <a href="#/vents" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:700;color:#475569">🌲 秘境解憂樹洞（意見箱）</a>
+          </div>
           <span class="info-pill-tip" data-tip="想要什麼實用工具、自動化報表或好用的系統介面？投下一枚金幣許願，或點擊池底金幣幫同事按 +1 集氣！">ⓘ 說明</span>
           <div class="compact-kpi-strip">
             <span class="kpi-chip">🪙 池中願望金幣 <b>${wishes.length}</b></span>
@@ -272,7 +275,6 @@ export function mountWishes(el) {
           </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
-          <a href="#/vents" class="btn sm ghost" style="text-decoration:none">🗣️ 切換至意見箱(抱怨箱)</a>
           <button class="btn primary sm" data-new-wish>🪙 投幣許一個願望</button>
         </div>
       </div>
@@ -912,7 +914,10 @@ export function mountVents(el) {
     el.innerHTML = `
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 class="view-title" style="margin:0">🌲 意見箱（秘境森林解憂樹洞）</h2>
+          <div style="display:inline-flex;background:#e2e8f0;padding:3px;border-radius:11px;gap:3px">
+            <a href="#/wishes" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:700;color:#475569">⛲ 皇家許願噴泉（許願池）</a>
+            <a href="#/vents" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:800;background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.1)">🌲 秘境解憂樹洞（意見箱）</a>
+          </div>
           <span class="info-pill-tip" data-tip="選擇『🥷 完全匿名』發表時，系統連資料庫都不會寫入您的真實帳號 UID，管理員與任何人都無法反查身分，請安心抒發！">🛡️ 100% 零追蹤匿名保護</span>
           <div class="compact-kpi-strip">
             <span class="kpi-chip">🏮 枝頭心聲燈籠 <b>${vents.length}</b></span>
@@ -920,7 +925,6 @@ export function mountVents(el) {
           </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
-          <a href="#/wishes" class="btn sm ghost" style="text-decoration:none">🌠 切換至許願池</a>
           <button class="btn primary sm" data-new-vent>✈️ 摺紙飛機吐苦水</button>
         </div>
       </div>

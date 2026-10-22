@@ -274,8 +274,7 @@ async function boot() {
           <span class="nav-more-trigger ${isMoreActive ? 'active' : ''}">✨ ${esc(activeMoreLabel)} ▾</span>
           <div class="nav-more-menu">
             <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">🧰 實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
-            <a href="#/wishes" class="${currentRoute === 'wishes' ? 'active' : ''}">🌠 團隊許願池 <small>想要的工具 +1 附議</small></a>
-            <a href="#/vents" class="${currentRoute === 'vents' ? 'active' : ''}">🗣️ 意見箱(抱怨箱) <small>100% 匿名吐苦水樹洞</small></a>
+            <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">⛲ 許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
             <a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">💡 改善提案 <small>管理辦法圖卡與獎金速查</small></a>
           </div>
         </div>

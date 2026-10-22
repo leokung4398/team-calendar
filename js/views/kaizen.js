@@ -229,23 +229,49 @@ const REFORM_TOPICS = [
 // 預設範例提案（當雲端尚無提案時，提供 1 筆示範種子讓大家秒懂怎麼填）
 const SEED_PROPOSALS = [
   {
-    id: 'kzp_seed_1',
-    title: '【示範提案】外勤巡檢與高鐵/國道/氣象工具整合至團隊協同平台，省去跨網站切換時間',
-    category: '流程簡化 / 數位工具',
+    id: 'kzp_seed_2026h1_leo',
+    title: '模擬體驗會議閱覽體驗升級與防呆視覺化報表重構',
+    category: '流程',
     proposerType: '個人改善',
-    proposerName: '經營 Team 示範',
+    proposerName: '孔令淳',
+    empId: 'B4398',
     coProposer: '',
-    dept: '經營 Team',
-    startDate: '2026-10-01',
-    beforeDesc: '過去外勤巡檢與差旅前，同仁需分別開啟 YouBike 官網查電輔車、氣象署查雷達、Windy 看颱風、高鐵/台鐵查時刻票價、1968 看路況，來回切換 5~6 個網頁耗時又容易漏看。',
-    afterDesc: '將所有常用查詢系統與「改善提案辦法懶人包＋線上登錄表」直接內建在經營 Team 協同平台，一頁直查免跳轉，並支援點擊放大與即時試算。',
-    benefitType: '節省工時 / 提升品質',
-    benefitDetail: '預估每位同仁每次外勤出差前可節省 5~8 分鐘查詢時間，全組每年累計省下超過 40 小時行政查詢工時，資訊透明度大幅提升。',
-    canSpread: '可擴散至營運處各區調度與維運團隊參考',
-    selfScore: 68,
-    status: '已立案示範',
+    dept: '經營組',
+    startDate: '2026-06-19',
+    implArea: '新辦公室',
+    needCoSign: '否',
+    coSignDept: '',
+    stdDocAction: '無',
+    stdDocType: '',
+    stdDocNo: '',
+    stdDocVer: '',
+    beforeDesc: `1. 報表產出極度耗時、易出錯：每月需仰賴人工整理龐雜的 Excel 數據，並手動複製貼上至 PPT，不僅耗費大量工時，且極易產生人為登錄錯誤。
+2. 視覺擁擠，長官閱覽體驗不佳：傳統靜態簡報受限於版面，將海量數據硬塞入單一頁面，導致字體過小；且在會議室投影機的低解析度下，數字模糊不清，嚴重影響會議效率。
+3. 缺乏動態下鑽與重點警示：靜態報表無法即時互動。長官無法直覺對照「上月與本月」的趨勢差異，也無法在發現異常時，立即調閱對應的現場照片或影片實證，導致決策過程不夠直覺。`,
+    afterDesc: `1. 開發「自動化數據轉譯引擎 (ETL)」：導入前端網頁技術取代傳統 PPT。未來只需匯入原始 CSV 檔，系統即會自動清洗、對齊並生成資料，將數小時的製表作業縮短至幾秒鐘。
+2. 導入「專屬報告模式」與「減法視覺設計」：
+   • 量身打造會議專用的全螢幕簡報模式，結合滑鼠滾輪平滑切換。
+   • 強制實裝「字體巨大化」與「高對比重點標色（紅色警示退步 / 藍色標註進步）」，自動過濾正常數據，引導長官視線一秒聚焦核心問題（例外管理）。
+3. 建構「動態戰情室」與「多媒體實證牆」：整合 ECharts 互動圖表，並首創「現場問題實證紀錄區」。長官不只能看見冰冷的數據，更能點擊查看高畫質的「異常狀況相片與影片（燈箱特效）」，讓營運會議做到真正的「有圖有真相」。`,
+    benefitType: '節省工時 / 數位轉型',
+    tangibleBenefit: `• 製表工時大幅縮減（自動化）：導入專屬 CSV 數據轉譯引擎 (ETL) 後，每月月報的資料整理與產出時間，由原先人工製作的 2 小時，極速縮減至 1 分鐘內（一鍵拖曳解析），報表前置作業人力成本節省達 90% 以上。
+• 零人工錯誤率（防呆）：系統程式碼自動讀取並對齊 CSV 數據，徹底根絕過去人工操作 Excel 複製貼上 (Copy & Paste) 容易產生的錯行、漏字等致命人為失誤。
+• 會議溝通效率提升：透過「專屬報告模式」隱藏干擾元素並極大化字體，省去長官在密密麻麻表格中尋找重點的時間，單次會議檢討時間預估可有效縮短 15%~20%。`,
+    intangibleBenefit: `• 直覺化決策輔助（例外管理）：導入嚴謹的色彩心理學（紅色警示異常、藍色標註進步、黑色收納正常數據），讓高階主管能「一秒鎖定痛點」，大腦無須進行多餘的數字運算，大幅提升營運決策品質。
+• 會議體驗與專業度躍升：首創「第八頁動態多媒體實證區（相片/影片燈箱特效）」，打破傳統靜態簡報的沉悶感。長官能直接調閱現場異常畫面，做到真正的「有圖有真相」，大幅提升提案團隊的科技專業形象。
+• 響應數位轉型與綠色企業：淘汰紙本或傳統檔案夾帶傳輸，全面邁向 Web 雲端化、無紙化閱覽，建立團隊擁抱數位工具的創新文化。`,
+    horizontalExpansion: `• 跨部門無縫複製套用：本系統底層已實現「UI 組件與數據資料庫分離」的高階架構。此套模板可低成本、快速地平行展開至其他單位（如：客服滿意度監控、物流調度分析、零件庫存數據板）。
+• 即時數據中心擴充潛力：目前系統已具備高度動態互動性，未來若有需求，只需串接後端 API 或雲端資料庫（如 Firebase），即可「零痛感」升級為 24 小時大螢幕自動滾動的「即時營運監控管理中心」。`,
+    benefitDetail: '每月製表時間由 2 小時縮短至 1 分鐘內（節省 90% 以上工時）、人工複製貼上錯誤率降為 0%，單次會議檢討時間縮短 15%~20%。',
+    beforeImg: 'assets/kaizen/demo_before.png',
+    afterImg: 'assets/kaizen/demo_after.png',
+    spreadNeed: '需要',
+    canSpread: '客服滿意度監控、物流調度分析、零件庫存數據板等相關單位',
+    spreadStatus: '未擴散',
+    selfScore: 78,
+    status: '2026上半年實績範本',
     likes: [],
-    createdAtIso: '2026-10-22T10:00:00.000Z',
+    createdAtIso: '2026-06-19T09:00:00.000Z',
   },
 ];
 
@@ -543,17 +569,17 @@ export function mountKaizen(el) {
         <div class="tools-card-header">
           <div>
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <h3 style="margin:0;font-size:16px">📝 線上改善提案登錄表 ＆ 團隊改善點子庫</h3>
-              <span class="tools-live-badge">⚡ 支援一鍵套用正式公文排版列印 / 匯出 PDF</span>
+              <h3 style="margin:0;font-size:16px">📝 線上改善提案登錄表 ＆ 團隊改善點子庫（100% 對齊公司標準雙頁表單）</h3>
+              <span class="tools-live-badge">⚡ 支援一鍵套用正式公文排版列印 / 匯出 PDF（含改善前後對照圖＆第2頁採分基準表）</span>
             </div>
-            <div class="muted tiny" style="margin-top:3px">ไม่ต้อง再找舊 Word/Excel 檔！直接線上填寫「改善前問題 ➔ 改善後對策 ➔ 預估效益」，不僅可讓團隊互相觀摩給讚，還能一鍵產出標準「改善提案登錄表」列印送簽！</div>
+            <div class="muted tiny" style="margin-top:3px">已依據《2026 上半年改善提案登錄表 By 經營組_孔令淳.docx》完整重構欄位：涵蓋「提案類別勾選、人事編號、實施區域、會簽與標準化文件、改善前問題、我的對策、效果確認（有形／無形效益／平行展開）、改善前後對照圖」，並可一鍵產出與 Word 完全一致的正式表格列印送簽！</div>
           </div>
           <button type="button" class="btn primary sm" data-open-new-proposal>＋ 新增改善提案登錄表</button>
         </div>
 
         <div class="kz-proposal-list">
           ${proposals.map(p => {
-            const tier = getKaizenTierByScore(p.selfScore || 60);
+            const tier = getKaizenTierByScore(p.selfScore || 65);
             const likes = Array.isArray(p.likes) ? p.likes : [];
             const liked = likes.includes(myUid());
             const canDel = p.uid && (p.uid === myUid() || isAdmin());
@@ -561,38 +587,60 @@ export function mountKaizen(el) {
               <div class="kz-prop-card">
                 <div class="kz-prop-head">
                   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-                    <span class="fw-badge" style="background:#FEF3C7;color:#92400E">${esc(p.proposerType || '個人改善')}</span>
-                    <span class="fw-badge">${esc(p.category || '作業改善')}</span>
+                    <span class="fw-badge" style="background:#FEF3C7;color:#92400E">類別：${esc(p.category || '流程')}</span>
+                    <span class="fw-badge">${esc(p.dept || '經營組')} · ${esc(p.empId || 'B4398')} ${esc(p.proposerName || '組員')}${p.coProposer ? `、${esc(p.coProposer)}` : ''}</span>
                     <span class="fw-status-pill" style="background:${tier.badgeBg};color:${tier.badgeColor}">自評預估：${tier.grade} (${tier.prizeText} / ${tier.points}點)</span>
-                    <span class="muted tiny">📅 實施起始日：${esc(p.startDate || '-')} · 提案人：<b>${esc(p.proposerName || '組員')}</b>${p.coProposer ? `、${esc(p.coProposer)}` : ''}（${esc(p.dept || '經營 Team')}）</span>
+                    <span class="muted tiny">📅 實施日：${esc(p.startDate || '-')} · 📍 實施區域：<b>${esc(p.implArea || '新辦公室')}</b></span>
                   </div>
                   <div style="display:flex;gap:6px;align-items:center">
                     <button type="button" class="btn sm ${liked ? 'primary' : 'ghost'}" data-like-prop="${esc(p.id)}" style="padding:3px 9px;font-size:12px">
                       👍 好點子 (${likes.length})
                     </button>
-                    <button type="button" class="btn sm ghost" data-print-prop="${esc(p.id)}" style="padding:3px 9px;font-size:12px">
-                      🖨️ 預覽登錄表／列印送簽
+                    <button type="button" class="btn sm primary" data-print-prop="${esc(p.id)}" style="padding:3px 11px;font-size:12px">
+                      🖨️ 預覽正式登錄表／列印送簽
                     </button>
                     ${canDel ? `<button type="button" class="icon-btn" data-del-prop="${esc(p.id)}" title="刪除此提案" style="color:var(--danger);font-size:12px">✕</button>` : ''}
                   </div>
                 </div>
 
-                <h4 class="kz-prop-title">${esc(p.title)}</h4>
+                <h4 class="kz-prop-title">案名：${esc(p.title)}</h4>
 
                 <div class="kz-ba-grid">
                   <div class="kz-ba-box before">
-                    <div class="kz-ba-lbl">🔍 改善前現況與痛點 (Before)</div>
+                    <div class="kz-ba-lbl">🔍 改善前問題是什麼（有何缺失需要改善）</div>
                     <div class="kz-ba-txt">${esc(p.beforeDesc)}</div>
                   </div>
                   <div class="kz-ba-box after">
-                    <div class="kz-ba-lbl">✨ 改善後具體作法 (After)</div>
+                    <div class="kz-ba-lbl">✨ 我的對策（利用什麼方式或手法將問題處理完成）</div>
                     <div class="kz-ba-txt">${esc(p.afterDesc)}</div>
                   </div>
                 </div>
 
-                <div class="kz-prop-foot">
-                  <span>🎯 <b>效益類別：</b>${esc(p.benefitType || '提升效率')} — ${esc(p.benefitDetail || '無')}</span>
-                  ${p.canSpread ? `<span class="kz-spread-tag">🔄 水平展開/會簽建議：${esc(p.canSpread)}</span>` : ''}
+                ${(p.tangibleBenefit || p.intangibleBenefit || p.horizontalExpansion) ? `
+                  <div style="margin-top:10px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 14px;font-size:12.5px;line-height:1.58">
+                    <div style="font-weight:800;color:#92400E;margin-bottom:6px">📊 效果確認（有形效益 ／ 無形效益 ／ 平行展開）</div>
+                    ${p.tangibleBenefit ? `<div style="margin-bottom:6px"><b style="color:#0F172A">【有形效益（具體量化指標）】</b><div style="white-space:pre-wrap;color:#334155">${esc(p.tangibleBenefit)}</div></div>` : ''}
+                    ${p.intangibleBenefit ? `<div style="margin-bottom:6px"><b style="color:#0F172A">【無形效益（質性與體驗升級）】</b><div style="white-space:pre-wrap;color:#334155">${esc(p.intangibleBenefit)}</div></div>` : ''}
+                    ${p.horizontalExpansion ? `<div><b style="color:#0F172A">【平行展開（未來擴充與複製性）】</b><div style="white-space:pre-wrap;color:#334155">${esc(p.horizontalExpansion)}</div></div>` : ''}
+                  </div>
+                ` : ''}
+
+                ${(p.beforeImg || p.afterImg) ? `
+                  <div class="kz-ba-grid" style="margin-top:10px">
+                    <div style="background:#F8FAFC;border:1px solid #CBD5E1;border-radius:10px;padding:8px 10px">
+                      <div style="font-size:11.5px;font-weight:800;color:#475569;margin-bottom:6px">🖼️ 改善前示意圖／附件</div>
+                      ${p.beforeImg ? `<img src="${esc(p.beforeImg)}" alt="改善前" style="width:100%;max-height:240px;object-fit:contain;border-radius:6px;background:#fff;border:1px solid #E2E8F0">` : '<div class="muted tiny">未附圖</div>'}
+                    </div>
+                    <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:8px 10px">
+                      <div style="font-size:11.5px;font-weight:800;color:#166534;margin-bottom:6px">🖼️ 改善後示意圖／附件</div>
+                      ${p.afterImg ? `<img src="${esc(p.afterImg)}" alt="改善後" style="width:100%;max-height:240px;object-fit:contain;border-radius:6px;background:#fff;border:1px solid #BBF7D0">` : '<div class="muted tiny">未附圖</div>'}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <div class="kz-prop-foot" style="margin-top:10px">
+                  <span>🎯 <b>效益摘要：</b>${esc(p.benefitDetail || p.tangibleBenefit?.slice(0, 70) || '詳見效果確認')}</span>
+                  ${p.canSpread ? `<span class="kz-spread-tag">🔄 擴散相關單位（${esc(p.spreadNeed || '需要')} · ${esc(p.spreadStatus || '未擴散')}）：${esc(p.canSpread)}</span>` : ''}
                 </div>
               </div>
             `;
@@ -858,80 +906,194 @@ export function mountKaizen(el) {
   return { onData: render };
 }
 
+function readImageFileAsDataUrl(file, maxWidth = 1100) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve('');
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => resolve(reader.result);
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / (img.width || maxWidth));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.84));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function openNewProposalModal(currentList, onSaved) {
-  const meName = state.me?.displayName || '';
+  const meName = state.me?.displayName || '孔令淳';
   const today = ymd();
   openModal(`
-    <div class="modal-head">
-      <h3>✍️ 線上填寫「改善提案登錄表」（GUT02202 規格）</h3>
-      <button class="icon-btn" data-close>✕</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fef08a 0%,#f59e0b 100%);display:grid;place-items:center;font-size:21px;flex-shrink:0">📝</div>
+        <div style="min-width:0">
+          <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">線上填寫「改善提案登錄表」</h3>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">100% 對齊公司標準 Word 表格（GUT02202 雙頁規格：含改善前後對照圖＆採分基準表）</div>
+        </div>
+      </div>
+      <button type="button" class="icon-btn" data-close style="flex-shrink:0">✕</button>
     </div>
-    <form class="form" id="kz-proposal-form">
-      <label>提案主題名稱 <span class="req">*</span>
-        <input type="text" name="title" required placeholder="例如：優化場站巡檢照片回傳流程，減少重複整理時間">
-      </label>
-      <div class="grid2">
-        <label>提案型態
-          <select name="proposerType">
-            <option value="個人改善">👤 個人改善（1人）</option>
-            <option value="小團體改善">👥 小團體改善（2人協作）</option>
-            <option value="跨部門專案(CFT)">🤝 部門間專案改善 (CFT)</option>
-          </select>
-        </label>
-        <label>改善類別
+
+    <form class="form" id="kz-proposal-form" style="gap:14px;max-height:76vh;overflow-y:auto;padding-right:4px">
+      <div class="field">
+        <span>📌 案名（提案主題名稱） <em>*</em></span>
+        <input type="text" name="title" required placeholder="例如：模擬體驗會議閱覽體驗升級與防呆視覺化報表重構">
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div class="field">
+          <span>🏷️ 提案類別(請勾選)</span>
           <select name="category">
-            <option value="流程簡化 / 數位工具">💻 流程簡化 / 數位工具</option>
-            <option value="場站調度 / 外勤維運">🚲 場站調度 / 外勤維運</option>
-            <option value="品質提升 / 客戶服務">⭐ 品質提升 / 客戶服務</option>
-            <option value="成本節降 / 採購優化">💰 成本節降 / 採購優化</option>
-            <option value="職場安全 / 5S 環境">🛡️ 職場安全 / 5S 環境</option>
+            <option value="流程" selected>☑️ 流程</option>
+            <option value="品質">☑️ 品質</option>
+            <option value="成本">☑️ 成本</option>
+            <option value="5S">☑️ 5S</option>
+            <option value="其它">☑️ 其它</option>
           </select>
-        </label>
-      </div>
-      <div class="grid2">
-        <label>提案人姓名 <span class="req">*</span>
+        </div>
+        <div class="field">
+          <span>🏢 提案單位</span>
+          <input type="text" name="dept" value="經營組" required>
+        </div>
+        <div class="field">
+          <span>🪪 人事編號</span>
+          <input type="text" name="empId" value="B4398" placeholder="例如：B4398">
+        </div>
+        <div class="field">
+          <span>👤 姓名 <em>*</em></span>
           <input type="text" name="proposerName" value="${esc(meName)}" required>
-        </label>
-        <label>共同提案人（小團體改善可填 1 位搭檔）
-          <input type="text" name="coProposer" placeholder="個人提案免填">
-        </label>
+        </div>
       </div>
-      <div class="grid2">
-        <label>所屬部門 / 單位
-          <input type="text" name="dept" value="經營 Team" required>
-        </label>
-        <label>改善實施起始日（須於實施 1 年內提交） <span class="req">*</span>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="field">
+          <span>📅 實施起始日（從 MM月DD日起實施中） <em>*</em></span>
           <input type="date" name="startDate" value="${esc(today)}" required>
-        </label>
+        </div>
+        <div class="field">
+          <span>📍 實施區域</span>
+          <input type="text" name="implArea" value="新辦公室" placeholder="例如：新辦公室 / 全區場站">
+        </div>
+        <div class="field">
+          <span>👥 共同提案人（選填）</span>
+          <input type="text" name="coProposer" placeholder="個人提案免填">
+        </div>
       </div>
-      <label>🔍 改善前現況與問題點 (Before) <span class="req">*</span>
-        <textarea name="beforeDesc" rows="3" required placeholder="請直白描述原本作業哪裡花時間、容易出錯、或造成不便？"></textarea>
-      </label>
-      <label>✨ 改善後具體對策與作法 (After) <span class="req">*</span>
-        <textarea name="afterDesc" rows="3" required placeholder="請描述您實際做了什麼調整或工具改善？"></textarea>
-      </label>
-      <div class="grid2">
-        <label>🎯 主要達成效益類別
-          <select name="benefitType">
-            <option value="節省工時 / 提升效率">⏱️ 節省工時 / 提升效率</option>
-            <option value="提升服務與作業品質">📈 提升服務與作業品質</option>
-            <option value="降低成本 / 減少浪費">💵 降低成本 / 減少浪費</option>
-            <option value="強化安全 / 降低風險">🛡️ 強化安全 / 降低風險</option>
+
+      <!-- 會簽單位與標準化文件區塊 -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr 2fr;gap:10px">
+        <div class="field">
+          <span>🤝 會簽單位（□是 □否）</span>
+          <div style="display:flex;gap:6px">
+            <select name="needCoSign" style="width:90px">
+              <option value="否" selected>□ 否</option>
+              <option value="是">☑ 是</option>
+            </select>
+            <input type="text" name="coSignDept" placeholder="會簽單位名稱（無免填）" style="flex:1">
+          </div>
+        </div>
+        <div class="field">
+          <span>📄 標準化文件（□新增 □修訂 · 作業標準書/表單/圖面）</span>
+          <div style="display:grid;grid-template-columns:110px 130px 1fr 80px;gap:6px">
+            <select name="stdDocAction">
+              <option value="無" selected>無異動</option>
+              <option value="新增">☑ 新增</option>
+              <option value="修訂">☑ 修訂</option>
+            </select>
+            <select name="stdDocType">
+              <option value="">文件類型…</option>
+              <option value="作業標準書">作業標準書</option>
+              <option value="表單文件">表單文件</option>
+              <option value="圖面文件">圖面文件</option>
+            </select>
+            <input type="text" name="stdDocNo" placeholder="文件編號">
+            <input type="text" name="stdDocVer" placeholder="版次">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <span>🔍 改善前問題是什麼（請說明改善前有何缺失需要改善的） <em>*</em></span>
+          <textarea name="beforeDesc" rows="5" required placeholder="1. 報表產出極度耗時、易出錯…&#10;2. 視覺擁擠，長官閱覽體驗不佳…&#10;3. 缺乏動態下鑽與重點警示…"></textarea>
+        </div>
+        <div class="field">
+          <span>✨ 我的對策：（說明利用什麼方式或手法將問題處理完成） <em>*</em></span>
+          <textarea name="afterDesc" rows="5" required placeholder="1. 開發「自動化數據轉譯引擎 (ETL)」…&#10;2. 導入「專屬報告模式」與「減法視覺設計」…&#10;3. 建構「動態戰情室」與「多媒體實證牆」…"></textarea>
+        </div>
+      </div>
+
+      <!-- 效果確認（有形效益 / 無形效益 / 平行展開） -->
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:13.5px;font-weight:800;color:#92400e">📊 效果確認：（將改善完成後有形的及無形的成果加以說明）</div>
+        <div class="field">
+          <span>📈 有形效益（具體量化指標：如工時縮減、零錯誤率、成本節省） <em>*</em></span>
+          <textarea name="tangibleBenefit" rows="3" required placeholder="• 製表工時大幅縮減（自動化）：由原先 2 小時縮減至 1 分鐘內，節省達 90% 以上…&#10;• 零人工錯誤率（防呆）：自動讀取並對齊 CSV 數據…"></textarea>
+        </div>
+        <div class="field">
+          <span>🌟 無形效益（質性與體驗升級：如直覺決策輔助、專業形象、無紙化）</span>
+          <textarea name="intangibleBenefit" rows="3" placeholder="• 直覺化決策輔助（例外管理）：導入色彩心理學讓高階主管一秒鎖定痛點…&#10;• 會議體驗與專業度躍升：有圖有真相…"></textarea>
+        </div>
+        <div class="field">
+          <span>🚀 平行展開（未來擴充與跨部門複製性）</span>
+          <textarea name="horizontalExpansion" rows="2" placeholder="• 跨部門無縫複製套用：可低成本快速平行展開至其他單位…"></textarea>
+        </div>
+      </div>
+
+      <!-- 改善前 / 改善後 圖畫或截圖附件 -->
+      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px">
+        <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:8px">🖼️ 將您改善前與改善後的過程、方法、圖片、表格以圖畫(或附件)任何人都能一目了然（選填，支援上傳截圖）</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <span>📸 改善前圖片／截圖</span>
+            <input type="file" name="beforeImgFile" accept="image/*" style="font-size:12px">
+          </div>
+          <div class="field">
+            <span>📸 改善後圖片／截圖</span>
+            <input type="file" name="afterImgFile" accept="image/*" style="font-size:12px">
+          </div>
+        </div>
+      </div>
+
+      <!-- 擴散相關單位與自評採分 -->
+      <div style="display:grid;grid-template-columns:120px 1fr 130px 150px;gap:10px;align-items:end">
+        <div class="field">
+          <span>🔄 擴散相關單位</span>
+          <select name="spreadNeed">
+            <option value="需要" selected>☑ 需要</option>
+            <option value="不需要">□ 不需要</option>
           </select>
-        </label>
-        <label>🏅 自評預估採分（0~100分，系統自動換算等級）
-          <input type="number" name="selfScore" value="65" min="31" max="100">
-        </label>
+        </div>
+        <div class="field">
+          <span>🏢 需擴散之單位說明</span>
+          <input type="text" name="canSpread" placeholder="例如：客服滿意度監控、物流調度分析等相關單位">
+        </div>
+        <div class="field">
+          <span>📌 擴散狀態</span>
+          <select name="spreadStatus">
+            <option value="未擴散" selected>□ 未擴散</option>
+            <option value="已擴散">☑ 已擴散</option>
+          </select>
+        </div>
+        <div class="field">
+          <span>🏅 自評預估採分(0~100)</span>
+          <input type="number" name="selfScore" value="78" min="31" max="100">
+        </div>
       </div>
-      <label>📊 具體效益說明（量化數字或質化成果） <span class="req">*</span>
-        <input type="text" name="benefitDetail" required placeholder="例如：每月節省約 4 小時人工統計時間、錯誤率降為 0%">
-      </label>
-      <label>🔄 是否可水平展開／擴散至其他單位會簽？
-        <input type="text" name="canSpread" placeholder="例如：可擴散至各區營運處參考（無則免填）">
-      </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">💾 儲存至提案庫（可隨時列印送簽）</button>
+
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
+        <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px">💾 儲存並產出標準登錄表</button>
       </div>
     </form>
   `, { wide: true });
@@ -939,21 +1101,39 @@ function openNewProposalModal(currentList, onSaved) {
   document.getElementById('kz-proposal-form').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
+    const beforeImg = await readImageFileAsDataUrl(f.beforeImgFile?.files?.[0]);
+    const afterImg = await readImageFileAsDataUrl(f.afterImgFile?.files?.[0]);
+    const tangible = f.tangibleBenefit.value.trim();
     const item = {
       id: 'kzp_' + Date.now().toString(36),
       title: f.title.value.trim(),
-      proposerType: f.proposerType.value,
+      proposerType: f.coProposer.value.trim() ? '小團體改善' : '個人改善',
       category: f.category.value,
       proposerName: f.proposerName.value.trim(),
+      empId: f.empId.value.trim() || 'B4398',
       coProposer: f.coProposer.value.trim(),
-      dept: f.dept.value.trim() || '經營 Team',
+      dept: f.dept.value.trim() || '經營組',
       startDate: f.startDate.value,
+      implArea: f.implArea.value.trim() || '新辦公室',
+      needCoSign: f.needCoSign.value,
+      coSignDept: f.coSignDept.value.trim(),
+      stdDocAction: f.stdDocAction.value,
+      stdDocType: f.stdDocType.value,
+      stdDocNo: f.stdDocNo.value.trim(),
+      stdDocVer: f.stdDocVer.value.trim(),
       beforeDesc: f.beforeDesc.value.trim(),
       afterDesc: f.afterDesc.value.trim(),
-      benefitType: f.benefitType.value,
-      benefitDetail: f.benefitDetail.value.trim(),
+      tangibleBenefit: tangible,
+      intangibleBenefit: f.intangibleBenefit.value.trim(),
+      horizontalExpansion: f.horizontalExpansion.value.trim(),
+      benefitType: f.category.value + '改善',
+      benefitDetail: tangible.split('\n')[0] || '詳見效果確認',
+      beforeImg: beforeImg || '',
+      afterImg: afterImg || '',
+      spreadNeed: f.spreadNeed.value,
       canSpread: f.canSpread.value.trim(),
-      selfScore: Number(f.selfScore.value || 65),
+      spreadStatus: f.spreadStatus.value,
+      selfScore: Number(f.selfScore.value || 78),
       uid: myUid(),
       likes: [],
       createdAtIso: new Date().toISOString(),
@@ -961,72 +1141,303 @@ function openNewProposalModal(currentList, onSaved) {
     const next = [item, ...currentList];
     await saveToolsDoc('kaizenProposals', { list: next });
     closeModal();
-    toast('🎉 已建立改善提案登錄表！可點選「預覽登錄表／列印送簽」匯出紙本或 PDF');
+    toast('🎉 已建立改善提案登錄表！可點選「預覽正式登錄表／列印送簽」匯出完整雙頁公文');
     onSaved?.();
   };
 }
 
 function openPrintProposalModal(p) {
-  const tier = getKaizenTierByScore(p.selfScore || 65);
+  const cats = ['品質', '成本', '流程', '5S', '其它'];
+  const activeCat = cats.find(c => (p.category || '').includes(c)) || '流程';
+  const dtParts = (p.startDate || '2026-06-19').split('-');
+  const startMonth = dtParts[1] || '06';
+  const startDay = dtParts[2] || '19';
+  const chk = cond => (cond ? '☑' : '□');
+
   openModal(`
-    <div class="modal-head">
-      <h3>🖨️ 微笑單車－改善提案登錄表（標準編號 GUT02202 預覽）</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
-    <div id="kz-printable-sheet" style="background:#fff;border:2px solid #0F172A;border-radius:8px;padding:18px;color:#0F172A;font-size:13px;line-height:1.55">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #0F172A;padding-bottom:8px;margin-bottom:12px">
-        <div>
-          <div style="font-size:11px;color:#475569;font-weight:700">微笑單車股份有限公司 · 標準編號 GUT02202</div>
-          <h2 style="margin:2px 0 0;font-size:20px;letter-spacing:1px">改善提案登錄表</h2>
-        </div>
-        <div style="text-align:right;font-size:12px">
-          <div><b>提報部門：</b>${esc(p.dept || '經營 Team')}</div>
-          <div><b>實施起始日：</b>${esc(p.startDate || '-')}（每月 20 日截止）</div>
-        </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e2e8f0">
+      <div>
+        <h3 style="margin:0;font-size:17px;font-weight:800">🖨️ 改善提案登錄表（標準 Word 雙頁格式 1:1 預覽）</h3>
+        <div class="muted tiny">已 100% 還原《2026 上半年改善提案登錄表 By 經營組_孔令淳.docx》第 1 頁登錄表與第 2 頁採分基準表</div>
       </div>
-
-      <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:13px">
-        <tr>
-          <th style="border:1px solid #334155;background:#F1F5F9;padding:7px 10px;width:110px;text-align:left">提案主題</th>
-          <td colspan="3" style="border:1px solid #334155;padding:7px 10px;font-weight:800;font-size:14px">${esc(p.title)}</td>
-        </tr>
-        <tr>
-          <th style="border:1px solid #334155;background:#F1F5F9;padding:7px 10px;text-align:left">提案人</th>
-          <td style="border:1px solid #334155;padding:7px 10px">${esc(p.proposerName)}${p.coProposer ? `、${esc(p.coProposer)}` : ''}</td>
-          <th style="border:1px solid #334155;background:#F1F5F9;padding:7px 10px;width:110px;text-align:left">提案型態／類別</th>
-          <td style="border:1px solid #334155;padding:7px 10px">${esc(p.proposerType)} ／ ${esc(p.category)}</td>
-        </tr>
-        <tr>
-          <th style="border:1px solid #334155;background:#FEF2F2;padding:10px;text-align:left;vertical-align:top">🔍 改善前現況<br><span style="font-size:11px;font-weight:500;color:#64748B">(問題點說明)</span></th>
-          <td colspan="3" style="border:1px solid #334155;padding:10px;white-space:pre-wrap">${esc(p.beforeDesc)}</td>
-        </tr>
-        <tr>
-          <th style="border:1px solid #334155;background:#F0FDF4;padding:10px;text-align:left;vertical-align:top">✨ 改善後對策<br><span style="font-size:11px;font-weight:500;color:#64748B">(具體作法)</span></th>
-          <td colspan="3" style="border:1px solid #334155;padding:10px;white-space:pre-wrap">${esc(p.afterDesc)}</td>
-        </tr>
-        <tr>
-          <th style="border:1px solid #334155;background:#FFFBEB;padding:9px 10px;text-align:left">🎯 具體效益</th>
-          <td colspan="3" style="border:1px solid #334155;padding:9px 10px"><b>【${esc(p.benefitType)}】</b> ${esc(p.benefitDetail)}</td>
-        </tr>
-        <tr>
-          <th style="border:1px solid #334155;background:#F1F5F9;padding:7px 10px;text-align:left">🔄 會簽／擴散</th>
-          <td colspan="3" style="border:1px solid #334155;padding:7px 10px">${esc(p.canSpread || '本單位自主改善（無須跨單位會簽）')}</td>
-        </tr>
-      </table>
-
-      <div style="border:1px solid #334155;border-radius:6px;padding:10px;background:#F8FAFC;font-size:12px">
-        <div style="font-weight:800;margin-bottom:6px">📋 主管審核評等欄（自評預估參考：${p.selfScore} 分 ➔ ${tier.grade} · 獎金 ${tier.prizeText} · 點數 ${tier.points} 點）</div>
-        <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:8px;text-align:center;margin-top:8px">
-          <div style="border:1px dashed #94A3B8;padding:18px 6px 6px;background:#fff">主任／指定授權者<br><span class="muted tiny">(7~8等核定)</span></div>
-          <div style="border:1px dashed #94A3B8;padding:18px 6px 6px;background:#fff">處長／Team 主管<br><span class="muted tiny">(5~8等核定)</span></div>
-          <div style="border:1px dashed #94A3B8;padding:18px 6px 6px;background:#fff">高等案件審查會<br><span class="muted tiny">(4等以上審查)</span></div>
-          <div style="border:1px dashed #94A3B8;padding:18px 6px 6px;background:#fff">總經理核決<br><span class="muted tiny">(3等以上月會頒獎)</span></div>
-        </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button type="button" class="btn primary sm" data-do-print>🖨️ 列印 ／ 另存為 PDF 送簽</button>
+        <button type="button" class="icon-btn" data-close>✕</button>
       </div>
     </div>
-    <div class="modal-foot">
-      <button type="button" class="btn" data-close>關閉</button>
-      <button type="button" class="btn primary" data-do-print>🖨️ 列印 ／ 另存為 PDF 送簽</button>
+
+    <div style="max-height:75vh;overflow-y:auto;background:#e2e8f0;padding:14px;border-radius:10px">
+      <div id="kz-printable-sheet" style="background:#fff;max-width:820px;margin:0 auto;padding:22px 26px;color:#000;font-family:'Microsoft JhengHei','PMingLiU',sans-serif;font-size:12px;line-height:1.45;box-shadow:0 4px 18px rgba(0,0,0,0.12)">
+        <style>
+          #kz-printable-sheet table.kz-doc-tbl { width: 100%; border-collapse: collapse; margin-bottom: 6px; table-layout: fixed; }
+          #kz-printable-sheet table.kz-doc-tbl th,
+          #kz-printable-sheet table.kz-doc-tbl td { border: 1px solid #000; padding: 4px 6px; vertical-align: middle; word-wrap: break-word; font-size: 11.5px; }
+          #kz-printable-sheet .kz-doc-title { text-align: center; font-size: 20px; font-weight: 800; letter-spacing: 6px; margin: 0 0 8px; }
+          #kz-printable-sheet .kz-sec-head { font-weight: 800; background: #f8fafc; }
+          @media print {
+            .kz-page-break { page-break-before: always; margin-top: 16px; }
+          }
+        </style>
+
+        <!-- ==================== 第 1 頁：改善提案登錄表 ==================== -->
+        <div class="kz-doc-title">改善提案登錄表</div>
+
+        <!-- 頂部基本資料表 (TABLE 0) -->
+        <table class="kz-doc-tbl">
+          <tr>
+            <td style="width:9%;font-weight:800;text-align:center">案名</td>
+            <td colspan="9" style="font-weight:800;font-size:13.5px">${esc(p.title)}</td>
+            <td colspan="2" style="width:18%;font-size:11px">提案編號<br>(事務局填寫):</td>
+            <td style="width:12%"></td>
+          </tr>
+          <tr style="text-align:center;font-weight:700;background:#f8fafc">
+            <td colspan="10">提案類別(請V勾選)</td>
+            <td>提案單位</td>
+            <td>人事編號</td>
+            <td>姓名</td>
+          </tr>
+          <tr style="text-align:center">
+            <td>品質</td>
+            <td style="font-weight:900">${activeCat === '品質' ? 'V' : ''}</td>
+            <td>成本</td>
+            <td style="font-weight:900">${activeCat === '成本' ? 'V' : ''}</td>
+            <td>流程</td>
+            <td style="font-weight:900">${activeCat === '流程' ? 'V' : ''}</td>
+            <td>5S</td>
+            <td style="font-weight:900">${activeCat === '5S' ? 'V' : ''}</td>
+            <td>其它</td>
+            <td style="font-weight:900">${activeCat === '其它' ? 'V' : ''}</td>
+            <td>${esc(p.dept || '經營組')}</td>
+            <td>${esc(p.empId || 'B4398')}</td>
+            <td style="font-weight:700">${esc(p.proposerName || '孔令淳')}${p.coProposer ? `<br><small>${esc(p.coProposer)}</small>` : ''}</td>
+          </tr>
+          <tr>
+            <td colspan="10">從 <b>${esc(startMonth)}</b> 月 <b>${esc(startDay)}</b> 日起實施中, 實施區域( <b>${esc(p.implArea || '新辦公室')}</b> )</td>
+            <td colspan="3">會簽單位：${esc(p.coSignDept || '')}</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="text-align:center">${chk(p.needCoSign === '是')}是 ${chk(p.needCoSign !== '是')}否</td>
+            <td colspan="2" style="text-align:center;font-weight:700">標準化文件</td>
+            <td colspan="2">${chk(p.stdDocAction === '新增')}新增 ${chk(p.stdDocAction === '修訂')}修訂</td>
+            <td colspan="4">${chk(p.stdDocType === '作業標準書')}作業標準書 ${chk(p.stdDocType === '表單文件')}表單文件 ${chk(p.stdDocType === '圖面文件')}圖面文件</td>
+            <td colspan="2">文件編號：${esc(p.stdDocNo || '')}</td>
+            <td>版次：${esc(p.stdDocVer || '')}</td>
+          </tr>
+        </table>
+        <div style="text-align:center;font-size:11px;font-weight:700;margin:2px 0 4px">↑以上欄位由提案者詳細填寫</div>
+
+        <!-- 評等權限與採分、等級、獎金、點數對照表 (TABLE 1) -->
+        <table class="kz-doc-tbl" style="text-align:center">
+          <tr style="background:#f8fafc;font-weight:700">
+            <td rowspan="2" style="width:13%">評等權限</td>
+            <td style="width:7%">創造性</td>
+            <td style="width:7%">努力性</td>
+            <td style="width:7%">實際<br>效益</td>
+            <td rowspan="2" style="width:6%">採分</td>
+            <td rowspan="2" style="width:6%">等級</td>
+            <td rowspan="2" style="width:8%">簽核</td>
+            <td colspan="9" style="text-align:left;font-size:11px">※提案採分、等級、獎金、點數對照表。</td>
+          </tr>
+          <tr style="background:#f8fafc;font-size:10.5px">
+            <td>40%</td>
+            <td>20%</td>
+            <td>40%</td>
+            <td>等級</td>
+            <td>8等</td>
+            <td>7等</td>
+            <td>6等</td>
+            <td>5等</td>
+            <td>4等</td>
+            <td>3等</td>
+            <td>2等</td>
+            <td>1等</td>
+          </tr>
+          <tr>
+            <td style="font-size:10.5px">主任/指定授權者</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td style="background:#f8fafc;font-weight:700">採分</td>
+            <td>0~30</td><td>31~36</td><td>37~44</td><td>45~50</td><td>51~60</td><td>61~75</td><td>76~90</td><td>90↑</td>
+          </tr>
+          <tr>
+            <td style="font-size:10.5px">處長/Team主管</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td style="background:#f8fafc;font-weight:700">獎金</td>
+            <td style="font-size:10px">再接再勵</td><td>100</td><td>200</td><td>300</td><td>1000</td><td>5000</td><td>10000</td><td>20000</td>
+          </tr>
+          <tr>
+            <td style="font-size:10.5px">高等案件審查會</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td style="background:#f8fafc;font-weight:700">點數</td>
+            <td>0</td><td>1</td><td>2</td><td>3</td><td>5</td><td>10</td><td>15</td><td>30</td>
+          </tr>
+          <tr>
+            <td style="font-size:10.5px">總經理</td>
+            <td></td><td></td><td></td><td></td><td></td><td></td>
+            <td style="background:#f8fafc;font-weight:700">核准<br>權限</td>
+            <td colspan="2" style="font-size:9.5px;line-height:1.25">Y職:主任/指定授權者<br>U職:處長/Team主管</td>
+            <td colspan="3" style="font-size:9.5px;line-height:1.25">Y職:處長<br>U職:處長/Team主管</td>
+            <td colspan="3" style="font-size:9.5px;line-height:1.25">總經理<br>(需檢附改善效益評估表)</td>
+          </tr>
+        </table>
+
+        <!-- 改善前問題、我的對策、效果確認、改善前後圖示 (TABLE 2) -->
+        <table class="kz-doc-tbl">
+          <tr>
+            <td style="width:50%;vertical-align:top;padding:8px">
+              <div style="font-weight:800;margin-bottom:4px">改善前問題是什麼(請說明改善前有何缺失需要改善的)</div>
+              <div style="white-space:pre-wrap;line-height:1.5">${esc(p.beforeDesc)}</div>
+            </td>
+            <td style="width:50%;vertical-align:top;padding:8px">
+              <div style="font-weight:800;margin-bottom:4px">我的對策：(說明利用什麼方式或手法將問題處理完成)</div>
+              <div style="white-space:pre-wrap;line-height:1.5">${esc(p.afterDesc)}</div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="vertical-align:top;padding:8px">
+              <div style="font-weight:800;margin-bottom:4px">效果確認：(將改善完成後有形的及無形的成果加以說明)</div>
+              ${p.tangibleBenefit ? `
+                <div style="margin-bottom:6px">
+                  <div style="font-weight:800">有形效益(具體量化指標)：</div>
+                  <div style="white-space:pre-wrap;line-height:1.5">${esc(p.tangibleBenefit)}</div>
+                </div>
+              ` : `<div style="white-space:pre-wrap;line-height:1.5">${esc(p.benefitDetail || '')}</div>`}
+              ${p.intangibleBenefit ? `
+                <div style="margin-bottom:6px">
+                  <div style="font-weight:800">無形效益(質性與體驗升級)：</div>
+                  <div style="white-space:pre-wrap;line-height:1.5">${esc(p.intangibleBenefit)}</div>
+                </div>
+              ` : ''}
+              ${p.horizontalExpansion ? `
+                <div>
+                  <div style="font-weight:800">平行展開(未來擴充與複製性)：</div>
+                  <div style="white-space:pre-wrap;line-height:1.5">${esc(p.horizontalExpansion)}</div>
+                </div>
+              ` : ''}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="text-align:center;font-weight:700;background:#f8fafc">
+              將您改善前與改善後的過程、方法、圖片、表格以圖畫(或附件)任何人都能一目了然
+            </td>
+          </tr>
+          <tr>
+            <td style="vertical-align:top;padding:8px;min-height:160px">
+              <div style="font-weight:800;margin-bottom:6px">改善前：</div>
+              ${p.beforeImg ? `<img src="${esc(p.beforeImg)}" alt="改善前" style="max-width:100%;max-height:220px;display:block;margin:0 auto;object-fit:contain">` : '<div style="height:120px;display:grid;place-items:center;color:#94a3b8;font-size:11px">（如附件或說明）</div>'}
+            </td>
+            <td style="vertical-align:top;padding:8px;min-height:160px">
+              <div style="font-weight:800;margin-bottom:6px">改善後：</div>
+              ${p.afterImg ? `<img src="${esc(p.afterImg)}" alt="改善後" style="max-width:100%;max-height:220px;display:block;margin:0 auto;object-fit:contain">` : '<div style="height:120px;display:grid;place-items:center;color:#94a3b8;font-size:11px">（如附件或說明）</div>'}
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding:6px 8px">
+              <div>擴散相關單位：${chk((p.spreadNeed || '需要') === '需要')}需要　　${chk(p.spreadNeed === '不需要')}不需要</div>
+              <div style="display:flex;justify-content:space-between;margin-top:3px">
+                <span>需擴散之單位：${esc(p.canSpread || '')}</span>
+                <span>${chk(p.spreadStatus === '已擴散')}已擴散　${chk((p.spreadStatus || '未擴散') !== '已擴散')}未擴散</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ==================== 第 2 頁：改善提案採分基準表 ＆ 績效點數對照表 ==================== -->
+        <div class="kz-page-break" style="margin-top:18px;padding-top:12px;border-top:2px dashed #94a3b8">
+          <div style="text-align:center;font-size:16px;font-weight:800;margin-bottom:6px">改善提案採分基準表</div>
+          <table class="kz-doc-tbl" style="text-align:center">
+            <tr style="background:#f8fafc;font-weight:700">
+              <td style="width:14%">區分</td>
+              <td colspan="5">評價</td>
+            </tr>
+            <tr>
+              <td rowspan="2" style="font-weight:700">創造性(40%)</td>
+              <td>完全模仿公司內既有者</td>
+              <td>模仿公司內既有者並加以應用或改造者</td>
+              <td>參考或應用他人之手法者，並加入自己的創意</td>
+              <td>能略參考以往經驗後，大量加入自己的創意</td>
+              <td>完全屬個人創新並構想優異</td>
+            </tr>
+            <tr style="background:#f8fafc;font-weight:700">
+              <td>1~8</td><td>9~16</td><td>17~24</td><td>25~32</td><td>33~40</td>
+            </tr>
+            <tr>
+              <td rowspan="2" style="font-weight:700">努力性(20%)</td>
+              <td>完全由他人協助執行完成</td>
+              <td>需由它人協助共同執行完成或自己可容易執行完成者</td>
+              <td>自己可執行完成且須花費時間完成</td>
+              <td>難度一般, 需相當努力用苦心完成</td>
+              <td>難度高，極為努力克服困難完成</td>
+            </tr>
+            <tr style="background:#f8fafc;font-weight:700">
+              <td>1~4</td><td>5~8</td><td>9~12</td><td>13~16</td><td>17~20</td>
+            </tr>
+          </table>
+
+          <table class="kz-doc-tbl" style="text-align:center;font-size:10.5px">
+            <tr style="background:#f8fafc;font-weight:700">
+              <td style="width:12%">區分</td>
+              <td colspan="14">評價（有形效益與無形效益擇一評分）</td>
+            </tr>
+            <tr>
+              <td rowspan="6" style="font-weight:700">預估或實際效益<br>(40%)</td>
+              <td rowspan="3" style="width:8%;font-weight:700">有形效益</td>
+              <td style="width:14%">成本的降低<br>需扣除材料人工等費用(元/年) · <b>U職</b></td>
+              <td>2萬以下</td><td>4萬以下</td><td>8萬以下</td><td>12萬以下</td><td>16萬以下</td><td>20萬以下</td><td>24萬以下</td><td>28萬以下</td><td>35萬以下</td><td>42萬以下</td><td>50萬以下</td><td>50萬以上</td>
+            </tr>
+            <tr>
+              <td><b>Y職</b></td>
+              <td colspan="2">5仟元以下</td><td colspan="2">1萬元以下</td><td colspan="2">2萬元以下</td><td colspan="3">5萬元以下</td><td colspan="3">10萬元以下</td>
+            </tr>
+            <tr style="background:#f8fafc;font-weight:700">
+              <td>分數</td>
+              <td>3</td><td>6</td><td>9</td><td>12</td><td>15</td><td>18</td><td>21</td><td>24</td><td>28</td><td>32</td><td>36</td><td>40</td>
+            </tr>
+            <tr>
+              <td rowspan="3" style="font-weight:700">無形效益</td>
+              <td rowspan="2">品質/速度/服務/<br>安全/環境的提升</td>
+              <td colspan="2">有效果, 但需增加成本負擔</td>
+              <td colspan="3">有效果, 且不需增加成本</td>
+              <td colspan="2">有效果, 且還能降低成本1萬元以下</td>
+              <td colspan="3">有相當效果, 且還能降低成本1~10萬元</td>
+              <td colspan="2">有相當效果, 提升公司形象, 且降低10~20萬</td>
+            </tr>
+            <tr>
+              <td colspan="2"></td>
+              <td colspan="3"></td>
+              <td colspan="2">有相當的效果</td>
+              <td colspan="3">效果相當大</td>
+              <td colspan="2">效果相當大, 且降低1~10萬</td>
+            </tr>
+            <tr style="background:#f8fafc;font-weight:700">
+              <td>分數</td>
+              <td colspan="2">2~6</td>
+              <td colspan="3">7~11</td>
+              <td colspan="2">12~17</td>
+              <td colspan="3">18~24</td>
+              <td colspan="2">25~32</td>
+            </tr>
+          </table>
+
+          <div style="text-align:center;font-size:14px;font-weight:800;margin:8px 0 4px">提案績效點數對照表</div>
+          <table class="kz-doc-tbl" style="text-align:center">
+            <tr style="background:#f8fafc;font-weight:700">
+              <td>提案等級</td><td>8等</td><td>7等</td><td>6等</td><td>5等</td><td>4等</td><td>3等</td><td>2等</td><td>1等</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700">採分</td><td>0~30</td><td>31~36</td><td>37~44</td><td>45~50</td><td>51~60</td><td>61~75</td><td>76~90</td><td>90↑</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700">核准權限</td>
+              <td colspan="2">Y職：主任/指定授權者<br>U職：處長/Team主管</td>
+              <td colspan="3">Y職：處長<br>U職：處長/Team主管</td>
+              <td colspan="3">總經理</td>
+            </tr>
+            <tr>
+              <td style="font-weight:700">績效點數</td><td>0</td><td>1</td><td>2</td><td>3</td><td>5</td><td>10</td><td>15</td><td>30</td>
+            </tr>
+          </table>
+        </div>
+      </div>
     </div>
   `, { wide: true });
 
@@ -1034,12 +1445,12 @@ function openPrintProposalModal(p) {
   if (printBtn) {
     printBtn.onclick = () => {
       const content = document.getElementById('kz-printable-sheet')?.outerHTML || '';
-      const w = window.open('', '_blank', 'width=840,height=680');
+      const w = window.open('', '_blank', 'width=900,height=760');
       if (!w) {
         window.print();
         return;
       }
-      w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>改善提案登錄表 - ${esc(p.title)}</title><style>body{font-family:"Microsoft JhengHei",sans-serif;padding:20px;color:#0F172A}@media print{body{padding:0}}</style></head><body>${content}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+      w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>改善提案登錄表 - ${esc(p.title)}</title><style>body{font-family:"Microsoft JhengHei",sans-serif;padding:12px;color:#000}@media print{body{padding:0}}</style></head><body>${content}<script>window.onload=function(){window.print();}<\/script></body></html>`);
       w.document.close();
     };
   }
