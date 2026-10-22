@@ -331,6 +331,17 @@ export function mountWishes(el) {
             ${poolCoinsHtml}
           </div>
 
+          ${wishes.length === 0 ? `
+            <div class="wf-empty-floating-cta">
+              <span style="font-size:24px">🪙</span>
+              <div style="text-align:left">
+                <div style="font-size:13.5px;font-weight:800;color:#fef08a">許願池水清澈見底，還沒有第一枚願望金幣</div>
+                <div style="font-size:11.5px;color:#cbd5e1">有任何希望加進平台的小工具、自動統計或介面優化，歡迎投下第一枚金幣！</div>
+              </div>
+              <button type="button" class="wf-toss-demo-btn" data-new-wish>🪙 投下第一枚願望金幣</button>
+            </div>
+          ` : ''}
+
           <!-- 第 6 層：3D 拋物線硬幣與落水水花特效層 -->
           <div class="wf-fx-layer" data-wf-fx></div>
         </div>
@@ -349,14 +360,7 @@ export function mountWishes(el) {
         </div>
       </div>
 
-      ${wishes.length === 0 ? `
-        <div class="card pad empty" style="padding:36px 20px;text-align:center">
-          <div style="font-size:38px;margin-bottom:8px">🪙</div>
-          <h3 style="margin:0 0 6px">許願池水清澈見底，還沒有第一枚願望金幣</h3>
-          <p class="muted" style="margin:0 0 16px">有任何希望加進平台的小工具、自動統計或介面優化，歡迎投下第一枚金幣！</p>
-          <button class="btn primary" data-new-wish>🪙 投下第一枚願望金幣</button>
-        </div>
-      ` : `
+      ${wishes.length > 0 ? `
         <div class="wish-grid">
           ${wishes.map((w, idx) => {
             const st = WISH_STATUSES.find(s => s.id === (w.status || 'open')) || WISH_STATUSES[0];
@@ -400,7 +404,7 @@ export function mountWishes(el) {
             `;
           }).join('')}
         </div>
-      `}
+      ` : ''}
     `;
 
     // 若剛完成新增許願或附議，立即在重繪後的許願池播放 3D 投幣落水動畫！

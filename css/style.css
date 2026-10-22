@@ -5896,24 +5896,26 @@ th.has-meeting { position: relative; }
   transform: translateY(1px);
 }
 
-/* 噴泉舞台畫布容器（16:9 劇院比例） */
+/* 噴泉舞台畫布容器（16:9 完整全幅比例，完美顯示三層噴泉頂峰與星空，同時填滿視窗高度） */
 .wf-scene {
   position: relative;
-  height: 460px;
   width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: calc(100vh - 205px);
+  max-height: 760px;
   overflow: hidden;
   cursor: pointer;
 }
 
 @media (max-width: 900px) {
   .wf-scene {
-    height: 380px;
+    min-height: 440px;
   }
 }
 
 @media (max-width: 640px) {
   .wf-scene {
-    height: 310px;
+    min-height: 330px;
   }
 }
 
@@ -5923,9 +5925,9 @@ th.has-meeting { position: relative; }
   inset: 0;
   background-image: url('../assets/wishing_fountain_bg.jpg');
   background-size: cover;
-  background-position: center 58%;
+  background-position: center center;
   z-index: 1;
-  transform: scale(1.01);
+  transform: scale(1.005);
 }
 
 /* 2. 池水動態流體折射層（僅裁切於橢圓水池範圍內，套用 SVG feTurbulence 水波置換濾鏡） */
@@ -5934,21 +5936,21 @@ th.has-meeting { position: relative; }
   inset: 0;
   background-image: url('../assets/wishing_fountain_bg.jpg');
   background-size: cover;
-  background-position: center 58%;
+  background-position: center center;
   /* 精準對準畫面中下方的大理石橢圓形水池內部 */
-  clip-path: ellipse(43.5% 27.5% at 50% 69.5%);
+  clip-path: ellipse(43.5% 25.5% at 50% 71.5%);
   filter: url(#wfWaterDisplacementFilter) brightness(1.06) saturate(1.08);
   z-index: 2;
   pointer-events: none;
-  transform: scale(1.015);
+  transform: scale(1.012);
 }
 
 /* 3. 池水波光粼粼微光與噴泉水霧呼吸層 */
 .wf-water-shimmer-overlay {
   position: absolute;
   inset: 0;
-  clip-path: ellipse(43.5% 27.5% at 50% 69.5%);
-  background: radial-gradient(ellipse at 50% 62%, rgba(56, 189, 248, 0.16) 0%, rgba(250, 204, 21, 0.08) 55%, transparent 80%);
+  clip-path: ellipse(43.5% 25.5% at 50% 71.5%);
+  background: radial-gradient(ellipse at 50% 66%, rgba(56, 189, 248, 0.16) 0%, rgba(250, 204, 21, 0.08) 55%, transparent 80%);
   mix-blend-mode: screen;
   animation: wfWaterGlowBreathe 4.5s infinite ease-in-out alternate;
   z-index: 3;
@@ -6022,10 +6024,31 @@ th.has-meeting { position: relative; }
   position: absolute;
   left: 11%;
   right: 11%;
-  top: 48%;
-  bottom: 9%;
+  top: 52%;
+  bottom: 8%;
   z-index: 6;
   pointer-events: auto;
+}
+
+/* 無願望時浮在水池中央的半透明磨砂玻璃引導膠囊 */
+.wf-empty-floating-cta {
+  position: absolute;
+  left: 50%;
+  bottom: 16%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: rgba(8, 15, 30, 0.72);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  border-radius: 16px;
+  padding: 12px 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 24px rgba(250, 204, 21, 0.22);
+  color: #f8fafc;
 }
 
 @media (max-width: 680px) {
