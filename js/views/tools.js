@@ -319,8 +319,9 @@ export function mountTools(el) {
   let activeCorridorId = 'n1_north';
 
   // 5. 里程與日期計算機狀態
+  let calcVehicle = 'scooter'; // 'scooter' (1.8) | 'car' (5.7)
   let calcKm = 35;
-  let calcRate = 3;
+  let calcRate = 1.8;
   let calcToll = 0;
   let dateStart = ymd();
   let dateEnd = ymd();
@@ -726,20 +727,35 @@ export function mountTools(el) {
             <h3 style="margin:0 0 10px;font-size:15px">🧮 出差里程試算 ＆ 日期工作日計算機</h3>
             <div class="grid2" style="gap:14px">
               <div style="background:#F8FAFC;padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
-                <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">🛵 外勤里程／油資津貼試算</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+                  <div style="font-size:12.5px;font-weight:700">🛵🚗 外勤里程／油資津貼試算</div>
+                  <div style="display:inline-flex;background:#E2E8F0;padding:2px;border-radius:8px;gap:2px">
+                    <button type="button" data-calc-vehicle="scooter" style="border:none;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;background:${calcVehicle === 'scooter' ? '#fff' : 'transparent'};color:${calcVehicle === 'scooter' ? 'var(--primary)' : '#475569'};box-shadow:${calcVehicle === 'scooter' ? '0 1px 2px rgba(0,0,0,.08)' : 'none'}">
+                      🛵 機車 (1.8元/km)
+                    </button>
+                    <button type="button" data-calc-vehicle="car" style="border:none;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;background:${calcVehicle === 'car' ? '#fff' : 'transparent'};color:${calcVehicle === 'car' ? 'var(--primary)' : '#475569'};box-shadow:${calcVehicle === 'car' ? '0 1px 2px rgba(0,0,0,.08)' : 'none'}">
+                      🚗 汽車 (5.7元/km)
+                    </button>
+                  </div>
+                </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
                   <label style="font-size:11px;color:var(--muted)">公里數(km)
-                    <input type="number" data-calc-km value="${calcKm}" min="0" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border)">
+                    <input type="number" data-calc-km value="${calcKm}" min="0" step="0.1" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border)">
                   </label>
                   <label style="font-size:11px;color:var(--muted)">每km補貼(元)
-                    <input type="number" data-calc-rate value="${calcRate}" min="0" step="0.5" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border)">
+                    <input type="number" data-calc-rate value="${calcRate}" min="0" step="0.1" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border)">
                   </label>
                   <label style="font-size:11px;color:var(--muted)">過路/停車費
                     <input type="number" data-calc-toll value="${calcToll}" min="0" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border)">
                   </label>
                 </div>
-                <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--primary)" data-calc-result>
-                  預估合計：NT$ ${Math.round(calcKm * calcRate + calcToll).toLocaleString()} 元
+                <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px" data-calc-result>
+                  <span style="font-size:13px;font-weight:800;color:var(--primary)">
+                    預估合計：NT$ ${Math.round(calcKm * calcRate + calcToll).toLocaleString()} 元
+                  </span>
+                  <span style="font-size:11px;color:var(--muted)">
+                    （🛵 機車 $${Math.round(calcKm * 1.8 + calcToll).toLocaleString()} ／ 🚗 汽車 $${Math.round(calcKm * 5.7 + calcToll).toLocaleString()}）
+                  </span>
                 </div>
               </div>
 
@@ -923,12 +939,42 @@ export function mountTools(el) {
     const rateIn = el.querySelector('[data-calc-rate]');
     const tollIn = el.querySelector('[data-calc-toll]');
     const resEl = el.querySelector('[data-calc-result]');
+    const vehicleBtns = el.querySelectorAll('[data-calc-vehicle]');
+    const syncVehicleButtons = () => {
+      vehicleBtns.forEach(btn => {
+        const active = btn.dataset.calcVehicle === calcVehicle;
+        btn.style.background = active ? '#fff' : 'transparent';
+        btn.style.color = active ? 'var(--primary)' : '#475569';
+        btn.style.boxShadow = active ? '0 1px 2px rgba(0,0,0,.08)' : 'none';
+      });
+    };
     const updateCalc = () => {
       calcKm = Number(kmIn?.value || 0);
       calcRate = Number(rateIn?.value || 0);
       calcToll = Number(tollIn?.value || 0);
-      if (resEl) resEl.textContent = `預估合計：NT$ ${Math.round(calcKm * calcRate + calcToll).toLocaleString()} 元`;
+      if (Math.abs(calcRate - 1.8) < 0.001) calcVehicle = 'scooter';
+      else if (Math.abs(calcRate - 5.7) < 0.001) calcVehicle = 'car';
+      else calcVehicle = 'custom';
+      syncVehicleButtons();
+      if (resEl) {
+        resEl.innerHTML = `
+          <span style="font-size:13px;font-weight:800;color:var(--primary)">
+            預估合計：NT$ ${Math.round(calcKm * calcRate + calcToll).toLocaleString()} 元
+          </span>
+          <span style="font-size:11px;color:var(--muted)">
+            （🛵 機車 $${Math.round(calcKm * 1.8 + calcToll).toLocaleString()} ／ 🚗 汽車 $${Math.round(calcKm * 5.7 + calcToll).toLocaleString()}）
+          </span>
+        `;
+      }
     };
+    vehicleBtns.forEach(btn => {
+      btn.onclick = () => {
+        calcVehicle = btn.dataset.calcVehicle;
+        calcRate = calcVehicle === 'car' ? 5.7 : 1.8;
+        if (rateIn) rateIn.value = calcRate;
+        updateCalc();
+      };
+    });
     if (kmIn) kmIn.oninput = updateCalc;
     if (rateIn) rateIn.oninput = updateCalc;
     if (tollIn) tollIn.oninput = updateCalc;
