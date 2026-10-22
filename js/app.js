@@ -196,6 +196,7 @@ async function boot() {
     const { mountCases } = await import('./views/cases.js');
     const { mountTools } = await import('./views/tools.js');
     const { mountWishes, mountVents } = await import('./views/feedback.js');
+    const { mountKaizen } = await import('./views/kaizen.js');
     const { initChatDrawer, toggleChatDrawer, getUnreadChatCount } = await import('./chatDrawer.js');
 
     const routes = {
@@ -209,6 +210,7 @@ async function boot() {
       tools: { label: '實用小工具', icon: '🧰', mount: mountTools, inMoreMenu: true },
       wishes: { label: '許願池', icon: '🌠', mount: mountWishes, inMoreMenu: true },
       vents: { label: '意見箱(抱怨箱)', icon: '🗣️', mount: mountVents, inMoreMenu: true },
+      kaizen: { label: '改善提案', icon: '💡', mount: mountKaizen, inMoreMenu: true },
       admin: { label: '管理', icon: '⚙️', mount: mountAdmin, admin: true },
     };
     const ctx = { month: ymd().slice(0, 7) };
@@ -251,7 +253,7 @@ async function boot() {
     let hasPendingDailyReport = false;
 
     function renderTabs() {
-      const moreKeys = ['tools', 'wishes', 'vents'];
+      const moreKeys = ['tools', 'wishes', 'vents', 'kaizen'];
       const isMoreActive = moreKeys.includes(currentRoute);
       const activeMoreLabel = isMoreActive ? routes[currentRoute]?.label : '百寶箱';
 
@@ -274,6 +276,7 @@ async function boot() {
             <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">🧰 實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
             <a href="#/wishes" class="${currentRoute === 'wishes' ? 'active' : ''}">🌠 團隊許願池 <small>想要的工具 +1 附議</small></a>
             <a href="#/vents" class="${currentRoute === 'vents' ? 'active' : ''}">🗣️ 意見箱(抱怨箱) <small>100% 匿名吐苦水樹洞</small></a>
+            <a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">💡 改善提案 <small>管理辦法圖卡與獎金速查</small></a>
           </div>
         </div>
       `;
