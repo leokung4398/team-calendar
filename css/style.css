@@ -5788,6 +5788,493 @@ th.has-meeting { position: relative; }
   color: #92400e;
 }
 
+/* ============================================================
+   ⛲ 團隊許願池（具現化星空歐式噴泉池 + 3D 投幣落水物理動畫）
+   ============================================================ */
+.wf-hero-stage {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 0%, #1e3a8a 0%, #0f172a 60%, #090d16 100%);
+  border: 1px solid #1e293b;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  margin-bottom: 18px;
+  color: #f8fafc;
+  user-select: none;
+}
+
+.wf-hero-topbar {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 18px 0;
+}
+
+.wf-hero-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wf-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 196, 0, 0.16);
+  border: 1px solid rgba(255, 196, 0, 0.45);
+  color: #fde047;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 11px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+
+.wf-hero-sub {
+  font-size: 12.5px;
+  color: #cbd5e1;
+}
+
+.wf-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wf-sound-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+  backdrop-filter: blur(4px);
+}
+
+.wf-sound-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.wf-toss-demo-btn {
+  background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%);
+  border: 1px solid #fef08a;
+  color: #0f172a;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.45);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.wf-toss-demo-btn:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 0 22px rgba(250, 204, 21, 0.7);
+}
+
+.wf-toss-demo-btn:active {
+  transform: translateY(1px);
+}
+
+/* 噴泉舞台畫布容器 */
+.wf-scene {
+  position: relative;
+  height: 320px;
+  width: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 680px) {
+  .wf-scene {
+    height: 270px;
+  }
+}
+
+/* 星空閃爍與流星 */
+.wf-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wf-star {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 6px #ffffff;
+  animation: wfTwinkle 3.2s infinite ease-in-out;
+}
+
+@keyframes wfTwinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+
+.wf-shooting-star {
+  position: absolute;
+  top: 22px;
+  right: 18%;
+  width: 90px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.95), transparent);
+  transform: rotate(-25deg);
+  opacity: 0;
+  animation: wfShoot 7s infinite ease-in-out 1.5s;
+}
+
+@keyframes wfShoot {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-25deg); }
+  6% { opacity: 1; }
+  14% { opacity: 0; transform: translate(-220px, 100px) rotate(-25deg); }
+  100% { opacity: 0; }
+}
+
+/* 噴泉背景 SVG */
+.wf-fountain-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 噴泉水柱呼吸與水波流動動畫 */
+.wf-water-stream {
+  animation: wfStreamPulse 1.6s infinite ease-in-out alternate;
+  transform-origin: 50% 100%;
+}
+
+@keyframes wfStreamPulse {
+  0% { opacity: 0.78; transform: scaleY(0.97); }
+  100% { opacity: 0.98; transform: scaleY(1.03); }
+}
+
+.wf-wave-caustic {
+  animation: wfWaveDrift 5.5s infinite ease-in-out alternate;
+}
+
+.wf-wave-caustic.alt {
+  animation-duration: 7s;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes wfWaveDrift {
+  0% { transform: translateX(-14px); opacity: 0.35; }
+  100% { transform: translateX(14px); opacity: 0.65; }
+}
+
+/* 池底硬幣圖層（可點擊／懸停檢視願望） */
+.wf-coins-bed {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  top: 52%;
+  bottom: 13%;
+  z-index: 4;
+  pointer-events: auto;
+}
+
+@media (max-width: 680px) {
+  .wf-coins-bed {
+    left: 7%;
+    right: 7%;
+  }
+}
+
+.wf-pool-coin {
+  position: absolute;
+  width: 34px;
+  height: 24px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s;
+  animation: wfCoinUnderwater 3.6s infinite ease-in-out;
+}
+
+/* 依許願狀態區分硬幣材質 */
+.wf-pool-coin.coin-open {
+  background: radial-gradient(circle at 35% 30%, #fef08a 0%, #facc15 45%, #ca8a04 90%, #854d0e 100%);
+  border: 1.5px solid #fef9c3;
+  box-shadow: 0 3px 0 #854d0e, 0 0 12px rgba(250, 204, 21, 0.55);
+  color: #713f12;
+}
+
+.wf-pool-coin.coin-reviewing {
+  background: radial-gradient(circle at 35% 30%, #e0f2fe 0%, #38bdf8 50%, #0284c7 90%, #075985 100%);
+  border: 1.5px solid #e0f2fe;
+  box-shadow: 0 3px 0 #075985, 0 0 12px rgba(56, 189, 248, 0.6);
+  color: #0c4a6e;
+}
+
+.wf-pool-coin.coin-building {
+  background: radial-gradient(circle at 35% 30%, #f3e8ff 0%, #c084fc 50%, #7e22ce 90%, #4c1d95 100%);
+  border: 1.5px solid #f3e8ff;
+  box-shadow: 0 3px 0 #4c1d95, 0 0 12px rgba(192, 132, 252, 0.65);
+  color: #3b0764;
+}
+
+.wf-pool-coin.coin-done {
+  width: 38px;
+  height: 27px;
+  background: radial-gradient(circle at 35% 30%, #ffffff 0%, #6ee7b7 40%, #10b981 82%, #065f46 100%);
+  border: 2px solid #d1fae5;
+  box-shadow: 0 3.5px 0 #065f46, 0 0 18px rgba(16, 185, 129, 0.85);
+  color: #064e3b;
+}
+
+.wf-pool-coin:hover {
+  transform: translate(-50%, -62%) scale(1.26) !important;
+  z-index: 25 !important;
+  filter: brightness(1.12);
+}
+
+.wf-coin-votes-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #0f172a;
+  color: #facc15;
+  border: 1px solid #facc15;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 0 4.5px;
+  line-height: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes wfCoinUnderwater {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -53%) scale(1.03); }
+}
+
+/* 硬幣懸停願望氣泡卡 */
+.wf-coin-pop {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.92);
+  width: 220px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #f8fafc;
+  font-size: 11.5px;
+  line-height: 1.45;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.16s, transform 0.16s;
+  z-index: 30;
+  text-align: left;
+}
+
+.wf-pool-coin:hover .wf-coin-pop {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* 飛行金幣動畫層 */
+.wf-fx-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+/* 拋物線拆解：外層負責水平移動，內層負責垂直上拋與重力下墜 + 3D 翻轉 */
+.wf-flying-coin-x {
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 42px;
+  height: 42px;
+  margin-left: -21px;
+  animation: wfTossX 0.78s linear forwards;
+}
+
+.wf-flying-coin-y {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #fef08a 25%, #facc15 60%, #ca8a04 100%);
+  border: 2px solid #fef9c3;
+  box-shadow: 0 0 18px rgba(250, 204, 21, 0.9), inset 0 0 6px #ca8a04;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #713f12;
+  font-weight: 900;
+  animation: wfTossY 0.78s cubic-bezier(0.22, 0.68, 0.38, 1.0) forwards;
+}
+
+@keyframes wfTossX {
+  0% { transform: translateX(var(--start-x, 0px)) scale(1.25); }
+  100% { transform: translateX(var(--end-x, 0px)) scale(0.72); }
+}
+
+@keyframes wfTossY {
+  0% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+    opacity: 1;
+  }
+  46% {
+    transform: translateY(-215px) rotateX(540deg) rotateY(180deg);
+    opacity: 1;
+  }
+  92% {
+    transform: translateY(var(--end-y, -110px)) rotateX(1080deg) rotateY(360deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(var(--end-y, -110px) + 12px)) rotateX(1120deg) scale(0.55);
+    opacity: 0;
+  }
+}
+
+/* 落水同心圓漣漪 */
+.wf-splash-ripple {
+  position: absolute;
+  width: 24px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(224, 242, 254, 0.92);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+  transform: translate(-50%, -50%) scale(0.2);
+  animation: wfRippleExpand 1.05s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.wf-splash-ripple.r2 {
+  border-width: 1.5px;
+  border-color: rgba(250, 204, 21, 0.85);
+  animation-delay: 0.12s;
+}
+
+@keyframes wfRippleExpand {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(4.8); opacity: 0; }
+}
+
+/* 落水飛濺水珠與星光粒子 */
+.wf-splash-drop {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  box-shadow: 0 0 8px #38bdf8;
+  transform: translate(-50%, -50%);
+  animation: wfDropSplash 0.65s ease-out forwards;
+}
+
+.wf-splash-drop.gold {
+  background: #fef08a;
+  box-shadow: 0 0 8px #facc15;
+}
+
+@keyframes wfDropSplash {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  55% {
+    transform: translate(-50%, -50%) translate(var(--dx, 0px), var(--dy, -28px)) scale(1.1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(calc(var(--dx, 0px) * 1.35), 10px) scale(0.3);
+    opacity: 0;
+  }
+}
+
+/* 落水飄字 (+1 願望成真!) */
+.wf-float-toast {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  color: #fef08a;
+  font-size: 13.5px;
+  font-weight: 900;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75), 0 0 12px rgba(250, 204, 21, 0.8);
+  white-space: nowrap;
+  animation: wfFloatText 1.25s ease-out forwards;
+}
+
+@keyframes wfFloatText {
+  0% { transform: translate(-50%, 0px) scale(0.8); opacity: 0; }
+  20% { transform: translate(-50%, -14px) scale(1.08); opacity: 1; }
+  100% { transform: translate(-50%, -48px) scale(1); opacity: 0; }
+}
+
+/* 噴泉底部圖例與提示列 */
+.wf-hero-foot {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 18px 12px;
+  background: rgba(9, 13, 22, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  color: #cbd5e1;
+}
+
+.wf-legend-list {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wf-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+}
+
+.wf-legend-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* 點擊池底硬幣時，下方對應的願望卡片閃耀高亮 */
+.wish-card.wf-card-highlight {
+  animation: wfCardPulse 1.8s ease-out;
+}
+
+@keyframes wfCardPulse {
+  0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.9); border-color: #f59e0b; background: #fffbeb; }
+  70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); border-color: #f59e0b; }
+  100% { box-shadow: none; }
+}
+
+
 
 
 

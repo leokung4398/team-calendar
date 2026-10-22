@@ -21,43 +21,411 @@ const VENT_CATEGORIES = [
   { id: 'life',   label: '☕ 職場心情抒發' },
 ];
 
+// ============================================================
+// 🎵 Web Audio API 許願池音效合成器（免外部音檔：金幣叮噹 + 落水撲通）
+// ============================================================
+let wfAudioCtx = null;
+function isWishSoundEnabled() {
+  return localStorage.getItem('wf_sound_muted') !== '1';
+}
+
+function playCoinDingSound() {
+  if (!isWishSoundEnabled()) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!wfAudioCtx) wfAudioCtx = new AudioCtx();
+    if (wfAudioCtx.state === 'suspended') wfAudioCtx.resume();
+    const now = wfAudioCtx.currentTime;
+
+    // 雙頻金屬泛音 (Ding!)
+    [1318.5, 2637.0].forEach((freq, i) => {
+      const osc = wfAudioCtx.createOscillator();
+      const gain = wfAudioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + i * 0.045);
+      gain.gain.setValueAtTime(0.001, now + i * 0.045);
+      gain.gain.exponentialRampToValueAtTime(i === 0 ? 0.14 : 0.09, now + i * 0.045 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.045 + 0.42);
+      osc.connect(gain);
+      gain.connect(wfAudioCtx.destination);
+      osc.start(now + i * 0.045);
+      osc.stop(now + i * 0.045 + 0.45);
+    });
+  } catch (_) {}
+}
+
+function playWaterPlopSound() {
+  if (!isWishSoundEnabled()) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!wfAudioCtx) wfAudioCtx = new AudioCtx();
+    if (wfAudioCtx.state === 'suspended') wfAudioCtx.resume();
+    const now = wfAudioCtx.currentTime;
+
+    // 1. 水滴氣泡音（頻率快速上滑的正弦波 Plop!）
+    const osc = wfAudioCtx.createOscillator();
+    const gain = wfAudioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(240, now);
+    osc.frequency.exponentialRampToValueAtTime(680, now + 0.13);
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+    osc.connect(gain);
+    gain.connect(wfAudioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.17);
+
+    // 2. 水花濺起聲（短促 Bandpass 白噪音）
+    const bufferSize = Math.floor(wfAudioCtx.sampleRate * 0.18);
+    const buffer = wfAudioCtx.createBuffer(1, bufferSize, wfAudioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.35));
+    }
+    const noise = wfAudioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = wfAudioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1150, now);
+    filter.Q.setValueAtTime(1.8, now);
+    const nGain = wfAudioCtx.createGain();
+    nGain.gain.setValueAtTime(0.14, now);
+    nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    noise.connect(filter);
+    filter.connect(nGain);
+    nGain.connect(wfAudioCtx.destination);
+    noise.start(now);
+  } catch (_) {}
+}
+
+// 依據許願 ID 產生穩定且自然散佈在橢圓水池內的 (left%, top%) 座標
+function getCoinPosition(id, idx, total) {
+  let hash = 2166136261;
+  const s = String(id || idx);
+  for (let i = 0; i < s.length; i++) {
+    hash ^= s.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const h1 = Math.abs(hash % 1000) / 1000;
+  const h2 = Math.abs(((hash >> 8) ^ (idx * 97)) % 1000) / 1000;
+
+  // 使用黃金角螺旋 + 雜湊微調，確保硬幣在橢圓水池中均勻散開不重疊
+  const goldenAngle = idx * 2.399963229728653 + h1 * 1.2;
+  const radiusRatio = Math.min(0.88, 0.22 + 0.66 * Math.sqrt((idx + 0.45) / Math.max(total, 6)));
+  const x = 50 + Math.cos(goldenAngle) * (radiusRatio * 42);
+  const y = 54 + Math.sin(goldenAngle) * (radiusRatio * 34) + (h2 - 0.5) * 6;
+  return {
+    left: Math.max(8, Math.min(92, x)).toFixed(1),
+    top: Math.max(16, Math.min(88, y)).toFixed(1),
+  };
+}
+
+// 在許願池舞台觸發「拋擲 3D 金幣 -> 落水漣漪 -> 水花飛濺 -> 飄字」動畫
+function triggerCoinTossAnimation(rootEl, opts = {}) {
+  const fxLayer = rootEl?.querySelector('[data-wf-fx]');
+  if (!fxLayer) return Promise.resolve();
+
+  const targetLeftPct = Number(opts.leftPct ?? (36 + Math.random() * 28));
+  const targetTopPct = Number(opts.topPct ?? (56 + Math.random() * 22));
+  const labelText = opts.text || '🪙 +1 願望投入池中！';
+  const coinSymbol = opts.symbol || '🚲';
+
+  const sceneRect = fxLayer.getBoundingClientRect();
+  const w = sceneRect.width || 760;
+  const h = sceneRect.height || 320;
+
+  // 計算終點相對於底部中央的偏移 px
+  const endX = ((targetLeftPct - 50) / 100) * w;
+  const endY = -((100 - targetTopPct) / 100) * h;
+  const startX = (Math.random() - 0.5) * 90;
+
+  playCoinDingSound();
+
+  const coinWrap = document.createElement('div');
+  coinWrap.className = 'wf-flying-coin-x';
+  coinWrap.style.setProperty('--start-x', `${startX.toFixed(0)}px`);
+  coinWrap.style.setProperty('--end-x', `${endX.toFixed(0)}px`);
+
+  const coinBody = document.createElement('div');
+  coinBody.className = 'wf-flying-coin-y';
+  coinBody.style.setProperty('--end-y', `${endY.toFixed(0)}px`);
+  coinBody.textContent = coinSymbol;
+  coinWrap.appendChild(coinBody);
+  fxLayer.appendChild(coinWrap);
+
+  return new Promise(resolve => {
+    // 0.72 秒硬幣接觸水面，觸發水花與漣漪
+    setTimeout(() => {
+      playWaterPlopSound();
+
+      // 雙層擴散水波紋
+      ['r1', 'r2'].forEach(cls => {
+        const ripple = document.createElement('div');
+        ripple.className = `wf-splash-ripple ${cls}`;
+        ripple.style.left = `${targetLeftPct}%`;
+        ripple.style.top = `${targetTopPct}%`;
+        fxLayer.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 1200);
+      });
+
+      // 10 顆飛濺水珠與金光粒子
+      for (let i = 0; i < 10; i++) {
+        const drop = document.createElement('div');
+        drop.className = `wf-splash-drop ${i % 3 === 0 ? 'gold' : ''}`;
+        drop.style.left = `${targetLeftPct}%`;
+        drop.style.top = `${targetTopPct}%`;
+        const angle = (Math.PI * i) / 9 + (Math.random() - 0.5) * 0.25;
+        const dist = 20 + Math.random() * 28;
+        const dx = Math.cos(angle) * dist * (i % 2 === 0 ? 1 : -1);
+        const dy = -Math.abs(Math.sin(angle) * (22 + Math.random() * 26)) - 8;
+        drop.style.setProperty('--dx', `${dx.toFixed(1)}px`);
+        drop.style.setProperty('--dy', `${dy.toFixed(1)}px`);
+        fxLayer.appendChild(drop);
+        setTimeout(() => drop.remove(), 700);
+      }
+
+      // 落水祝福飄字
+      const floatToast = document.createElement('div');
+      floatToast.className = 'wf-float-toast';
+      floatToast.style.left = `${targetLeftPct}%`;
+      floatToast.style.top = `${targetTopPct}%`;
+      floatToast.textContent = labelText;
+      fxLayer.appendChild(floatToast);
+      setTimeout(() => floatToast.remove(), 1300);
+    }, 710);
+
+    setTimeout(() => {
+      coinWrap.remove();
+      resolve();
+    }, 840);
+  });
+}
+
 export function mountWishes(el) {
+  // 記錄待播放投幣動畫的願望（新增許願或附議時觸發）
+  let pendingTossOpts = null;
+
   function render() {
     const wishes = wishList();
     const uid = myUid();
+    const totalVotes = wishes.reduce((acc, w) => acc + (Array.isArray(w.votes) ? w.votes.length : 0), 0);
+    const doneCount = wishes.filter(w => w.status === 'done').length;
+    const soundOn = isWishSoundEnabled();
+
+    // 隨機繁星座標（固定種子讓每次重繪一致）
+    const starsHtml = Array.from({ length: 24 }, (_, i) => {
+      const left = ((i * 37 + 13) % 94) + 3;
+      const top = ((i * 23 + 7) % 44) + 4;
+      const delay = ((i * 0.4) % 3.2).toFixed(1);
+      const size = i % 4 === 0 ? 3.5 : 2.2;
+      return `<span class="wf-star" style="left:${left}%;top:${top}%;width:${size}px;height:${size}px;animation-delay:${delay}s"></span>`;
+    }).join('');
+
+    // 將每一筆許願化為池底的一枚實體硬幣
+    const poolCoinsHtml = wishes.map((w, idx) => {
+      const stId = w.status || 'open';
+      const st = WISH_STATUSES.find(s => s.id === stId) || WISH_STATUSES[0];
+      const votes = Array.isArray(w.votes) ? w.votes : [];
+      const pos = getCoinPosition(w.id, idx, wishes.length);
+      const icon = stId === 'done' ? '💎' : stId === 'building' ? '🛠️' : stId === 'reviewing' ? '🔍' : '🚲';
+      const delay = ((idx * 0.35) % 3).toFixed(2);
+      return `
+        <div class="wf-pool-coin coin-${esc(stId)}"
+             data-pool-coin="${esc(w.id)}"
+             data-coin-left="${pos.left}"
+             data-coin-top="${pos.top}"
+             style="left:${pos.left}%;top:${pos.top}%;animation-delay:${delay}s;z-index:${10 + idx}">
+          <span>${icon}</span>
+          ${votes.length > 0 ? `<span class="wf-coin-votes-badge">+${votes.length}</span>` : ''}
+          <div class="wf-coin-pop">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:3px">
+              <span style="color:#fde047;font-weight:800">${esc(st.label)}</span>
+              <span style="color:#94a3b8;font-size:10.5px">🙌 ${votes.length} 附議</span>
+            </div>
+            <div style="font-weight:700;color:#fff;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(w.title)}</div>
+            <div style="color:#cbd5e1;font-size:10.5px">許願人：${esc(w.authorName || '組員')}（點擊硬幣附議 +1）</div>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     el.innerHTML = `
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <h2 class="view-title" style="margin:0">🌠 團隊許願池</h2>
-          <span class="info-pill-tip" data-tip="想要什麼實用工具、自動化報表或好用的系統介面？歡迎具名提出並讓大家按 +1 附議集氣！">ⓘ 說明</span>
+          <span class="info-pill-tip" data-tip="想要什麼實用工具、自動化報表或好用的系統介面？投下一枚金幣許願，或點擊池底金幣幫同事按 +1 集氣！">ⓘ 說明</span>
           <div class="compact-kpi-strip">
-            <span class="kpi-chip">總許願 <b>${wishes.length}</b></span>
-            <span class="kpi-chip">🎉 已實現 <b>${wishes.filter(w => w.status === 'done').length}</b></span>
+            <span class="kpi-chip">🪙 池中願望金幣 <b>${wishes.length}</b></span>
+            <span class="kpi-chip">🙌 累積集氣 <b>${totalVotes}</b></span>
+            <span class="kpi-chip">💎 已實現 <b>${doneCount}</b></span>
           </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
           <a href="#/vents" class="btn sm ghost" style="text-decoration:none">🗣️ 切換至意見箱(抱怨箱)</a>
-          <button class="btn primary sm" data-new-wish>＋ 許一個願望</button>
+          <button class="btn primary sm" data-new-wish>🪙 投幣許一個願望</button>
+        </div>
+      </div>
+
+      <!-- ⛲ 具現化星空歐式許願噴泉池 -->
+      <div class="wf-hero-stage" data-wf-stage>
+        <div class="wf-hero-topbar">
+          <div class="wf-hero-title-box">
+            <span class="wf-hero-badge">⛲ 經營 Team 星空許願噴泉</span>
+            <span class="wf-hero-sub">每一個願望都是一枚閃耀金幣・點擊池面或下方按鈕即可投幣許願！</span>
+          </div>
+          <div class="wf-hero-actions">
+            <button type="button" class="wf-sound-btn" data-wf-sound-toggle title="切換投幣與落水音效">
+              ${soundOn ? '🔊 音效開啟' : '🔇 音效靜音'}
+            </button>
+            <button type="button" class="wf-toss-demo-btn" data-wf-quick-toss title="試丟一枚幸運金幣聽聽水聲">
+              🪙 試丟幸運幣
+            </button>
+            <button type="button" class="wf-toss-demo-btn" data-new-wish style="background:linear-gradient(135deg,#38bdf8 0%,#2563eb 100%);color:#fff;border-color:#bae6fd;box-shadow:0 0 16px rgba(56,189,248,0.45)">
+              ✨ 許下新願望
+            </button>
+          </div>
+        </div>
+
+        <div class="wf-scene" data-wf-scene>
+          <!-- 星空與流星背景 -->
+          <div class="wf-stars">
+            ${starsHtml}
+            <div class="wf-shooting-star"></div>
+          </div>
+
+          <!-- 歐式雙層石雕噴泉與波光粼粼水池 SVG -->
+          <svg class="wf-fountain-svg" viewBox="0 0 900 330" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <!-- 噴泉池水深淺漸層 -->
+              <radialGradient id="wfWaterGrad" cx="50%" cy="48%" r="52%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.92"/>
+                <stop offset="45%" stop-color="#0284c7" stop-opacity="0.95"/>
+                <stop offset="82%" stop-color="#0369a1" stop-opacity="0.98"/>
+                <stop offset="100%" stop-color="#0c4a6e" stop-opacity="1"/>
+              </radialGradient>
+              <!-- 池邊大理石漸層 -->
+              <linearGradient id="wfStoneRim" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#64748b"/>
+                <stop offset="25%" stop-color="#cbd5e1"/>
+                <stop offset="50%" stop-color="#f8fafc"/>
+                <stop offset="75%" stop-color="#cbd5e1"/>
+                <stop offset="100%" stop-color="#475569"/>
+              </linearGradient>
+              <linearGradient id="wfStoneBase" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#94a3b8"/>
+                <stop offset="100%" stop-color="#334155"/>
+              </linearGradient>
+              <!-- 噴泉水柱漸層 -->
+              <linearGradient id="wfJetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+                <stop offset="50%" stop-color="#bae6fd" stop-opacity="0.75"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.15"/>
+              </linearGradient>
+              <!-- 池底黃金光芒 -->
+              <radialGradient id="wfGoldGlow" cx="50%" cy="55%" r="40%">
+                <stop offset="0%" stop-color="#facc15" stop-opacity="0.32"/>
+                <stop offset="100%" stop-color="#facc15" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+
+            <!-- 遠景光暈 -->
+            <ellipse cx="450" cy="210" rx="370" ry="105" fill="url(#wfGoldGlow)" />
+
+            <!-- 噴泉外池底座陰影與石雕外牆 -->
+            <ellipse cx="450" cy="236" rx="386" ry="86" fill="rgba(0,0,0,0.45)" />
+            <path d="M 74 212 A 376 80 0 0 0 826 212 L 816 238 A 366 82 0 0 1 84 238 Z" fill="url(#wfStoneBase)" />
+
+            <!-- 噴泉石雕池緣外圈 -->
+            <ellipse cx="450" cy="210" rx="376" ry="82" fill="url(#wfStoneRim)" stroke="#e2e8f0" stroke-width="2" />
+            <!-- 噴泉石雕池壁內側 -->
+            <ellipse cx="450" cy="212" rx="352" ry="72" fill="#1e293b" />
+
+            <!-- 碧藍清澈池水本體 -->
+            <ellipse cx="450" cy="215" rx="348" ry="69" fill="url(#wfWaterGrad)" />
+
+            <!-- 池底焦散水波紋 (Caustics) -->
+            <g class="wf-wave-caustic">
+              <ellipse cx="450" cy="216" rx="290" ry="50" fill="none" stroke="rgba(186,230,253,0.32)" stroke-width="2" stroke-dasharray="28 18" />
+              <ellipse cx="450" cy="222" rx="220" ry="36" fill="none" stroke="rgba(224,242,254,0.28)" stroke-width="1.5" stroke-dasharray="18 24" />
+            </g>
+            <g class="wf-wave-caustic alt">
+              <ellipse cx="450" cy="212" rx="320" ry="58" fill="none" stroke="rgba(125,211,252,0.25)" stroke-width="1.5" stroke-dasharray="40 22" />
+              <ellipse cx="450" cy="218" rx="155" ry="26" fill="none" stroke="rgba(254,240,138,0.35)" stroke-width="2" stroke-dasharray="14 16" />
+            </g>
+
+            <!-- 中央噴泉石柱基座 -->
+            <ellipse cx="450" cy="198" rx="64" ry="15" fill="rgba(12,74,110,0.65)" />
+            <ellipse cx="450" cy="195" rx="54" ry="11" fill="none" stroke="rgba(224,242,254,0.65)" stroke-width="2" stroke-dasharray="8 6" />
+            <path d="M 426 135 L 474 135 L 484 195 C 484 202, 416 202, 416 195 Z" fill="url(#wfStoneRim)" stroke="#94a3b8" stroke-width="1" />
+
+            <!-- 上層噴水玉盤 -->
+            <path d="M 378 124 Q 450 152 522 124 Z" fill="url(#wfStoneBase)" />
+            <ellipse cx="450" cy="124" rx="72" ry="16" fill="url(#wfStoneRim)" stroke="#f1f5f9" stroke-width="1.5" />
+            <ellipse cx="450" cy="124" rx="62" ry="12" fill="#0284c7" />
+
+            <!-- 頂端噴泉雕飾柱頭 -->
+            <path d="M 438 92 L 462 92 L 466 124 L 434 124 Z" fill="url(#wfStoneRim)" />
+            <circle cx="450" cy="88" r="10" fill="#facc15" stroke="#fef08a" stroke-width="2" />
+
+            <!-- 動態噴泉水柱與水簾 -->
+            <g class="wf-water-stream">
+              <!-- 主水柱向上噴發 -->
+              <path d="M 446 86 Q 450 32 454 86 Z" fill="url(#wfJetGrad)" />
+              <!-- 左右對稱拋物線水柱落入上盤 -->
+              <path d="M 450 48 Q 410 45 395 122" fill="none" stroke="url(#wfJetGrad)" stroke-width="4.5" stroke-linecap="round" />
+              <path d="M 450 48 Q 490 45 505 122" fill="none" stroke="url(#wfJetGrad)" stroke-width="4.5" stroke-linecap="round" />
+              <path d="M 450 58 Q 425 58 414 122" fill="none" stroke="url(#wfJetGrad)" stroke-width="3" stroke-linecap="round" />
+              <path d="M 450 58 Q 475 58 486 122" fill="none" stroke="url(#wfJetGrad)" stroke-width="3" stroke-linecap="round" />
+              <!-- 從上層玉盤傾瀉入大水池的水簾 -->
+              <path d="M 386 128 Q 362 162 355 202" fill="none" stroke="url(#wfJetGrad)" stroke-width="3.5" stroke-dasharray="6 4" />
+              <path d="M 408 134 Q 392 168 388 206" fill="none" stroke="url(#wfJetGrad)" stroke-width="3" stroke-dasharray="8 5" />
+              <path d="M 492 134 Q 508 168 512 206" fill="none" stroke="url(#wfJetGrad)" stroke-width="3" stroke-dasharray="8 5" />
+              <path d="M 514 128 Q 538 162 545 202" fill="none" stroke="url(#wfJetGrad)" stroke-width="3.5" stroke-dasharray="6 4" />
+            </g>
+          </svg>
+
+          <!-- 池底願望金幣互動層 -->
+          <div class="wf-coins-bed" data-wf-coins-bed title="點擊水面可試丟金幣，點擊金幣可檢視並幫願望 +1 集氣">
+            ${poolCoinsHtml}
+          </div>
+
+          <!-- 3D 拋物線硬幣與落水水花特效層 -->
+          <div class="wf-fx-layer" data-wf-fx></div>
+        </div>
+
+        <div class="wf-hero-foot">
+          <div class="wf-legend-list">
+            <span style="font-weight:800;color:#f8fafc">池底硬幣圖例：</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#facc15;box-shadow:0 0 6px #facc15"></i> 🚲 許願集氣中 (${wishes.filter(w => (w.status || 'open') === 'open').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#38bdf8;box-shadow:0 0 6px #38bdf8"></i> 🔍 評估規劃中 (${wishes.filter(w => w.status === 'reviewing').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#c084fc;box-shadow:0 0 6px #c084fc"></i> 🛠️ 排程開發中 (${wishes.filter(w => w.status === 'building').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#10b981;box-shadow:0 0 6px #10b981"></i> 💎 已實現上線 (${doneCount})</span>
+          </div>
+          <div style="color:#fde047;font-weight:700">
+            💡 提示：滑鼠移到池中金幣可偷看願望，點擊金幣可直接幫他再投一枚幣 (+1)！
+          </div>
         </div>
       </div>
 
       ${wishes.length === 0 ? `
-        <div class="card pad empty" style="padding:48px 20px;text-align:center">
-          <div style="font-size:40px;margin-bottom:8px">🌠</div>
-          <h3 style="margin:0 0 6px">許願池目前還沒有願望</h3>
-          <p class="muted" style="margin:0 0 16px">有任何希望加進平台的小工具、自動統計或介面優化，歡迎第一個提出！</p>
-          <button class="btn primary" data-new-wish>＋ 提出第一個願望</button>
+        <div class="card pad empty" style="padding:36px 20px;text-align:center">
+          <div style="font-size:38px;margin-bottom:8px">🪙</div>
+          <h3 style="margin:0 0 6px">許願池水清澈見底，還沒有第一枚願望金幣</h3>
+          <p class="muted" style="margin:0 0 16px">有任何希望加進平台的小工具、自動統計或介面優化，歡迎投下第一枚金幣！</p>
+          <button class="btn primary" data-new-wish>🪙 投下第一枚願望金幣</button>
         </div>
       ` : `
         <div class="wish-grid">
-          ${wishes.map(w => {
+          ${wishes.map((w, idx) => {
             const st = WISH_STATUSES.find(s => s.id === (w.status || 'open')) || WISH_STATUSES[0];
             const votes = Array.isArray(w.votes) ? w.votes : [];
             const voted = votes.includes(uid);
             const canDel = w.createdBy === uid || isAdmin();
+            const pos = getCoinPosition(w.id, idx, wishes.length);
             return `
-              <div class="card pad wish-card">
+              <div class="card pad wish-card" data-wish-card="${esc(w.id)}">
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
                   <div style="min-width:0;flex:1">
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
@@ -73,8 +441,13 @@ export function mountWishes(el) {
                     ` : ''}
                   </div>
                   <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0">
-                    <button class="btn ${voted ? 'primary' : ''}" data-vote-wish="${esc(w.id)}" style="min-width:74px;flex-direction:column;padding:8px 12px;gap:2px">
-                      <span style="font-size:16px">🙌 +1</span>
+                    <button class="btn ${voted ? 'primary' : ''}"
+                            data-vote-wish="${esc(w.id)}"
+                            data-coin-left="${pos.left}"
+                            data-coin-top="${pos.top}"
+                            style="min-width:82px;flex-direction:column;padding:8px 12px;gap:2px"
+                            title="點擊投幣附議 +1">
+                      <span style="font-size:15px">🪙 +1 投幣</span>
                       <span style="font-size:12px;font-weight:800">${votes.length} 人附議</span>
                     </button>
                     <div style="display:flex;gap:4px">
@@ -90,15 +463,123 @@ export function mountWishes(el) {
       `}
     `;
 
-    el.querySelectorAll('[data-new-wish]').forEach(btn => {
-      btn.onclick = () => openNewWishModal(render);
+    // 若剛完成新增許願或附議，立即在重繪後的許願池播放 3D 投幣落水動畫！
+    if (pendingTossOpts) {
+      const opts = pendingTossOpts;
+      pendingTossOpts = null;
+      setTimeout(() => triggerCoinTossAnimation(el, opts), 60);
+    }
+
+    // 音效開關
+    const soundBtn = el.querySelector('[data-wf-sound-toggle]');
+    if (soundBtn) {
+      soundBtn.onclick = () => {
+        const nextMuted = isWishSoundEnabled() ? '1' : '0';
+        localStorage.setItem('wf_sound_muted', nextMuted);
+        if (nextMuted === '0') playCoinDingSound();
+        render();
+      };
+    }
+
+    // 試丟幸運幣按鈕
+    const quickTossBtn = el.querySelector('[data-wf-quick-toss]');
+    if (quickTossBtn) {
+      quickTossBtn.onclick = () => {
+        const blessings = [
+          '🪙 撲通！願外勤一路綠燈順暢！',
+          '🪙 撲通！願系統越來越好用！',
+          '🪙 撲通！願今日巡檢晴空萬里！',
+          '🪙 撲通！經營 Team 業績長紅！',
+        ];
+        triggerCoinTossAnimation(el, {
+          text: blessings[Math.floor(Math.random() * blessings.length)],
+          symbol: '🚲',
+        });
+      };
+    }
+
+    // 點擊池面空白處也可直接投一枚許願幣並可選擇高亮
+    const coinsBed = el.querySelector('[data-wf-coins-bed]');
+    if (coinsBed) {
+      coinsBed.onclick = e => {
+        const coinEl = e.target.closest('[data-pool-coin]');
+        if (coinEl) return; // 由金幣點擊事件處理
+        const rect = el.querySelector('[data-wf-scene]')?.getBoundingClientRect();
+        if (rect) {
+          const leftPct = Math.max(18, Math.min(82, ((e.clientX - rect.left) / rect.width) * 100));
+          const topPct = Math.max(48, Math.min(82, ((e.clientY - rect.top) / rect.height) * 100));
+          triggerCoinTossAnimation(el, {
+            leftPct,
+            topPct,
+            text: '🪙 撲通！點擊右上角「投幣許一個願望」把點子留在池底吧！',
+          });
+        }
+      };
+    }
+
+    // 點擊池底金幣：直接幫該願望投幣附議 +1，並捲動高亮下方願望卡片
+    el.querySelectorAll('[data-pool-coin]').forEach(coinEl => {
+      coinEl.onclick = async e => {
+        e.stopPropagation();
+        const wid = coinEl.dataset.poolCoin;
+        const w = state.wishes.get(wid);
+        const leftPct = Number(coinEl.dataset.coinLeft || 50);
+        const topPct = (Number(coinEl.dataset.coinTop || 50) * 0.36) + 52;
+        const alreadyVoted = Array.isArray(w?.votes) && w.votes.includes(uid);
+
+        pendingTossOpts = {
+          leftPct,
+          topPct,
+          text: alreadyVoted ? `✨ 已收回附議：${w?.title || ''}` : `🪙 +1 投幣集氣：${(w?.title || '').slice(0, 14)}`,
+          symbol: '🙌',
+        };
+        await toggleWishVote(wid);
+        render();
+
+        const targetCard = el.querySelector(`[data-wish-card="${CSS.escape(wid)}"]`);
+        if (targetCard) {
+          targetCard.classList.remove('wf-card-highlight');
+          void targetCard.offsetWidth;
+          targetCard.classList.add('wf-card-highlight');
+        }
+      };
     });
+
+    // 新增許願按鈕
+    el.querySelectorAll('[data-new-wish]').forEach(btn => {
+      btn.onclick = () => openNewWishModal(wishTitle => {
+        pendingTossOpts = {
+          leftPct: 44 + Math.random() * 12,
+          topPct: 62 + Math.random() * 12,
+          text: `🪙 願望入池：${(wishTitle || '').slice(0, 15)}`,
+          symbol: '🌠',
+        };
+        render();
+      });
+    });
+
+    // 下方願望卡片的「🪙 +1 投幣」按鈕
     el.querySelectorAll('[data-vote-wish]').forEach(btn => {
       btn.onclick = async () => {
-        await toggleWishVote(btn.dataset.voteWish);
+        const wid = btn.dataset.voteWish;
+        const w = state.wishes.get(wid);
+        const alreadyVoted = Array.isArray(w?.votes) && w.votes.includes(uid);
+        const leftPct = Number(btn.dataset.coinLeft || 50);
+        const topPct = (Number(btn.dataset.coinTop || 50) * 0.36) + 52;
+
+        // 若畫面捲在下方，自動平滑捲回池子或直接在池子上方投幣
+        el.querySelector('[data-wf-stage]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        pendingTossOpts = {
+          leftPct,
+          topPct,
+          text: alreadyVoted ? '✨ 已取消附議' : `🪙 +1 附議投入池中！`,
+          symbol: '🙌',
+        };
+        await toggleWishVote(wid);
         render();
       };
     });
+
     el.querySelectorAll('[data-status-wish]').forEach(btn => {
       btn.onclick = () => {
         const w = state.wishes.get(btn.dataset.statusWish);
@@ -124,10 +605,13 @@ export function mountWishes(el) {
 function openNewWishModal(onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>🌠 許一個新願望（實用工具／介面優化）</h3>
+      <h3>🪙 投幣許一個新願望（實用工具／介面優化）</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="wish-form">
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.5">
+        ⛲ 送出後將為您鑄造一枚專屬<b>願望金幣</b>並拋入團隊許願池中！同事們點擊金幣即可幫您按 <b>+1 附議集氣</b>。
+      </div>
       <label>願望標題 <span class="req">*</span>
         <input type="text" name="title" required placeholder="例如：希望小工具新增各縣市 YouBike 場站天氣預警地圖">
       </label>
@@ -136,20 +620,19 @@ function openNewWishModal(onDone) {
       </label>
       <div class="modal-foot">
         <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">送出許願</button>
+        <button type="submit" class="btn primary">🪙 投幣送出許願</button>
       </div>
     </form>
   `);
   document.getElementById('wish-form').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
-    await saveWishItem({
-      title: f.title.value.trim(),
-      description: f.description.value.trim(),
-    });
+    const title = f.title.value.trim();
+    const description = f.description.value.trim();
+    await saveWishItem({ title, description });
     closeModal();
-    toast('願望已送出！快揪同事一起按 +1 附議');
-    onDone?.();
+    toast('🪙 撲通！願望金幣已投入許願池，快揪同事一起按 +1 附議！');
+    onDone?.(title);
   };
 }
 
