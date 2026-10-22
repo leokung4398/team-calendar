@@ -285,6 +285,34 @@ table.table tr.inactive td:nth-child(4) { opacity: 1; }
 .overlap-list { margin: 8px 0; padding-left: 20px; font-size: 14px; }
 
 .form { display: flex; flex-direction: column; gap: 14px; }
+.form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #334155;
+  min-width: 0;
+}
+.form > label .req {
+  color: var(--danger);
+  margin-left: 2px;
+}
+.form > label > input:not([type="checkbox"]):not([type="radio"]),
+.form > label > select,
+.form > label > textarea {
+  width: 100%;
+  font-weight: 400;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form > label > textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.55;
+}
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .field > span { font-size: 13px; font-weight: 600; color: #334155; }
 .field em { color: var(--danger); font-style: normal; }

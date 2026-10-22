@@ -548,23 +548,36 @@ export function mountWishes(el) {
 
 function openNewWishModal(onDone) {
   openModal(`
-    <div class="modal-head">
-      <h3>🪙 投幣許一個新願望（實用工具／介面優化）</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
-    <form class="form" id="wish-form">
-      <div style="background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.5">
-        ⛲ 送出後將為您鑄造一枚專屬<b>願望金幣</b>並拋入團隊許願池中！同事們點擊金幣即可幫您按 <b>+1 附議集氣</b>。
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fef08a 0%,#f59e0b 100%);display:grid;place-items:center;font-size:21px;box-shadow:0 4px 12px rgba(245,158,11,0.3);flex-shrink:0">🪙</div>
+        <div style="min-width:0">
+          <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">投幣許一個新願望</h3>
+          <div style="font-size:12px;color:#64748b;margin-top:2px">實用小工具 · 自動化報表 · 系統介面優化</div>
+        </div>
       </div>
-      <label>願望標題 <span class="req">*</span>
-        <input type="text" name="title" required placeholder="例如：希望小工具新增各縣市 YouBike 場站天氣預警地圖">
-      </label>
-      <label>具體想法或使用情境說明 <span class="req">*</span>
-        <textarea name="description" rows="4" required placeholder="說明這個工具或功能可以幫大家省下什麼麻煩…"></textarea>
-      </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">🪙 投幣送出許願</button>
+      <button type="button" class="icon-btn" data-close style="flex-shrink:0">✕</button>
+    </div>
+
+    <form class="form" id="wish-form" style="gap:16px">
+      <div style="display:flex;align-items:flex-start;gap:10px;background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1px solid #fde68a;color:#92400e;padding:11px 14px;border-radius:12px;font-size:12.5px;line-height:1.55">
+        <span style="font-size:18px;line-height:1.2">⛲</span>
+        <div>送出後將為您鑄造一枚專屬<b>願望金幣</b>並拋入團隊許願池中！同事們點擊池底金幣即可幫您按 <b>+1 附議集氣</b>。</div>
+      </div>
+
+      <div class="field">
+        <span>🏷️ 願望標題 <em>*</em></span>
+        <input type="text" name="title" required placeholder="例如：希望小工具新增各縣市 YouBike 場站天氣預警地圖" style="width:100%;padding:10px 12px;border-radius:10px">
+      </div>
+
+      <div class="field">
+        <span>💡 具體想法或使用情境說明 <em>*</em></span>
+        <textarea name="description" rows="4" required placeholder="說明這個工具或功能可以幫大家省下什麼麻煩、或是希望怎麼呈現…" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical;line-height:1.55"></textarea>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9;margin-top:2px">
+        <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;box-shadow:0 4px 14px rgba(245,172,0,0.35)">🪙 投幣送出許願</button>
       </div>
     </form>
   `);
@@ -582,22 +595,30 @@ function openNewWishModal(onDone) {
 
 function openWishAdminModal(w, onDone) {
   openModal(`
-    <div class="modal-head">
-      <h3>⚙️ 更新許願狀態：${esc(w.title)}</h3>
-      <button class="icon-btn" data-close>✕</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <div style="width:38px;height:38px;border-radius:10px;background:#f1f5f9;display:grid;place-items:center;font-size:19px;flex-shrink:0">⚙️</div>
+        <div style="min-width:0">
+          <h3 style="margin:0;font-size:16px;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">更新許願狀態</h3>
+          <div style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(w.title)}</div>
+        </div>
+      </div>
+      <button type="button" class="icon-btn" data-close style="flex-shrink:0">✕</button>
     </div>
-    <form class="form" id="wish-admin-form">
-      <label>目前處理狀態
-        <select name="status">
+    <form class="form" id="wish-admin-form" style="gap:16px">
+      <div class="field">
+        <span>📌 目前處理狀態</span>
+        <select name="status" style="width:100%;padding:9px 12px;border-radius:10px">
           ${WISH_STATUSES.map(s => `<option value="${s.id}" ${w.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
         </select>
-      </label>
-      <label>開發評估／回覆說明（選填）
-        <textarea name="adminNote" rows="3" placeholder="例如：已排入下週更新，預計週五上線！">${esc(w.adminNote || '')}</textarea>
-      </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">儲存更新</button>
+      </div>
+      <div class="field">
+        <span>🛠️ 開發評估／回覆說明（選填）</span>
+        <textarea name="adminNote" rows="3" placeholder="例如：已排入下週更新，預計週五上線！" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical">${esc(w.adminNote || '')}</textarea>
+      </div>
+      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
+        <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px">儲存更新</button>
       </div>
     </form>
   `);
