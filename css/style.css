@@ -7557,6 +7557,45 @@ th.has-meeting { position: relative; }
   gap: 10px;
   flex-wrap: nowrap;
   margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.dr-boss-arena.is-collapsed .dr-boss-main-bar-wrap {
+  margin-bottom: 0;
+}
+
+.dr-boss-stage-toggle-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #fde68a;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.dr-boss-stage-toggle-btn:hover {
+  background: rgba(212, 175, 55, 0.24);
+  border-color: #fde047;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
+}
+
+.dr-bst-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.dr-boss-collapsible-body {
+  margin-top: 10px;
+  animation: vibeDrawerIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dr-boss-identity {
