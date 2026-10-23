@@ -2055,6 +2055,18 @@ th.has-meeting { position: relative; }
   gap: 14px;
 }
 
+/* 外勤品管 3 位同仁專區：寬螢幕下直接滿版 3 等分大卡片展開，不留右側空白 */
+#dr-field-section .dr-cards-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 1200px) {
+  #dr-field-section .dr-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  }
+}
+
 .dr-member-card {
   padding: 16px;
   display: flex;
@@ -7408,15 +7420,15 @@ th.has-meeting { position: relative; }
 
 .dr-bh-tag {
   margin-top: 2px;
-  min-width: 92px;
-  max-width: 118px;
-  padding: 3px 6px;
-  border-radius: 7px;
-  background: rgba(9, 13, 22, 0.84);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+  min-width: 105px;
+  max-width: 145px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(9, 13, 22, 0.86);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.65);
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -7443,9 +7455,9 @@ th.has-meeting { position: relative; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 4px;
-  font-size: 10px;
-  line-height: 1.2;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.25;
 }
 
 .dr-bh-slot {
@@ -7457,12 +7469,12 @@ th.has-meeting { position: relative; }
 .dr-bh-hp {
   font-weight: 900;
   color: #fde047;
-  font-size: 10.5px;
+  font-size: 11.5px;
   white-space: nowrap;
 }
 
 .dr-bh-hp small {
-  font-size: 8.5px;
+  font-size: 9.5px;
   color: #94a3b8;
   font-weight: 600;
 }
@@ -7472,13 +7484,13 @@ th.has-meeting { position: relative; }
 }
 
 .dr-bh-region {
-  font-size: 9px;
+  font-size: 10px;
   color: #93c5fd;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin: 1px 0 2px;
+  margin: 1px 0 3px;
 }
 
 .dr-boss-hotspot.limb .dr-bh-region {

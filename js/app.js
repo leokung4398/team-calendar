@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261023v44';
+    const V = '20261023v45';
     const [{ mountToday }, { mountSchedule }, { mountAdmin }, ef] = await Promise.all([
       import(`./views/today.js?v=${V}`), import(`./views/schedule.js?v=${V}`), import(`./views/admin.js?v=${V}`), import(`./eventForm.js?v=${V}`),
     ]);
