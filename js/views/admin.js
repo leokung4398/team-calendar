@@ -24,12 +24,11 @@ export function mountAdmin(el) {
         <h2 class="view-title" style="text-align:left;">管理</h2>
       </div>
       <div class="seg" data-admin-switcher title="切換管理檢視">
-        <label><input type="radio" name="adminViewTab" value="system" checked><span>👥 系統組員設定</span></label>
-        <label><input type="radio" name="adminViewTab" value="permissions"><span>🛡️ 業務模組權限</span></label>
+        <label><input type="radio" name="adminViewTab" value="system" checked><span>系統組員設定</span></label>
+        <label><input type="radio" name="adminViewTab" value="permissions"><span>業務模組權限</span></label>
       </div>
       <div class="toolbar-end" style="display:flex; justify-content:flex-end;">
         <button class="btn primary achieve-trigger-btn" data-open-achievements title="查看專案開發成果與里程碑">
-          <span style="font-size:16px;">🏆</span>
           <span>專案成果與里程碑</span>
           <span class="achieve-trigger-badge">${ACHIEVEMENTS.length} 項</span>
         </button>
@@ -58,7 +57,7 @@ export function mountAdmin(el) {
         <button class="btn" data-add-type>＋ 新增類型</button>
       </section>
       <section class="card pad">
-        <h3>💼 月會與紀錄人輪值設定</h3>
+        <h3>月會與紀錄人輪值設定</h3>
         <p class="hint">設定預設開會地點、Google Meet 連結，以及紀錄人輪值順序。排定月會時系統會自動依此順序建議下一位紀錄人。</p>
         <form class="form" data-meeting-settings-form style="margin-top:14px;">
           <div class="row2">
@@ -97,7 +96,7 @@ export function mountAdmin(el) {
       <section class="card pad">
         <div class="section-head" style="align-items:flex-start; flex-direction:column; gap:6px;">
           <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-            <h3>🛡️ 業務模組存取權限矩陣</h3>
+            <h3>業務模組存取權限矩陣</h3>
           </div>
           <p class="hint" style="margin-top:2px;">
             精準控管各組員可見與操作的業務模組。未勾選之組員，頂部導航欄將自動隱藏該功能頁籤並限制進入。<b>系統管理員</b>預設享有全模組完整存取權。
@@ -106,19 +105,15 @@ export function mountAdmin(el) {
 
         <div class="perm-legend-box" style="margin: 14px 0; display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;">🚲</span>
             <b>模擬體驗</b>：<span class="muted">YouBike 2.0 / 2.0E 各縣市配額矩陣、北南區每日品管巡檢與年度總表</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;">📝</span>
             <b>每日回報</b>：<span class="muted">全組內外勤回報（內勤工作進度全組公開共享；外勤三問回報僅代理副理 徐嘉鴻、代理人 包于巧 與本人可見）</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;">📢</span>
             <b>採購佈告欄</b>：<span class="muted">採購 Team 專案管理、公告資訊、文件清單與業務後台</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
-            <span style="font-size:14px;">⚙️</span>
             <b>管理員 (全通)</b>：<span class="muted">擁有所有業務模組最高控管與修改權限</span>
           </div>
         </div>
@@ -168,13 +163,13 @@ export function mountAdmin(el) {
         <div class="modal" style="max-width:500px; width:94%;">
           <div class="modal-head">
             <h3 style="display:flex; align-items:center; gap:8px; margin:0;">
-              <span>👤</span><span>新增組員（新人入職預先建檔）</span>
+              <span></span><span>新增組員（新人入職預先建檔）</span>
             </h3>
             <button type="button" class="icon-btn" data-close-add-user aria-label="關閉">✕</button>
           </div>
           <form class="form" data-add-user-form style="padding:18px 20px;">
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#475569; line-height:1.55; margin-bottom:4px;">
-              💡 <b>防呆自動認領機制</b>：建檔後即自動開通該信箱登入白名單。新進同仁首次以 Google 帳號登入時，系統將<b>自動認領並繼承</b>下方設定的職位、內/外勤工作性質與權限，不會產生重複帳號。
+              <b>防呆自動認領機制</b>：建檔後即自動開通該信箱登入白名單。新進同仁首次以 Google 帳號登入時，系統將<b>自動認領並繼承</b>下方設定的職位、內/外勤工作性質與權限，不會產生重複帳號。
             </div>
 
             <div class="row2">
@@ -201,15 +196,15 @@ export function mountAdmin(el) {
               <label class="field">
                 <span>工作性質（連動每日回報與輪值）</span>
                 <select name="staffType">
-                  <option value="office" selected>🏢 內勤同仁（公開進度回報 / 參與月會輪值）</option>
-                  <option value="field">🛵 外勤品管（三問縣市回報 / 免月會紀錄輪值）</option>
+                  <option value="office" selected>內勤同仁（公開進度回報 / 參與月會輪值）</option>
+                  <option value="field">外勤品管（三問縣市回報 / 免月會紀錄輪值）</option>
                 </select>
               </label>
               <label class="field">
                 <span>系統權限</span>
                 <select name="role">
-                  <option value="member" selected>👤 組員（一般權限）</option>
-                  <option value="admin">⚙️ 管理員（後台設定權限）</option>
+                  <option value="member" selected>組員（一般權限）</option>
+                  <option value="admin">管理員（後台設定權限）</option>
                 </select>
               </label>
             </div>
@@ -412,7 +407,7 @@ export function mountAdmin(el) {
       if (u.isPreseeded) {
         return `
           <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <span class="badge-tag" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; font-size:11.5px; padding:2px 7px; border-radius:999px;" title="新人首次使用公司 Google 帳號登入後即自動認領啟用">⏳ 待首次登入</span>
+            <span class="badge-tag" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a; font-size:11.5px; padding:2px 7px; border-radius:999px;" title="新人首次使用公司 Google 帳號登入後即自動認領啟用">待首次登入</span>
             <button type="button" class="btn small ghost" data-delete-preseeded="${esc(u.uid)}" title="移除此筆預建組員資料" style="padding:1px 6px; font-size:11px; color:#dc2626;">移除</button>
           </div>`;
       }
@@ -444,8 +439,8 @@ export function mountAdmin(el) {
             <td>
               ${isSuper ? `<span class="muted small-text">主管（免回報）</span>` : `
                 <select name="staffType" style="font-size:12.5px; padding:3px 6px;" title="切換內勤/外勤工作性質（連動每日回報與月會輪值）">
-                  <option value="office" ${!isField ? 'selected' : ''}>🏢 內勤</option>
-                  <option value="field" ${isField ? 'selected' : ''}>🛵 外勤</option>
+                  <option value="office" ${!isField ? 'selected' : ''}>內勤</option>
+                  <option value="field" ${isField ? 'selected' : ''}>外勤</option>
                 </select>
               `}
             </td>
@@ -513,7 +508,7 @@ export function mountAdmin(el) {
         </div>`;
     }).join('') + `
       <div class="hint" style="margin-top:10px; font-size:12px; color:var(--text-muted); background:var(--bg-subtle); padding:8px 12px; border-radius:6px; border-left:3px solid var(--accent, #6366f1); line-height:1.6;">
-        💡 <b>併行判定機制</b>：
+        <b>併行判定機制</b>：
         <br>1. 系統自動以<b>已開完的最近一場月會紀錄人</b>作為基準往下輪值（如當天請假/出差自動跳下一位）。
         <br>2. 若排定時當事人無法到場，除了可於排定月會時隨時<b>下拉手動指定他人</b>，也可點擊上方<b>「設為上次紀錄人」</b>直接校正輪值基準點。
         <br>3. 主管（徐嘉鴻）與常態外勤組員（孔令淳、葉爵豪、陸逸群）已自動自紀錄人輪值序列中排除。
@@ -595,19 +590,19 @@ export function mountAdmin(el) {
           <th style="min-width:120px;">系統角色</th>
           <th style="text-align:center; min-width:130px;">
             <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-              <span>🚲 模擬體驗</span>
+              <span>模擬體驗</span>
               <button type="button" class="btn small ghost" data-batch-mod="simulation" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
           <th style="text-align:center; min-width:130px;">
             <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-              <span>📝 每日回報</span>
+              <span>每日回報</span>
               <button type="button" class="btn small ghost" data-batch-mod="dailyReport" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
           <th style="text-align:center; min-width:130px;">
             <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
-              <span>📢 採購佈告欄</span>
+              <span>採購佈告欄</span>
               <button type="button" class="btn small ghost" data-batch-mod="bulletin" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
@@ -640,7 +635,7 @@ export function mountAdmin(el) {
               </td>
               <td>
                 <span class="badge-role ${isUserAdmin ? 'role-admin' : 'role-member'}">
-                  ${isUserAdmin ? '⚙️ 管理員' : '👤 組員'}
+                  ${isUserAdmin ? '管理員' : '組員'}
                 </span>
               </td>
               <td style="text-align:center;">

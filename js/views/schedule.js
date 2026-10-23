@@ -5,7 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, eachDay, monthRange, shiftMonth, weekdayZh, avatar, WEEK } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { openExportDialog } from '../export.js';
-import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261023v58';
+import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261023v59';
 
 export function mountSchedule(el, ctx) {
   // 偏好視圖：'calendar' (月曆) 或 'grid' (總表)
@@ -27,8 +27,8 @@ export function mountSchedule(el, ctx) {
       <h2 class="view-title" data-title></h2>
       <div class="filters">
         <div class="seg" data-switcher title="切換檢視視圖">
-          <label><input type="radio" name="schedViewMode" value="calendar" ${currentView === 'calendar' ? 'checked' : ''}><span>🗓️ 月曆</span></label>
-          <label><input type="radio" name="schedViewMode" value="grid" ${currentView === 'grid' ? 'checked' : ''}><span>📊 總表</span></label>
+          <label><input type="radio" name="schedViewMode" value="calendar" ${currentView === 'calendar' ? 'checked' : ''}><span>月曆</span></label>
+          <label><input type="radio" name="schedViewMode" value="grid" ${currentView === 'grid' ? 'checked' : ''}><span>總表</span></label>
         </div>
         <select data-f="person" title="組員篩選" ${currentView === 'grid' ? 'style="display:none;"' : ''}></select>
         <select data-f="type" title="行程類型篩選" ${currentView === 'grid' ? 'style="display:none;"' : ''}></select>
@@ -158,7 +158,7 @@ export function mountSchedule(el, ctx) {
       meetingList().forEach(m => {
         items.push({
           id: `m_${m.id}`,
-          title: `💼 月會 ${m.startTime || ''}–${m.endTime || ''}`,
+          title: `月會 ${m.startTime || ''}–${m.endTime || ''}`,
           start: m.date,
           end: addDays(m.date, 1),
           allDay: true,
@@ -178,7 +178,7 @@ export function mountSchedule(el, ctx) {
       visibleMemos.forEach(m => {
         items.push({
           id: `memo_${m.id}`,
-          title: `${m.done ? '✅' : '📌'} ${m.scope === 'team' ? '[全組] ' : ''}${m.text}`,
+          title: `${m.done ? '[完成] ' : '[備忘] '}${m.scope === 'team' ? '[全組] ' : ''}${m.text}`,
           start: m.date,
           end: addDays(m.date, 1),
           allDay: true,
@@ -214,11 +214,11 @@ export function mountSchedule(el, ctx) {
       const dayMemos = getMemosOnDay(d);
       const pendingMemos = dayMemos.filter(x => !x.done);
       const cls = [i.off ? 'off' : '', i.makeup ? 'makeup' : '', d === today ? 'today' : '', mItem ? 'has-meeting' : ''].join(' ');
-      const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `💼 月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : '', dayMemos.length ? `📌 備忘 ${dayMemos.length} 筆` : ''].filter(Boolean);
+      const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : '', dayMemos.length ? `備忘 ${dayMemos.length} 筆` : ''].filter(Boolean);
       const tip = tipParts.join(' / ');
-      const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}">💼</div>` : '';
+      const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}" style="font-size:10px;font-weight:800;color:#1e293b">月會</div>` : '';
       const memoPin = dayMemos.length
-        ? `<div class="memo-dot" data-open-memo="${d}" title="${esc(dayMemos.map(x => `${x.done ? '✅' : '📌'} ${x.text}`).join('\n'))}" style="cursor:pointer;font-size:11px;line-height:1.1;margin-top:2px;color:${pendingMemos.length ? '#d97706' : '#94a3b8'};font-weight:800">📌${pendingMemos.length || ''}</div>`
+        ? `<div class="memo-dot" data-open-memo="${d}" title="${esc(dayMemos.map(x => `${x.done ? '[完成]' : '[待辦]'} ${x.text}`).join('\n'))}" style="cursor:pointer;font-size:10px;line-height:1.1;margin-top:2px;color:${pendingMemos.length ? '#d97706' : '#94a3b8'};font-weight:800">備忘${pendingMemos.length || ''}</div>`
         : '';
       return `<th class="${cls}" data-head-day="${d}" ${tip ? `title="${esc(tip)}"` : ''} style="cursor:pointer"><div class="dn">${Number(d.slice(8))}</div><div class="wd">${weekdayZh(d)}</div>${mIcon}${memoPin}${i.name ? '<div class="hol-dot"></div>' : ''}</th>`;
     }).join('');

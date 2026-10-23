@@ -196,7 +196,7 @@ export function mountMeeting(el) {
                 <div class="ai-title-wrap">
                   <div class="ai-title-row" data-ai-title-row data-mid="${esc(upcoming.id)}" data-idx="${idx}" data-title="${esc(item.title)}">
                     <span class="ai-title-text" data-title-text><b>${esc(item.title)}</b></span>
-                    <button type="button" class="ai-title-edit-btn" data-edit-agenda-title title="修改議題名稱" aria-label="修改議題名稱">✏️</button>
+                    <button type="button" class="ai-title-edit-btn" data-edit-agenda-title title="修改議題名稱" aria-label="修改議題名稱" style="font-size:11px;padding:1px 6px">編輯</button>
                   </div>
                   <div class="ai-meta muted small-text">
                     ${owner ? `<span class="person">${avatar(owner, 20)} ${esc(owner.displayName)}</span>` : '全體'}
@@ -214,13 +214,13 @@ export function mountMeeting(el) {
                 <div class="ai-links">
                   ${links.map(l => `
                     <a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer" class="link-chip" title="${esc(l.url)}">
-                      📄 ${esc(l.title)}
+                      ${esc(l.title)}
                     </a>`).join('')}
                 </div>` : ''}
               ${ownerCases.length > 0 ? `
                 <details style="margin-top:6px;font-size:12px;background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:4px 10px">
                   <summary style="cursor:pointer;color:var(--primary);font-weight:700;user-select:none">
-                    📌 連動例案進度（${ownerCases.length} 案進行中）▸ 點擊展開
+                    連動例案進度（${ownerCases.length} 案進行中）▸ 點擊展開
                   </summary>
                   <ul style="margin:6px 0 2px;padding-left:16px;color:var(--text);line-height:1.5">
                     ${ownerCases.map(c => {
@@ -246,10 +246,10 @@ export function mountMeeting(el) {
       <div class="meeting-hero card pad" style="padding:14px 18px">
         <div class="mh-top">
           <div class="mh-header-left">
-            <h1 class="mh-title" style="margin:0;font-size:19px">💼 ${fmtMD(upcoming.date)}（${weekdayZh(upcoming.date)}）經營 Team 月會 ${countdownTag} ${minutesStatusTag}</h1>
+            <h1 class="mh-title" style="margin:0;font-size:19px">${fmtMD(upcoming.date)}（${weekdayZh(upcoming.date)}）經營 Team 月會 ${countdownTag} ${minutesStatusTag}</h1>
             <div class="mh-info" style="margin-top:6px;display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-              <span>⏰ ${esc(upcoming.startTime)} – ${esc(upcoming.endTime)}</span>
-              <span>📍 ${esc(upcoming.location || '總公司會議室')}</span>
+              <span>${esc(upcoming.startTime)} – ${esc(upcoming.endTime)}</span>
+              <span>${esc(upcoming.location || '總公司會議室')}</span>
               <span class="kpi-chip">主持人：<b>${host ? esc(host.displayName) : '未指定'}</b></span>
               <span class="kpi-chip ${rec?.uid === myUid() ? 'active' : ''}">紀錄人：<b>${rec ? esc(rec.displayName) : '未指定'}</b>${rec?.uid === myUid() ? ' (我)' : ''}</span>
               <span class="kpi-chip">簡報連結：<b>${withLinks}/${totalAgenda}</b></span>
@@ -258,13 +258,13 @@ export function mountMeeting(el) {
           <div class="mh-actions">
             ${isRecorder ? `
               <button class="btn ok-btn" data-open-minutes="${esc(upcoming.id)}" title="本月紀錄人專屬">
-                📝 會議紀錄
+                會議紀錄
               </button>` : ''}
             ${upcoming.meetUrl ? `
               <a href="${esc(upcoming.meetUrl)}" target="_blank" rel="noopener noreferrer" class="btn primary meet-btn">
-                🎥 加入 Google Meet
+                加入 Google Meet
               </a>` : ''}
-            ${isAdmin() ? `<button class="btn" data-edit-m="${esc(upcoming.id)}" title="編輯月會資訊">⚙️</button>` : ''}
+            ${isAdmin() ? `<button class="btn" data-edit-m="${esc(upcoming.id)}" title="編輯月會資訊">設定</button>` : ''}
           </div>
         </div>
       </div>
@@ -274,21 +274,21 @@ export function mountMeeting(el) {
         <div class="meeting-section card pad min-display-card">
           <div class="section-head min-disp-head">
             <div>
-              <h3>📝 本次月會會議紀錄</h3>
+              <h3>本次月會會議紀錄</h3>
               <span class="muted small-text">
                 ${upcoming.status === 'published' ? '正式公開發布' : '草稿暫存中'}・紀錄人：${esc(rec?.displayName || '未指定')}
               </span>
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
               <button class="btn small ghost" data-copy-minutes="${esc(upcoming.id)}" title="複製會議紀錄內文（含藍色標題排版）">
-                📋 一鍵複製紀錄
+                一鍵複製紀錄
               </button>
               <button class="btn small ok-btn" data-email-minutes="${esc(upcoming.id)}" title="開啟 Outlook 寄信與收件者複製助手">
-                ✉️ Outlook 寄信助手
+                Outlook 寄信助手
               </button>
               ${isRecorder ? `
                 <button class="btn small ghost" data-open-minutes="${esc(upcoming.id)}">
-                  ✏️ 繼續編輯紀錄
+                  繼續編輯紀錄
                 </button>` : ''}
             </div>
           </div>
@@ -311,7 +311,7 @@ export function mountMeeting(el) {
           <!-- 各議題討論與裁示 -->
           ${minutes.agendaNotes && upcoming.agenda && upcoming.agenda.length ? `
             <div class="min-disp-block">
-              <h4 class="min-block-title">📋 各議題討論紀錄與結論</h4>
+              <h4 class="min-block-title">各議題討論紀錄與結論</h4>
               <div class="min-action-table">
                 ${upcoming.agenda.map((ag, idx) => {
                   const notes = minutes.agendaNotes[idx];
@@ -336,21 +336,21 @@ export function mountMeeting(el) {
           <!-- 重大決議 -->
           ${minutes.resolutions ? `
             <div class="min-disp-block">
-              <h4 class="min-block-title">⚖️ 重大決議事項</h4>
+              <h4 class="min-block-title">重大決議事項</h4>
               <div class="min-block-content text-pre-wrap">${esc(minutes.resolutions)}</div>
             </div>` : ''}
 
           <!-- 臨時動議與裁示 -->
           ${minutes.generalNotes ? `
             <div class="min-disp-block">
-              <h4 class="min-block-title">💬 綜合討論與主管裁示</h4>
+              <h4 class="min-block-title">綜合討論與主管裁示</h4>
               <div class="min-block-content text-pre-wrap">${esc(minutes.generalNotes)}</div>
             </div>` : ''}
 
           <!-- 待辦追蹤項目 -->
           ${Array.isArray(minutes.actionItems) && minutes.actionItems.length ? `
             <div class="min-disp-block">
-              <h4 class="min-block-title">🎯 待辦事項追蹤 (Action Items)</h4>
+              <h4 class="min-block-title">待辦事項追蹤 (Action Items)</h4>
               <div class="min-action-table">
                 ${minutes.actionItems.map((ai, i) => {
                   const assignee = state.users.get(ai.ownerUid);
@@ -368,7 +368,7 @@ export function mountMeeting(el) {
           <!-- 下次會議預排資訊 -->
           ${minutes.nextMeeting && minutes.nextMeeting.date ? `
             <div class="min-disp-block">
-              <h4 class="min-block-title">📅 下次會議資訊預排</h4>
+              <h4 class="min-block-title">下次會議資訊預排</h4>
               <div class="next-meeting-preview-box" style="margin-top:6px;">
                 <div class="next-m-left">
                   <span>預定下次月會：<b class="next-m-val">${esc(minutes.nextMeeting.date)}</b></span>
@@ -382,7 +382,7 @@ export function mountMeeting(el) {
 
       <div class="meeting-section card pad">
         <div class="section-head">
-          <h3>📋 會前議程與報告資料</h3>
+          <h3>會前議程與報告資料</h3>
           <span class="muted small-text">報告人請於會前將 Google 簡報或試算表連結貼於各項議題中，方便遠端與現場組員同步瀏覽</span>
         </div>
         ${agendaListHtml}
@@ -390,7 +390,7 @@ export function mountMeeting(el) {
 
       ${past.length ? `
         <div class="meeting-section card pad" style="margin-top:20px;">
-          <h3>📁 歷次月會存檔</h3>
+          <h3>歷次月會存檔</h3>
           <div class="past-list">
             ${past.map(p => {
               const pCanRec = p.recorderUid === myUid() || isAdmin();
@@ -402,9 +402,9 @@ export function mountMeeting(el) {
                     ${p.status === 'published' ? '<span class="badge-tag ok tiny">紀錄已發布</span>' : (p.minutes ? '<span class="badge-tag warn tiny">草稿</span>' : '')}
                   </div>
                   <div class="past-actions">
-                    ${p.minutes ? `<button class="btn small ok-btn ghost" data-view-minutes="${esc(p.id)}">📖 查看紀錄</button>` : ''}
-                    ${p.minutes ? `<button class="btn small ghost" data-email-minutes="${esc(p.id)}" title="Outlook 寄信與一鍵複製">✉️ 寄信/複製</button>` : ''}
-                    ${pCanRec ? `<button class="btn small ghost" data-open-minutes="${esc(p.id)}">✏️ 編輯紀錄</button>` : ''}
+                    ${p.minutes ? `<button class="btn small ok-btn ghost" data-view-minutes="${esc(p.id)}">查看紀錄</button>` : ''}
+                    ${p.minutes ? `<button class="btn small ghost" data-email-minutes="${esc(p.id)}" title="Outlook 寄信與一鍵複製">寄信/複製</button>` : ''}
+                    ${pCanRec ? `<button class="btn small ghost" data-open-minutes="${esc(p.id)}">編輯紀錄</button>` : ''}
                     ${p.meetUrl ? `<a href="${esc(p.meetUrl)}" target="_blank" rel="noopener noreferrer" class="btn small ghost">Meet</a>` : ''}
                     ${isAdmin() ? `<button class="btn small ghost" data-edit-m="${esc(p.id)}">管理</button>` : ''}
                   </div>

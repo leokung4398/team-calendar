@@ -1,19 +1,19 @@
-// 📌 例案追蹤（長期專案進度管理模組）
+// 例案追蹤（長期專案進度管理模組）
 // 支援「極簡列表（預設收合，點開看時間軸）」與「看板模式（Kanban）」切換，以及時間軸更新紀錄（Timeline Log）
 import { state, myUid, isAdmin, activeUsers, userOf, caseList, saveCaseItem, appendCaseTimeline, deleteCaseItem } from '../data.js';
 import { esc, avatar, ymd, toast, openModal, closeModal, confirmDialog } from '../utils.js';
 
 export const CASE_STATUSES = [
-  { id: 'planning', label: '📝 規劃中', color: '#64748B', bg: '#F1F5F9' },
-  { id: 'active',   label: '🚀 進行中', color: '#2563EB', bg: '#EFF6FF' },
-  { id: 'blocked',  label: '⚠️ 卡關待協商', color: '#DC2626', bg: '#FEF2F2' },
-  { id: 'done',     label: '✅ 已結案', color: '#16A34A', bg: '#F0FDF4' },
+  { id: 'planning', label: '規劃中', color: '#64748B', bg: '#F1F5F9' },
+  { id: 'active',   label: '進行中', color: '#2563EB', bg: '#EFF6FF' },
+  { id: 'blocked',  label: '卡關待協商', color: '#DC2626', bg: '#FEF2F2' },
+  { id: 'done',     label: '已結案', color: '#16A34A', bg: '#F0FDF4' },
 ];
 
 export const CASE_PRIORITIES = [
-  { id: 'high',   label: '🔥 高優先', color: '#DC2626' },
-  { id: 'medium', label: '⚡ 一般',   color: '#D97706' },
-  { id: 'low',    label: '🌱 常規',   color: '#64748B' },
+  { id: 'high',   label: '高優先', color: '#DC2626' },
+  { id: 'medium', label: '一般',   color: '#D97706' },
+  { id: 'low',    label: '常規',   color: '#64748B' },
 ];
 
 export function mountCases(el) {
@@ -42,20 +42,20 @@ export function mountCases(el) {
     el.innerHTML = `
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 class="view-title" style="margin:0">📌 例案追蹤</h2>
+          <h2 class="view-title" style="margin:0">例案追蹤</h2>
           <span class="info-pill-tip" data-tip="針對部門長期專案設立進度與時間軸軌跡；在『月會』頁面亦可一鍵引用個人負責的例案進度">ⓘ 說明</span>
           <div class="compact-kpi-strip">
             <span class="kpi-chip ${filterStatus === 'all' ? 'active' : ''}" data-filter-status="all">全部 <b>${counts.all}</b></span>
-            <span class="kpi-chip ${filterStatus === 'active' ? 'active' : ''}" data-filter-status="active">🚀 進行中 <b>${counts.active}</b></span>
-            ${counts.blocked > 0 ? `<span class="kpi-chip danger ${filterStatus === 'blocked' ? 'active' : ''}" data-filter-status="blocked">⚠️ 卡關 <b>${counts.blocked}</b></span>` : ''}
-            <span class="kpi-chip ${filterStatus === 'planning' ? 'active' : ''}" data-filter-status="planning">📝 規劃 <b>${counts.planning}</b></span>
-            <span class="kpi-chip ${filterStatus === 'done' ? 'active' : ''}" data-filter-status="done">✅ 結案 <b>${counts.done}</b></span>
+            <span class="kpi-chip ${filterStatus === 'active' ? 'active' : ''}" data-filter-status="active">進行中 <b>${counts.active}</b></span>
+            ${counts.blocked > 0 ? `<span class="kpi-chip danger ${filterStatus === 'blocked' ? 'active' : ''}" data-filter-status="blocked">卡關 <b>${counts.blocked}</b></span>` : ''}
+            <span class="kpi-chip ${filterStatus === 'planning' ? 'active' : ''}" data-filter-status="planning">規劃 <b>${counts.planning}</b></span>
+            <span class="kpi-chip ${filterStatus === 'done' ? 'active' : ''}" data-filter-status="done">結案 <b>${counts.done}</b></span>
           </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <select class="btn sm" data-filter-owner style="padding:5px 10px">
-            <option value="all">👤 所有負責人</option>
-            <option value="${esc(myUid())}" ${filterOwner === myUid() ? 'selected' : ''}>⭐ 我負責的例案</option>
+            <option value="all">所有負責人</option>
+            <option value="${esc(myUid())}" ${filterOwner === myUid() ? 'selected' : ''}>我負責的例案</option>
             ${users.map(u => `<option value="${esc(u.uid)}" ${filterOwner === u.uid ? 'selected' : ''}>${esc(u.displayName)}</option>`).join('')}
           </select>
           <div class="seg">
@@ -68,7 +68,6 @@ export function mountCases(el) {
 
       ${filtered.length === 0 ? `
         <div class="card pad empty" style="padding:48px 20px;text-align:center">
-          <div style="font-size:40px;margin-bottom:8px">📌</div>
           <h3 style="margin:0 0 6px">目前尚無符合條件的例案</h3>
           <p class="muted" style="margin:0 0 16px">點擊右上角「＋ 新增例案」建立長期追蹤專案，隨時記錄每次推進時間軸。</p>
           <button class="btn primary" data-new-case>＋ 立即建立第一個例案</button>
@@ -176,9 +175,9 @@ function renderCompactList(cases, expandedIds) {
                     <div class="case-prog-bar"><span style="width:${pct}%;background:${st.color}"></span></div>
                     <span class="case-prog-num">${pct}%</span>
                   </div>
-                  ${c.dueDate ? `<span class="case-due-chip">📅 ${esc(c.dueDate.slice(5))}</span>` : ''}
+                  ${c.dueDate ? `<span class="case-due-chip">${esc(c.dueDate.slice(5))}</span>` : ''}
                   <button class="btn sm primary" data-log-case="${esc(c.id)}" title="新增一筆進度紀錄">＋ 記進度</button>
-                  <button class="btn sm ghost" data-edit-case="${esc(c.id)}" title="編輯例案設定">✎</button>
+                  <button class="btn sm ghost" data-edit-case="${esc(c.id)}" title="編輯例案設定"></button>
                 </div>
               </div>
 
@@ -200,7 +199,7 @@ function renderCompactList(cases, expandedIds) {
                   </div>
 
                   <div class="case-timeline-box">
-                    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">🕒 歷史進度時間軸（共 ${(c.timeline || []).length} 筆）</div>
+                    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">歷史進度時間軸（共 ${(c.timeline || []).length} 筆）</div>
                     ${!(c.timeline || []).length ? `<div class="muted" style="font-size:12.5px">尚無時間軸紀錄，點擊「＋ 記進度」留下第一筆推進軌跡。</div>` : `
                       <ul class="case-tl-list">
                         ${(c.timeline || []).map(tl => `
@@ -244,9 +243,9 @@ function renderKanbanBoard(cases) {
                   <div class="case-kanban-card">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
                       <strong style="font-size:13.5px;line-height:1.35">${esc(c.title)}</strong>
-                      <button class="icon-btn" data-edit-case="${esc(c.id)}" title="編輯">✎</button>
+                      <button class="icon-btn" data-edit-case="${esc(c.id)}" title="編輯"></button>
                     </div>
-                    ${latestLog ? `<div class="muted" style="font-size:12px;margin-top:6px;background:#F8FAFC;padding:6px 8px;border-radius:6px">🕒 ${esc(latestLog.note)}</div>` : (c.summary ? `<div class="muted" style="font-size:12px;margin-top:4px">${esc(c.summary)}</div>` : '')}
+                    ${latestLog ? `<div class="muted" style="font-size:12px;margin-top:6px;background:#F8FAFC;padding:6px 8px;border-radius:6px">${esc(latestLog.note)}</div>` : (c.summary ? `<div class="muted" style="font-size:12px;margin-top:4px">${esc(c.summary)}</div>` : '')}
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px">
                       <div class="case-owners-avatars">${owners.map(u => avatar(u, 22)).join('')}</div>
                       <div class="case-prog-mini">
@@ -281,7 +280,7 @@ function openCaseFormModal(existing, onDone) {
 
   openModal(`
     <div class="modal-head">
-      <h3>${existing ? '編輯例案' : '📌 新增例案追蹤'}</h3>
+      <h3>${existing ? '編輯例案' : '新增例案追蹤'}</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="case-form">
@@ -368,7 +367,7 @@ function openCaseFormModal(existing, onDone) {
 function openTimelineLogModal(c, onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>🕒 推進例案進度：${esc(c.title)}</h3>
+      <h3>推進例案進度：${esc(c.title)}</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="tl-form">

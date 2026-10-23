@@ -3053,7 +3053,7 @@ th.has-meeting { position: relative; }
   margin-bottom: 12px;
 }
 
-/* --- 1. 頂部導覽列：✨ 百寶箱下拉選單 & 聊天室按鈕 --- */
+/* --- 1. 頂部導覽列： 百寶箱下拉選單 & 聊天室按鈕 --- */
 .nav-more-dropdown {
   position: relative;
   display: inline-flex;
@@ -3137,7 +3137,7 @@ th.has-meeting { position: relative; }
   border-color: #facc15;
 }
 
-/* --- 2. 首頁「☕ 晨間補給站 (Daily Vibe Bar)」Kinfolk / Monocle 日系北歐生活誌質感升級 --- */
+/* --- 2. 首頁「 晨間補給站 (Daily Vibe Bar)」Kinfolk / Monocle 日系北歐生活誌質感升級 --- */
 .vibe-bar-wrap.vibe-editorial-wrap {
   position: relative;
   background: linear-gradient(135deg, #faf7f2 0%, #f5efe6 52%, #fbf9f5 100%);
@@ -4133,7 +4133,7 @@ th.has-meeting { position: relative; }
   font-size: 12px;
 }
 
-/* --- 6. 📌 例案追蹤 (Cases) --- */
+/* --- 6. 例案追蹤 (Cases) --- */
 .case-compact-list {
   display: flex;
   flex-direction: column;
@@ -4311,7 +4311,7 @@ th.has-meeting { position: relative; }
   margin-top: 6px;
 }
 
-/* --- 7. 🧰 實用小工具 (Tools) --- */
+/* --- 7. 實用小工具 (Tools) --- */
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -4442,7 +4442,7 @@ th.has-meeting { position: relative; }
   color: #64748b;
 }
 
-/* --- 8. 🌠 許願池 & 🗣️ 匿名意見箱 --- */
+/* --- 8. 許願池 & 匿名意見箱 --- */
 .wish-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -4590,7 +4590,7 @@ th.has-meeting { position: relative; }
   color: #334155;
 }
 
-/* --- 9. 💬 團隊即時聊天室 (Chat Drawer & Maximized Window) --- */
+/* --- 9. 團隊即時聊天室 (Chat Drawer & Maximized Window) --- */
 .chat-fab-btn {
   position: fixed;
   right: 22px;
@@ -5004,7 +5004,7 @@ th.has-meeting { position: relative; }
   text-align: center;
 }
 
-/* 📌 備忘錄元件 */
+/* 備忘錄元件 */
 .memo-quick-form {
   display: flex;
   align-items: center;
@@ -5125,7 +5125,7 @@ th.has-meeting { position: relative; }
   background: #fee2e2;
 }
 
-/* 🌤️ 五區即時天氣條 & 📊 每日 PK 投票 */
+/* 五區即時天氣條 & 每日 PK 投票 */
 .hub-weather-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -5220,7 +5220,7 @@ th.has-meeting { position: relative; }
 .poll-bar-fill.fill-a { background: #f59e0b; }
 .poll-bar-fill.fill-b { background: #3b82f6; }
 
-/* 🧋 下午茶 / 午餐揪團 */
+/* 下午茶 / 午餐揪團 */
 .gb-info-bar {
   display: flex;
   align-items: center;
@@ -5288,7 +5288,7 @@ th.has-meeting { position: relative; }
   font-weight: 700;
 }
 
-/* 🏆 團隊感謝貼紙 (Kudos 誇誇牆) */
+/* 團隊感謝貼紙 (Kudos 誇誇牆) */
 .kudos-wall-list {
   display: flex;
   flex-direction: column;
@@ -5346,7 +5346,7 @@ th.has-meeting { position: relative; }
   border-color: #f43f5e;
 }
 
-/* 🗓️ 月曆與總表整合「📌 備忘錄角標膠囊」 */
+/* 月曆與總表整合「 備忘錄角標膠囊」 */
 .cal-memo-pill {
   display: inline-flex;
   align-items: center;
@@ -5397,7 +5397,7 @@ th.has-meeting { position: relative; }
 }
 
 /* =========================================================
-   v23: 🧰 實用小工具 6 大常用系統全內建互動工作台
+   v23: 實用小工具 6 大常用系統全內建互動工作台
    ========================================================= */
 .tools-sys-nav {
   display: flex;
@@ -5468,7 +5468,7 @@ th.has-meeting { position: relative; }
   font-weight: 700;
 }
 
-/* 1. 🚲 YouBike 全台即時場站查詢器 */
+/* 1. YouBike 全台即時場站查詢器 */
 .yb-search-bar {
   display: flex;
   align-items: center;
@@ -5651,7 +5651,7 @@ th.has-meeting { position: relative; }
   color: #94a3b8;
 }
 
-/* 2. 🌦️ 中央氣象署雷達迴波 & 鄉鎮天氣 Bento */
+/* 2. 中央氣象署雷達迴波 & 鄉鎮天氣 Bento */
 .weather-radar-bento {
   display: grid;
   grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
@@ -5698,7 +5698,7 @@ th.has-meeting { position: relative; }
   border-radius: 999px;
 }
 
-/* 3. 🚄 高鐵 & 🚆 台鐵票價車程試算 */
+/* 3. 高鐵 & 台鐵票價車程試算 */
 .rail-control-bar {
   display: grid;
   grid-template-columns: 1fr auto 1fr 160px;
@@ -5755,7 +5755,7 @@ th.has-meeting { position: relative; }
   color: #64748b;
 }
 
-/* 4. 🛣️ 1968 國道五大走廊即時路況 */
+/* 4. 1968 國道五大走廊即時路況 */
 .freeway-bento-grid {
   display: grid;
   grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.25fr);
@@ -5841,7 +5841,7 @@ th.has-meeting { position: relative; }
   font-weight: 600;
 }
 
-/* 5. 💡 改善提案作業管理辦法（日歐系文青生活誌 × 微縮工藝策展畫廊風格） */
+/* 5. 改善提案作業管理辦法（日歐系文青生活誌 × 微縮工藝策展畫廊風格） */
 .kaizen-editorial-card {
   background: linear-gradient(180deg, #faf7f2 0%, #f4efe6 100%) !important;
   border: 1px solid #e2d9c8 !important;
@@ -6212,7 +6212,7 @@ th.has-meeting { position: relative; }
   }
 }
 
-/* 📊 2023 vs 2026 優化對比圖卡 2 欄大卡 Grid 與管理效益說明（文青策展誌風格） */
+/* 2023 vs 2026 優化對比圖卡 2 欄大卡 Grid 與管理效益說明（文青策展誌風格） */
 .kaizen-vs-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -6289,7 +6289,7 @@ th.has-meeting { position: relative; }
 }
 
 /* ============================================================
-   ⛲ 團隊許願池（電影級歐式庭園實景底圖 + SVG 光學流體折射濾鏡 + 3D 浮雕金幣）
+   團隊許願池（電影級歐式庭園實景底圖 + SVG 光學流體折射濾鏡 + 3D 浮雕金幣）
    ============================================================ */
 .wf-hero-stage {
   position: relative;
@@ -6886,7 +6886,7 @@ th.has-meeting { position: relative; }
 }
 
 /* ============================================================
-   🌲 秘境森林解憂古樹洞（實景底圖 + 營火熱氣搖曳濾鏡 + 枝頭祈福燈籠 + 紙飛機飛入樹洞 + 營火焚毀鳥事）
+   秘境森林解憂古樹洞（實景底圖 + 營火熱氣搖曳濾鏡 + 枝頭祈福燈籠 + 紙飛機飛入樹洞 + 營火焚毀鳥事）
    ============================================================ */
 .th-hero-stage {
   position: relative;
@@ -7301,7 +7301,7 @@ th.has-meeting { position: relative; }
   100% { transform: translate(-50%, -50%) scale(4.8); opacity: 0; }
 }
 
-/* 7. 🔥 壓箱寶：把煩惱紙條丟進營火燒成灰燼動畫 */
+/* 7. 壓箱寶：把煩惱紙條丟進營火燒成灰燼動畫 */
 .th-burn-paper {
   position: absolute;
   width: 110px;
@@ -7382,9 +7382,9 @@ th.has-meeting { position: relative; }
 }
 
 /* ============================================================
-   👾 外勤品管遊戲化：月度區域魔王部位破壞系統（連動模擬體驗排班矩陣）
-   - 雙北 920 台平分 / 高雄 265 台 ＝ 🧠 魔王大腦 & 🫀 魔王身體核心
-   - 外縣市出差配額 ＝ 🦾🦿 魔王四肢部位
+   外勤品管遊戲化：月度區域魔王部位破壞系統（連動模擬體驗排班矩陣）
+   - 雙北 920 台平分 / 高雄 265 台 ＝ 魔王大腦 & 魔王身體核心
+   - 外縣市出差配額 ＝ 魔王四肢部位
    ============================================================ */
 .dr-raid-world-banner {
   display: flex;
@@ -7857,7 +7857,7 @@ th.has-meeting { position: relative; }
   color: #fde047;
 }
 
-/* 🖼️ 視覺化魔王立繪戰場舞台（AAA 電玩副本 Boss 戰框體） */
+/* 視覺化魔王立繪戰場舞台（AAA 電玩副本 Boss 戰框體） */
 .dr-boss-visual-stage {
   position: relative;
   width: 100%;
@@ -7925,7 +7925,7 @@ th.has-meeting { position: relative; }
   z-index: 4;
 }
 
-/* 🎯 部位鎖定準星與懸浮微型 RPG 戰術標籤 */
+/* 部位鎖定準星與懸浮微型 RPG 戰術標籤 */
 .dr-boss-hotspot {
   position: absolute;
   transform: translate(-50%, -50%);
@@ -8415,7 +8415,7 @@ th.has-meeting { position: relative; }
 }
 
 /* ============================================================
-   ⚡ 分頁切換絲滑入場動畫與長列表渲染加速 (v57 效能與體驗優化)
+   分頁切換絲滑入場動畫與長列表渲染加速 (v57 效能與體驗優化)
    ============================================================ */
 .view-enter {
   animation: viewSmoothEnter 0.18s cubic-bezier(0.22, 1, 0.36, 1);

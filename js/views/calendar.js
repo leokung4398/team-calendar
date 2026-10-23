@@ -29,7 +29,7 @@ export function mountCalendar(el, ctx) {
       </div>
       <h2 class="view-title" data-title></h2>
       <div class="filters">
-        <button class="btn ghost" data-act="new-memo" style="border-color:#fcd34d;background:#fffbeb;color:#b45309;font-weight:700">📌 新增備忘錄</button>
+        <button class="btn ghost" data-act="new-memo" style="border-color:#fcd34d;background:#fffbeb;color:#b45309;font-weight:700">新增備忘錄</button>
         <select data-f="person"></select>
         <select data-f="type"></select>
         <button class="btn" data-act="export">⬇ 匯出 Excel</button>
@@ -96,11 +96,11 @@ export function mountCalendar(el, ctx) {
     let memoBadge = '';
     if (memos.length > 0) {
       const pending = memos.filter(m => !m.done);
-      const tipText = memos.map(m => `${m.done ? '✅' : '📌'} ${m.text}`).join('\n');
+      const tipText = memos.map(m => `${m.done ? '' : ''} ${m.text}`).join('\n');
       if (pending.length > 0) {
-        memoBadge = `<span class="cal-memo-pill" data-cal-memo-pill="${dStr}" title="${esc(tipText + '\n(點擊檢視或打勾消除)')}">📌 ${pending.length}</span>`;
+        memoBadge = `<span class="cal-memo-pill" data-cal-memo-pill="${dStr}" title="${esc(tipText + '\n(點擊檢視或打勾消除)')}">${pending.length}</span>`;
       } else {
-        memoBadge = `<span class="cal-memo-pill all-done" data-cal-memo-pill="${dStr}" title="${esc(tipText + '\n(全部已完成)')}">✅ ${memos.length}</span>`;
+        memoBadge = `<span class="cal-memo-pill all-done" data-cal-memo-pill="${dStr}" title="${esc(tipText + '\n(全部已完成)')}">${memos.length}</span>`;
       }
     }
     return `<span class="dnum">${date.getDate()}</span><span style="display:inline-flex;align-items:center;gap:4px;margin-left:auto">${memoBadge}${label}</span>`;
@@ -138,7 +138,7 @@ export function mountCalendar(el, ctx) {
       meetingList().forEach(m => {
         items.push({
           id: `m_${m.id}`,
-          title: `💼 月會 ${m.startTime || ''}–${m.endTime || ''}`,
+          title: ` 月會 ${m.startTime || ''}–${m.endTime || ''}`,
           start: m.date,
           end: addDays(m.date, 1),
           allDay: true,

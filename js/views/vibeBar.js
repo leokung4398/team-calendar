@@ -1,4 +1,4 @@
-// ☕ 晨間補給站（三合一輕量資訊卡：自行車新聞與延伸話題 / 每日笑話 / 歷史上的今天）
+// 晨間補給站（三合一輕量資訊卡：自行車新聞與延伸話題 / 每日笑話 / 歷史上的今天）
 import { state, myUid, isAdmin, saveVibeDoc } from '../data.js';
 import { esc, ymd, toast, openModal, closeModal } from '../utils.js';
 
@@ -196,7 +196,7 @@ export function renderDailyVibeBar(container, onRerender) {
             <div class="vibe-card-head">
               <div class="vibe-title-group">
                 <span class="vibe-kicker">CYCLING DISPATCH</span>
-                <span class="vibe-pill-tag bike">🚲 單車快訊</span>
+                <span class="vibe-pill-tag bike">單車快訊</span>
               </div>
               <div class="vibe-meta-group">
                 <span class="vibe-meta-chip">${esc(topNews?.source || '產業快訊')}</span>
@@ -217,11 +217,11 @@ export function renderDailyVibeBar(container, onRerender) {
             <div class="vibe-card-head">
               <div class="vibe-title-group">
                 <span class="vibe-kicker">MORNING ESPRESSO</span>
-                <span class="vibe-pill-tag joke">😂 每日一笑</span>
+                <span class="vibe-pill-tag joke">每日一笑</span>
               </div>
               <div class="vibe-meta-group">
-                <button type="button" class="vibe-quick-action" data-quick-next-joke title="立即換一則笑話">🎲 換一則</button>
-                ${upCount > 0 ? `<span class="vibe-meta-chip warm">👍 ${upCount}</span>` : ''}
+                <button type="button" class="vibe-quick-action" data-quick-next-joke title="立即換一則笑話">換一則</button>
+                ${upCount > 0 ? `<span class="vibe-meta-chip warm">${upCount}</span>` : ''}
                 <span class="vibe-pill-caret">${activeExpandedTab === 'joke' ? '▴' : '▾'}</span>
               </div>
             </div>
@@ -239,7 +239,7 @@ export function renderDailyVibeBar(container, onRerender) {
             <div class="vibe-card-head">
               <div class="vibe-title-group">
                 <span class="vibe-kicker">ARCHIVE OF TODAY</span>
-                <span class="vibe-pill-tag history">📜 歷史今天 (${esc(mdLabel)})</span>
+                <span class="vibe-pill-tag history">歷史今天 (${esc(mdLabel)})</span>
               </div>
               <div class="vibe-meta-group">
                 ${topHistory?.year ? `<span class="vibe-meta-chip year">${esc(topHistory.year)} AD</span>` : ''}
@@ -257,7 +257,7 @@ export function renderDailyVibeBar(container, onRerender) {
     </div>
   `;
 
-  // 卡片上「🎲 換一則」快速按鈕（不觸發抽屜收合）
+  // 卡片上「 換一則」快速按鈕（不觸發抽屜收合）
   const quickNextBtn = container.querySelector('[data-quick-next-joke]');
   if (quickNextBtn) {
     quickNextBtn.onclick = e => {
@@ -360,9 +360,9 @@ function renderExpandedPanel(tab, ctx) {
   const { mdLabel } = ctx;
   const switchBar = `
     <div class="vibe-drawer-tabs">
-      <button type="button" class="vibe-drawer-tab ${tab === 'news' ? 'active' : ''}" data-vibe-switch="news">🚲 單車快訊</button>
-      <button type="button" class="vibe-drawer-tab ${tab === 'joke' ? 'active' : ''}" data-vibe-switch="joke">😂 每日一笑</button>
-      <button type="button" class="vibe-drawer-tab ${tab === 'history' ? 'active' : ''}" data-vibe-switch="history">📜 歷史今天 (${esc(mdLabel)})</button>
+      <button type="button" class="vibe-drawer-tab ${tab === 'news' ? 'active' : ''}" data-vibe-switch="news">單車快訊</button>
+      <button type="button" class="vibe-drawer-tab ${tab === 'joke' ? 'active' : ''}" data-vibe-switch="joke">每日一笑</button>
+      <button type="button" class="vibe-drawer-tab ${tab === 'history' ? 'active' : ''}" data-vibe-switch="history">歷史今天 (${esc(mdLabel)})</button>
     </div>
   `;
 
@@ -375,7 +375,7 @@ function renderExpandedPanel(tab, ctx) {
             <img src="assets/vibe/vibe_bike.jpg?v=20261023v52" alt="單車快訊" class="vibe-drawer-hero-img">
             <div>
               <div class="vibe-drawer-kicker">VOL. 01 · CYCLING &amp; MOBILITY GAZETTE</div>
-              <strong class="vibe-drawer-title">🚲 自行車產業、交通政策與市場趨勢</strong>
+              <strong class="vibe-drawer-title">自行車產業、交通政策與市場趨勢</strong>
               <div class="vibe-drawer-sub">自動聚合 Google News 即時新聞與組員延伸觀察</div>
             </div>
           </div>
@@ -414,7 +414,7 @@ function renderExpandedPanel(tab, ctx) {
             </div>
             ${sharedTopics.length === 0 ? `
               <div class="vibe-empty-box">
-                <div style="font-size:13.5px;font-weight:700;color:#1E3F35;margin-bottom:4px">✨ 尚無組員張貼延伸話題</div>
+                <div style="font-size:13.5px;font-weight:700;color:#1E3F35;margin-bottom:4px">尚無組員張貼延伸話題</div>
                 <div class="muted" style="font-size:12.5px;line-height:1.6">看到有趣的單車政策、外縣市營運亮點或產業新聞，歡迎點擊右上角「＋ 分享話題」與團隊共讀！</div>
               </div>
             ` : `
@@ -431,7 +431,7 @@ function renderExpandedPanel(tab, ctx) {
                         <div class="vibe-topic-meta">由 ${esc(t.authorName)} 策展分享</div>
                       </div>
                       <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-                        <button class="btn sm ${liked ? 'primary' : 'ghost'}" data-topic-like="${esc(t.id)}" style="padding:3px 9px;font-size:11.5px">👍 ${likes.length}</button>
+                        <button class="btn sm ${liked ? 'primary' : 'ghost'}" data-topic-like="${esc(t.id)}" style="padding:3px 9px;font-size:11.5px">${likes.length}</button>
                         ${canDel ? `<button class="btn sm ghost" data-topic-del="${esc(t.id)}" style="padding:3px 7px;font-size:11px;color:var(--danger)">✕</button>` : ''}
                       </div>
                     </li>
@@ -456,14 +456,14 @@ function renderExpandedPanel(tab, ctx) {
             <img src="assets/vibe/vibe_joke.jpg?v=20261023v52" alt="每日一笑" class="vibe-drawer-hero-img">
             <div>
               <div class="vibe-drawer-kicker">VOL. 02 · MORNING ESPRESSO &amp; HUMOR SALON</div>
-              <strong class="vibe-drawer-title">😂 晨間咖啡館 · 每日一笑補給</strong>
+              <strong class="vibe-drawer-title">晨間咖啡館 · 每日一笑補給</strong>
               <div class="vibe-drawer-sub">收錄來源：${esc(currentJoke?.author || '系統精選')} · 每日為團隊注入輕鬆幽默能量</div>
             </div>
           </div>
           <div class="vibe-drawer-actions">
             ${switchBar}
-            <button class="btn sm" data-next-joke>🎲 換一則笑話</button>
-            <button class="btn sm primary vibe-brass-btn" data-add-joke>✍️ 投稿笑話</button>
+            <button class="btn sm" data-next-joke>換一則笑話</button>
+            <button class="btn sm primary vibe-brass-btn" data-add-joke>投稿笑話</button>
             <button class="btn sm ghost" data-vibe-close>收起 ▴</button>
           </div>
         </div>
@@ -476,11 +476,11 @@ function renderExpandedPanel(tab, ctx) {
         </div>
         <div class="vibe-joke-footer">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <button class="btn sm ${myUp ? 'primary' : ''}" data-joke-vote="up">👍 這好笑 (${upCount})</button>
-            <button class="btn sm ${myCold ? 'primary' : ''}" data-joke-vote="cold">🥶 有點冷 (${coldCount})</button>
+            <button class="btn sm ${myUp ? 'primary' : ''}" data-joke-vote="up">這好笑 (${upCount})</button>
+            <button class="btn sm ${myCold ? 'primary' : ''}" data-joke-vote="cold">有點冷 (${coldCount})</button>
             <button class="btn sm ghost" data-next-joke>↻ 再抽一則</button>
           </div>
-          <span class="vibe-joke-blessing">☕ 每天自動更新一則，祝大家今日外勤與內勤順心愉快！</span>
+          <span class="vibe-joke-blessing">每天自動更新一則，祝大家今日外勤與內勤順心愉快！</span>
         </div>
       </div>
     `;
@@ -495,7 +495,7 @@ function renderExpandedPanel(tab, ctx) {
             <img src="assets/vibe/vibe_history.jpg?v=20261023v52" alt="歷史今天" class="vibe-drawer-hero-img">
             <div>
               <div class="vibe-drawer-kicker">VOL. 03 · CHRONICLES OF ${esc(mdLabel)}</div>
-              <strong class="vibe-drawer-title">📜 歲月書簡 · 歷史上的今天（${esc(mdLabel)}）</strong>
+              <strong class="vibe-drawer-title">歲月書簡 · 歷史上的今天（${esc(mdLabel)}）</strong>
               <div class="vibe-drawer-sub">串接維基百科歷史大事紀 · 回顧人類與城市文明軌跡</div>
             </div>
           </div>
@@ -524,7 +524,7 @@ function renderExpandedPanel(tab, ctx) {
 function openSubmitJokeModal(customJokes, votes, onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>✍️ 投稿團隊笑話</h3>
+      <h3>投稿團隊笑話</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="joke-form">
@@ -556,7 +556,7 @@ function openSubmitJokeModal(customJokes, votes, onDone) {
 function openSubmitTopicModal(sharedTopics, onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>🚲 分享自行車新聞／市場趨勢話題</h3>
+      <h3>分享自行車新聞／市場趨勢話題</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="topic-form">

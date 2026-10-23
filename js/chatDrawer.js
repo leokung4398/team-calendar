@@ -1,18 +1,18 @@
-// 💬 團隊即時聊天室（全站常駐滑出抽屜 + 支援最大化寬版模式）
+// 團隊即時聊天室（全站常駐滑出抽屜 + 支援最大化寬版模式）
 // 單一全組共用大廳、支援 @標註組員、引用回覆、表情符號反應、貼上圖片自動壓縮、YouBike 專屬快捷語
 import { state, myUid, isAdmin, activeUsers, userOf, sendChatMessage, toggleChatReaction, deleteChatMessage, onChange } from './data.js';
 import { esc, avatar, toast } from './utils.js';
 
 const QUICK_PHRASES = [
-  '🚲 出發巡檢！',
-  '🌧️ 下雨路滑注意安全',
-  '🚗 塞車中，稍後抵達',
-  '👌 收到！馬上處理',
-  '🙌 +1 算我一份',
-  '🧋 有人要訂飲料嗎？',
+  '出發巡檢！',
+  '下雨路滑注意安全',
+  '塞車中，稍後抵達',
+  '收到！馬上處理',
+  '+1 算我一份',
+  '有人要訂飲料嗎？',
 ];
 
-const REACTION_EMOJIS = ['👍', '❤️', '😂', '🔥', '🙏'];
+const REACTION_EMOJIS = ['讚', '愛心', '好笑', '推', '感謝'];
 
 let drawerOpen = false;
 let isMaximized = false;
@@ -119,7 +119,6 @@ function renderChatSystem() {
   if (!drawerOpen) {
     rootEl.innerHTML = `
       <button class="chat-fab-btn" data-open-chat title="開啟團隊即時聊天室">
-        <span style="font-size:18px">💬</span>
         <span class="chat-fab-label">聊天室</span>
         ${unread > 0 ? `<span class="chat-fab-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
       </button>
@@ -138,14 +137,13 @@ function renderChatSystem() {
     <aside class="chat-drawer open ${isMaximized ? 'maximized' : ''}">
       <div class="chat-head">
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:18px">💬</span>
           <div>
             <strong style="font-size:14.5px">經營 Team 即時聊天大廳</strong>
             <div class="muted" style="font-size:11px">全組日常協作、外勤連線與輕鬆交流</div>
           </div>
         </div>
         <div style="display:flex;gap:4px;align-items:center">
-          <button class="icon-btn" data-toggle-max title="${isMaximized ? '還原側邊抽屜大小' : '最大化寬版視窗'}">${isMaximized ? '🗗' : '🗖'}</button>
+          <button class="btn sm ghost" data-toggle-max title="${isMaximized ? '還原側邊抽屜大小' : '最大化寬版視窗'}" style="padding:3px 8px;font-size:12px">${isMaximized ? '還原' : '放大'}</button>
           <button class="icon-btn" data-close-chat title="收起聊天室">✕</button>
         </div>
       </div>
@@ -154,8 +152,7 @@ function renderChatSystem() {
       <div class="chat-body" id="chat-scroll-box">
         ${msgs.length === 0 ? `
           <div class="muted" style="text-align:center;padding:48px 16px;font-size:13px">
-            <div style="font-size:32px;margin-bottom:8px">🚲</div>
-            聊天大廳目前還沒有訊息，發送第一句招呼或貼圖熱絡一下吧！
+            聊天大廳目前還沒有訊息，發送第一句招呼熱絡一下吧！
           </div>
         ` : msgs.map(m => {
           const mine = m.uid === uid;
@@ -227,12 +224,12 @@ function renderChatSystem() {
 
       <!-- 輸入框 -->
       <form class="chat-input-form" id="chat-send-form">
-        <label class="icon-btn" title="上傳或貼上圖片/截圖" style="cursor:pointer;flex-shrink:0">
-          🖼️
+        <label class="btn sm ghost" title="上傳或貼上圖片/截圖" style="cursor:pointer;flex-shrink:0;padding:5px 8px;font-size:12px">
+          圖片
           <input type="file" accept="image/*" data-chat-file hidden>
         </label>
         <input type="text" name="text" id="chat-text-input" placeholder="輸入訊息（可直接 Ctrl+V 貼上截圖）…" autocomplete="off">
-        <button type="submit" class="btn primary sm" style="flex-shrink:0">傳送 ➤</button>
+        <button type="submit" class="btn primary sm" style="flex-shrink:0">傳送</button>
       </form>
     </aside>
   `;

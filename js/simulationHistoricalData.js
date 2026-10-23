@@ -20,7 +20,7 @@ export const MONTH_ZH_NAMES = {
   '2026-12': '十二月',
 };
 
-// 全台各縣市母體車輛與抽驗配額試算表（對應試算表「🔒 總數表」工作表）
+// 全台各縣市母體車輛與抽驗配額試算表（對應試算表「 總數表」工作表）
 export const FLEET_MASTER_SUMMARY = {
   totalV20: 96810,
   totalV20e: 17284,

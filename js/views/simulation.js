@@ -270,17 +270,17 @@ export function mountSimulation(el, ctx = {}) {
           <span style="font-weight:700; font-size:16px; min-width:110px; text-align:center;">${yStr} 年 ${Number(mStr)} 月</span>
           <button class="btn icon" data-month-next title="下個月">›</button>
         </div>
-        <h2 class="view-title">🚲 模擬體驗排班規劃</h2>
+        <h2 class="view-title">模擬體驗排班規劃</h2>
         <div class="toolbar-end" style="display:flex; gap:8px; flex-wrap:wrap;">
           <button type="button" class="btn ghost guide-btn" data-open-sim-tour style="font-weight:700; color:#b45309; background:#fef3c7; border-color:#fde68a;" title="啟動模擬體驗 6 步實景聚焦導覽">
-            🎯 模擬體驗導覽
+            模擬體驗導覽
           </button>
           <a class="btn ghost" href="https://docs.google.com/spreadsheets/d/1LZTYi7lptWpCXVOjaNs0WxkKl9SnDrfCVq1GmtqVgiI/edit?gid=1242229196#gid=1242229196" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:5px; font-weight:600; color:#15803d; border-color:#bbf7d0; background:#f0fdf4; text-decoration:none;" title="開啟原始 Google 試算表">
-            <span>📗 原始試算表</span>
+            <span>原始試算表</span>
             <span style="font-size:11px;">↗</span>
           </a>
           <a class="btn ghost" href="https://leokung4398.github.io/YouBike-MaIM/" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:6px; font-weight:600; color:#1e293b; border-color:#cbd5e1; background:#fff; text-decoration:none;" title="在新分頁開啟維修維護提升改善會議資訊 (MaIM 儀表板)">
-            <span>📊 維護改善會議資訊 (MaIM)</span>
+            <span>維護改善會議資訊 (MaIM)</span>
             <span style="font-size:12px; color:#64748b;">↗</span>
           </a>
         </div>
@@ -290,7 +290,7 @@ export function mountSimulation(el, ctx = {}) {
       <div id="sim-year-month-bar" class="sim-top-control-row">
         <div class="month-expander-bar" tabindex="0">
           <div class="month-expander-trigger">
-            <span class="month-trigger-label">📅 ${yStr}年 · <b>${Number(mStr)}月${curMonth === '2026-10' ? ' (本月)' : ''}</b></span>
+            <span class="month-trigger-label">${yStr}年 · <b>${Number(mStr)}月${curMonth === '2026-10' ? ' (本月)' : ''}</b></span>
             <span class="month-trigger-hint">▸ 切換月份</span>
           </div>
           <div class="month-expander-ZeroDrawer">
@@ -309,16 +309,16 @@ export function mountSimulation(el, ctx = {}) {
         <!-- 頂部獨立功能子分頁（固定於右側，不受月份展開推擠） -->
         <div class="sim-nav-pills">
           <button type="button" class="sim-pill-btn ${activeSubTab === 'matrix' ? 'active tab-matrix' : ''}" data-tab="matrix">
-            <span>📊 排班矩陣 (${Number(mStr)}月)</span>
+            <span>排班矩陣 (${Number(mStr)}月)</span>
           </button>
           <button type="button" class="sim-pill-btn ${activeSubTab === 'north' ? 'active tab-north' : ''}" data-tab="north">
-            <span>🧭 北區巡檢 (Leo/Hao)</span>
+            <span>北區巡檢 (Leo/Hao)</span>
           </button>
           <button type="button" class="sim-pill-btn ${activeSubTab === 'south' ? 'active tab-south' : ''}" data-tab="south">
-            <span>🌴 南區巡檢 (Chun)</span>
+            <span>南區巡檢 (Chun)</span>
           </button>
           <button type="button" class="sim-pill-btn ${activeSubTab === 'annual' ? 'active tab-matrix' : ''}" data-tab="annual" data-quick-annual>
-            <span>📈 年度總覽 & 母體表</span>
+            <span>年度總覽 & 母體表</span>
           </button>
         </div>
       </div>
@@ -351,7 +351,7 @@ export function mountSimulation(el, ctx = {}) {
         <!-- 輕量化單行指標條 + 圖2 外勤三人連動極簡膠囊（移上去或點擊才展開詳細日期） -->
         <div class="card sim-compact-bar">
           <div class="sim-compact-metrics">
-            <span class="sim-metric-main">🎯 <b>${Number(mStr)}月</b>抽驗目標 <strong>${totalCheckCountSum.toLocaleString()}</strong> 台</span>
+            <span class="sim-metric-main"><b>${Number(mStr)}月</b>抽驗目標 <strong>${totalCheckCountSum.toLocaleString()}</strong> 台</span>
             <span class="sim-metric-pill">工作天 <b>${workDays}</b>d</span>
             <span class="sim-metric-pill">出差天 <b style="color:#2563eb">${travelDays}</b>d</span>
             <span class="sim-metric-pill clickable" data-goto-master title="點擊查看母體總數表">2.0母體 <b style="color:#b45309">${totalV20Vehicles}</b> ↗</span>
@@ -361,7 +361,7 @@ export function mountSimulation(el, ctx = {}) {
 
           ${(crossCheck.Leo?.totalOutDays || crossCheck.Hao?.totalOutDays || crossCheck.Chun?.totalOutDays) ? `
             <div class="sim-crosscheck-compact">
-              <span class="crosscheck-label">🔗 外縣市月曆連動：</span>
+              <span class="crosscheck-label">外縣市月曆連動：</span>
               ${['Leo', 'Hao', 'Chun'].map(k => {
                 const cc = crossCheck[k];
                 if (!cc || !cc.totalOutDays) return '';
@@ -374,7 +374,7 @@ export function mountSimulation(el, ctx = {}) {
                     <div class="crosscheck-popover">
                       <div style="font-weight:700;margin-bottom:4px;color:#0369a1">${k} 當月已排外縣市（共 ${cc.totalOutDays} 天）</div>
                       <div style="font-size:12px;line-height:1.5;color:#334155">${esc(cc.outCities.join('、'))}</div>
-                      <div style="margin-top:6px;font-size:11px;color:#2563eb;font-weight:600" data-jump-zone="${zoneTab}">👉 點擊跳轉至${k === 'Chun' ? '南區' : '北區'}巡檢月曆 ↗</div>
+                      <div style="margin-top:6px;font-size:11px;color:#2563eb;font-weight:600" data-jump-zone="${zoneTab}">點擊跳轉至${k === 'Chun' ? '南區' : '北區'}巡檢月曆 ↗</div>
                     </div>
                   </div>
                 `;
@@ -387,7 +387,7 @@ export function mountSimulation(el, ctx = {}) {
         <div class="card pad" style="overflow-x:auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
             <div style="display:flex;align-items:center;gap:8px">
-              <h3 style="font-size:15.5px; margin:0;">📋 各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
+              <h3 style="font-size:15.5px; margin:0;">各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
               <span class="info-pill-tip" data-tip="點選上方粉紅列『出差日期』可記錄幾號出差（例：15, 16）；點選下方格子可直接編輯排班次數">ⓘ 操作提示</span>
             </div>
           </div>
@@ -400,7 +400,7 @@ export function mountSimulation(el, ctx = {}) {
                   當月工作天：<b>${workDays}</b> 天
                 </th>
                 <th colspan="3" style="padding:4px 8px; text-align:center; background:#ffe4e6; color:#9f1239; font-weight:800; font-size:12.5px; border-right:1px solid #fda4af;">
-                  📅 出差日期 (幾號)
+                  出差日期 (幾號)
                 </th>
                 ${sortedUsers.map(u => {
                   const nick = USER_NICK_MAP[u.displayName] || u.displayName;
@@ -434,7 +434,7 @@ export function mountSimulation(el, ctx = {}) {
               <tr style="background:#ffe4e6; border-bottom:1px solid #fda4af; height:28px;">
                 <th colspan="4" style="background:#f8fafc; border-right:1px solid #cbd5e1;"></th>
                 <th colspan="3" style="padding:2px 8px; text-align:center; background:#fecdd3; color:#881337; font-weight:800; font-size:12px; border-right:1px solid #fda4af;">
-                  🚄 外縣市天數
+                  外縣市天數
                 </th>
                 ${sortedUsers.map(u => {
                   const days = userTotalDays[u.uid] || 0;
@@ -512,8 +512,8 @@ export function mountSimulation(el, ctx = {}) {
                         </td>`;
                     }).join('')}
                     <td style="text-align:left; font-size:12px; color:#475569; white-space:nowrap;">
-                      ${q.mode?.includes('transit') ? '<span class="badge-tag info tiny" style="margin-right:4px; white-space:nowrap;">🚄 大眾運輸</span>' : ''}
-                      ${q.mode?.includes('overnight') ? '<span class="badge-tag warn tiny" style="margin-right:4px; white-space:nowrap;">🏨 兩天一夜</span>' : ''}
+                      ${q.mode?.includes('transit') ? '<span class="badge-tag info tiny" style="margin-right:4px; white-space:nowrap;">大眾運輸</span>' : ''}
+                      ${q.mode?.includes('overnight') ? '<span class="badge-tag warn tiny" style="margin-right:4px; white-space:nowrap;">兩天一夜</span>' : ''}
                       ${q.note ? `<span style="white-space:nowrap;">${esc(q.note)}</span>` : ''}
                     </td>
                   </tr>`;
@@ -548,7 +548,7 @@ export function mountSimulation(el, ctx = {}) {
         <!-- 底部規則與防呆說明卡片 -->
         <div class="card pad" style="background:#fffbeb; border:1px solid #fef3c7; border-left:4px solid #f59e0b;">
           <h4 style="margin:0 0 8px 0; color:#b45309; font-size:15px; display:flex; align-items:center; gap:6px;">
-            <span>🚩 模擬體驗現行 5 大執行規則與防呆</span>
+            <span>模擬體驗現行 5 大執行規則與防呆</span>
           </h4>
           <ol style="margin:0; padding-left:20px; line-height:1.7; font-size:13px; color:#78350f;">
             <li><b>自主選擇與動態調整：</b>模擬體驗雖先以同仁自主選擇，仍會因各營運處月初發布的車輛數量等其他原因做區域及數量調整，最終以群組發布的資訊為執行準則。（如有住宿，請以彈性為原則）</li>
@@ -565,7 +565,7 @@ export function mountSimulation(el, ctx = {}) {
     bindEvents();
   }
 
-  /** 子分頁 4：渲染「📈 2026年度總覽（一月～十一月垂直展開表）」與「🔒 母體總數試算表」 */
+  /** 子分頁 4：渲染「 2026年度總覽（一月～十一月垂直展開表）」與「 母體總數試算表」 */
   function renderAnnualAndMasterView(container, sortedUsers) {
     const activeMonths = SIMULATION_2026_MONTHS.slice(0, 11); // 2026-01 ~ 2026-11
 
@@ -598,7 +598,7 @@ export function mountSimulation(el, ctx = {}) {
               <span style="font-size:13px; color:#475569;">｜ 總抽檢目標：<b>${totalVeh.toLocaleString()}</b> 台</span>
             </div>
             <button type="button" class="btn small ghost" data-edit-single-month="${mKey}" style="font-weight:700; color:#2563eb;">
-              ✏️ 切換至 ${esc(zhMonth)} 編輯模式 ↗
+              切換至 ${esc(zhMonth)} 編輯模式 ↗
             </button>
           </div>
 
@@ -689,17 +689,17 @@ export function mountSimulation(el, ctx = {}) {
         <!-- 區塊切換導覽按鈕 -->
         <div class="card pad" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left:4px solid #d97706; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
-            <h3 style="margin:0; font-size:17px; color:#92400e;">📈 2026 全年度執行總覽 ＆ 🔒 全台母體車輛配額試算表</h3>
+            <h3 style="margin:0; font-size:17px; color:#92400e;">2026 全年度執行總覽 ＆ 全台母體車輛配額試算表</h3>
             <p style="margin:4px 0 0 0; font-size:12.5px; color:#b45309;">
-              完整整合試算表中的「<b>2026年度 (一月～十一月垂直總表)</b>」與「<b>🔒 總數表 (全台 114,094 台母體抽驗比例公式)</b>」
+              完整整合試算表中的「<b>2026年度 (一月～十一月垂直總表)</b>」與「<b>總數表 (全台 114,094 台母體抽驗比例公式)</b>」
             </p>
           </div>
           <div style="display:flex; gap:8px;">
             <button type="button" class="btn small ${annualViewMode === 'vertical' ? 'primary' : 'ghost'}" data-annual-mode="vertical">
-              📋 2026年度垂直展開表 (一月～十一月)
+              2026年度垂直展開表 (一月～十一月)
             </button>
             <button type="button" class="btn small ${annualViewMode === 'master' ? 'primary' : 'ghost'}" data-annual-mode="master">
-              🔒 母體總數與抽驗比例表 (總數表)
+              母體總數與抽驗比例表 (總數表)
             </button>
           </div>
         </div>
@@ -711,12 +711,12 @@ export function mountSimulation(el, ctx = {}) {
           </div>
         ` : ''}
 
-        <!-- 🔒 母體總數表（無論在哪個模式都顯示於下方，或切到 master 時置頂展示） -->
+        <!-- 母體總數表（無論在哪個模式都顯示於下方，或切到 master 時置頂展示） -->
         <div class="card pad" id="fleet-master-section" style="border-top:4px solid #0284c7;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
             <div>
               <div style="display:flex; align-items:center; gap:8px;">
-                <span class="badge-tag info">🔒 總數表 (配額計算源頭)</span>
+                <span class="badge-tag info">總數表 (配額計算源頭)</span>
                 <h3 style="margin:0; font-size:17px;">全台各縣市 2.0 / 2.0E 母體車輛數與抽驗配額試算表</h3>
               </div>
               <p class="muted small-text" style="margin:4px 0 0 0;">
@@ -797,7 +797,7 @@ export function mountSimulation(el, ctx = {}) {
           <!-- 跨部門協同測試名單（OA / RD / MK / HR / IT / FN / AD 共 36 人） -->
           <div style="margin-top:16px; padding:12px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
             <div style="font-size:13px; font-weight:800; color:#334155; margin-bottom:8px;">
-              👥 總數表附錄：各部門測試名額配置（共 36 人）
+              總數表附錄：各部門測試名額配置（共 36 人）
             </div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px; font-size:12px;">
               ${fm.crossDeptRoster.map(d => `
@@ -848,7 +848,7 @@ export function mountSimulation(el, ctx = {}) {
       });
     });
 
-    // 頂部「📈 2026年度全覽 & 母體總數表」快速按鈕
+    // 頂部「 2026年度全覽 & 母體總數表」快速按鈕
     q('[data-quick-annual]')?.addEventListener('click', () => {
       activeSubTab = 'annual';
       render();

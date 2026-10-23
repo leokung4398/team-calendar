@@ -17,7 +17,7 @@ export function mountGrid(el, ctx) {
       </div>
       <h2 class="view-title" data-title></h2>
       <div class="filters">
-        <button class="btn ghost" data-act="new-memo" style="border-color:#fcd34d;background:#fffbeb;color:#b45309;font-weight:700">📌 新增備忘錄</button>
+        <button class="btn ghost" data-act="new-memo" style="border-color:#fcd34d;background:#fffbeb;color:#b45309;font-weight:700">新增備忘錄</button>
         <button class="btn" data-act="export">⬇ 匯出 Excel</button>
       </div>
     </div>
@@ -75,12 +75,12 @@ export function mountGrid(el, ctx) {
       const memos = getMemosOnDay(d);
       const pendingMemos = memos.filter(x => !x.done);
       const memoDot = memos.length
-        ? `<div class="grid-memo-badge ${pendingMemos.length ? '' : 'done'}" data-grid-memo="${d}" title="${esc(memos.map(x => `${x.done ? '✅' : '📌'} ${x.text}`).join('\n') + '\n(點擊查看或打勾消除)')}">${pendingMemos.length ? `📌${pendingMemos.length}` : '✅'}</div>`
+        ? `<div class="grid-memo-badge ${pendingMemos.length ? '' : 'done'}" data-grid-memo="${d}" title="${esc(memos.map(x => `${x.done ? '[完成]' : '[待辦]'} ${x.text}`).join('\n') + '\n(點擊查看或打勾消除)')}">${pendingMemos.length ? `備忘${pendingMemos.length}` : '完成'}</div>`
         : '';
       const cls = [i.off ? 'off' : '', i.makeup ? 'makeup' : '', d === today ? 'today' : '', mItem ? 'has-meeting' : ''].join(' ');
-      const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `💼 月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : ''].filter(Boolean);
+      const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : ''].filter(Boolean);
       const tip = tipParts.join(' / ');
-      const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}">💼</div>` : '';
+      const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}" style="font-size:10px;font-weight:800;color:#1e293b">月會</div>` : '';
       return `<th class="${cls}" ${tip ? `title="${esc(tip)}"` : ''}><div class="dn">${Number(d.slice(8))}</div><div class="wd">${weekdayZh(d)}</div>${mIcon}${memoDot}${i.name ? '<div class="hol-dot"></div>' : ''}</th>`;
     }).join('');
 

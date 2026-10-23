@@ -5,8 +5,8 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, fmtMD, weekdayZh, nowMinutes, avatar, minToHM } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { bike, dock, rideBar } from '../yb.js';
-import { renderDailyVibeBar } from './vibeBar.js?v=20261023v58';
-import { renderStickyHub } from './stickyHub.js?v=20261023v58';
+import { renderDailyVibeBar } from './vibeBar.js?v=20261023v59';
+import { renderStickyHub } from './stickyHub.js?v=20261023v59';
 
 export function mountToday(el) {
   let day = ymd();
@@ -123,15 +123,15 @@ export function mountToday(el) {
       mBanner = `
         <div class="card banner-meeting">
           <div class="bm-left">
-            <span class="bm-tag">💼 經營 Team 月會</span>
-            <span class="bm-time">⏰ ${esc(mToday.startTime)} – ${esc(mToday.endTime)}</span>
-            <span class="bm-loc">📍 ${esc(mToday.location || '總公司會議室')}</span>
+            <span class="bm-tag">經營 Team 月會</span>
+            <span class="bm-time">${esc(mToday.startTime)} – ${esc(mToday.endTime)}</span>
+            <span class="bm-loc">${esc(mToday.location || '總公司會議室')}</span>
             <span class="bm-rec muted small-text">（紀錄人：${esc(userName(mToday.recorderUid))}）</span>
           </div>
           <div class="bm-right">
             ${mToday.meetUrl ? `
               <a href="${esc(mToday.meetUrl)}" target="_blank" rel="noopener noreferrer" class="btn primary small meet-btn">
-                🎥 加入 Google Meet
+                加入 Google Meet
               </a>` : ''}
             <a href="#/meeting" class="btn small ghost">檢視議程</a>
           </div>
@@ -141,8 +141,8 @@ export function mountToday(el) {
     q('[data-title]').textContent = `${fmtMD(day)}（${weekdayZh(day)}）${isToday ? '今天' : ''}`;
     q('[data-act=pick]').value = day;
     const holBanner = info.name || info.off
-      ? `<div class="banner holiday">🎌 ${info.name ? esc(info.name) : '週末'}・休假日</div>`
-      : info.makeup ? `<div class="banner makeup">📌 補班日</div>` : '';
+      ? `<div class="banner holiday">${info.name ? esc(info.name) : '週末'}・休假日</div>`
+      : info.makeup ? `<div class="banner makeup">補班日</div>` : '';
     q('[data-banner]').innerHTML = mBanner + holBanner;
 
     const rows = activeUsers().map(u => {
@@ -230,14 +230,14 @@ export function mountToday(el) {
       pill = st.list.length ? `<span class="pill sched">有行程</span>` : `<span class="pill office">無行程</span>`;
     } else if (cur) {
       if (cur.ev.typeId === 'office') {
-        pill = `<span class="pill in-office">🏢 進辦公室中</span>`;
+        pill = `<span class="pill in-office">進辦公室中</span>`;
       } else {
         pill = `<span class="pill out" style="--c:${esc(typeOf(cur.ev.typeId).color)}">${esc(typeOf(cur.ev.typeId).name)}中</span>`;
       }
     } else if (isField) {
       pill = isOfficeDuty
-        ? `<span class="pill in-office">🏢 在辦公室</span>`
-        : `<span class="pill field">🚲 常態外勤</span>`;
+        ? `<span class="pill in-office">在辦公室</span>`
+        : `<span class="pill field">常態外勤</span>`;
     } else {
       pill = `<span class="pill office">${dock(11)} 在辦公室</span>`;
     }
@@ -250,7 +250,7 @@ export function mountToday(el) {
           <div class="now-line"><b>${esc(timeOnDayText(ev, day))}</b></div>
           ${ev.reason ? `<div class="muted clamp">${esc(ev.reason)}</div>` : ''}
           <div class="now-meta">
-            <span>⏰ 預計回來：<b>${esc(returnText(ev, day, cur.iv))}</b></span>
+            <span>預計回來：<b>${esc(returnText(ev, day, cur.iv))}</b></span>
           </div>
         </div>`;
     }

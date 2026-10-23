@@ -1,6 +1,6 @@
-// 🌠 許願池 & 🗣️ 意見箱（抱怨箱）模組
+// 許願池 & 意見箱（抱怨箱）模組
 // - 許願池：具名公開，支援組員 +1 附議投票、管理員標記狀態（評估中／開發中／已實現）
-// - 意見箱（抱怨箱）：支援「🥷 完全匿名（連資料庫與管理員都不記錄真實 UID）」或「具名」自由切換，讓組員放心大吐苦水並互相拍拍打氣
+// - 意見箱（抱怨箱）：支援「 完全匿名（連資料庫與管理員都不記錄真實 UID）」或「具名」自由切換，讓組員放心大吐苦水並互相拍拍打氣
 import {
   state, myUid, isAdmin, wishList, saveWishItem, toggleWishVote, deleteWishItem,
   ventList, createVentItem, toggleVentReaction, addVentReply, deleteVentItem,
@@ -8,21 +8,21 @@ import {
 import { esc, toast, openModal, closeModal, confirmDialog } from '../utils.js';
 
 const WISH_STATUSES = [
-  { id: 'open',      label: '💡 許願集氣中', color: '#D97706', bg: '#FFFBEB' },
-  { id: 'reviewing', label: '🔍 評估規劃中', color: '#2563EB', bg: '#EFF6FF' },
-  { id: 'building',  label: '🛠️ 排程開發中', color: '#7C3AED', bg: '#F5F3FF' },
-  { id: 'done',      label: '🎉 已實現上線', color: '#16A34A', bg: '#F0FDF4' },
+  { id: 'open',      label: '許願集氣中', color: '#D97706', bg: '#FFFBEB' },
+  { id: 'reviewing', label: '評估規劃中', color: '#2563EB', bg: '#EFF6FF' },
+  { id: 'building',  label: '排程開發中', color: '#7C3AED', bg: '#F5F3FF' },
+  { id: 'done',      label: '已實現上線', color: '#16A34A', bg: '#F0FDF4' },
 ];
 
 const VENT_CATEGORIES = [
-  { id: 'work',   label: '💼 工作流程／制度吐苦水' },
-  { id: 'field',  label: '🚲 外勤日曬雨淋辛酸淚' },
-  { id: 'comm',   label: '📞 跨部門溝通心累日常' },
-  { id: 'life',   label: '☕ 職場心情抒發' },
+  { id: 'work',   label: '工作流程／制度吐苦水' },
+  { id: 'field',  label: '外勤日曬雨淋辛酸淚' },
+  { id: 'comm',   label: '跨部門溝通心累日常' },
+  { id: 'life',   label: '職場心情抒發' },
 ];
 
 // ============================================================
-// 🎵 Web Audio API 許願池音效合成器（免外部音檔：金幣叮噹 + 落水撲通）
+// Web Audio API 許願池音效合成器（免外部音檔：金幣叮噹 + 落水撲通）
 // ============================================================
 let wfAudioCtx = null;
 function isWishSoundEnabled() {
@@ -129,8 +129,8 @@ function triggerCoinTossAnimation(rootEl, opts = {}) {
 
   const targetLeftPct = Number(opts.leftPct ?? (36 + Math.random() * 28));
   const targetTopPct = Number(opts.topPct ?? (56 + Math.random() * 22));
-  const labelText = opts.text || '🪙 +1 願望投入池中！';
-  const coinSymbol = opts.symbol || '🚲';
+  const labelText = opts.text || '+1 願望投入池中！';
+  const coinSymbol = opts.symbol || '★';
 
   const sceneRect = fxLayer.getBoundingClientRect();
   const w = sceneRect.width || 760;
@@ -238,7 +238,7 @@ export function mountWishes(el) {
       const st = WISH_STATUSES.find(s => s.id === stId) || WISH_STATUSES[0];
       const votes = Array.isArray(w.votes) ? w.votes : [];
       const pos = getCoinPosition(w.id, idx, wishes.length);
-      const icon = stId === 'done' ? '💎' : stId === 'building' ? '🛠️' : stId === 'reviewing' ? '🔍' : '🚲';
+      const icon = `#${idx + 1}`;
       const delay = ((idx * 0.38) % 3.5).toFixed(2);
       return `
         <div class="wf-pool-coin coin-${esc(stId)}"
@@ -246,12 +246,12 @@ export function mountWishes(el) {
              data-coin-left="${pos.left}"
              data-coin-top="${pos.top}"
              style="left:${pos.left}%;top:${pos.top}%;animation-delay:${delay}s;z-index:${10 + idx}">
-          <span>${icon}</span>
+          <span style="font-size:11px;font-weight:800">${icon}</span>
           ${votes.length > 0 ? `<span class="wf-coin-votes-badge">+${votes.length}</span>` : ''}
           <div class="wf-coin-pop">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:3px">
               <span style="color:#fde047;font-weight:800">${esc(st.label)}</span>
-              <span style="color:#94a3b8;font-size:10.5px">🙌 ${votes.length} 附議</span>
+              <span style="color:#94a3b8;font-size:10.5px">${votes.length} 附議</span>
             </div>
             <div style="font-weight:700;color:#fff;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(w.title)}</div>
             <div style="color:#cbd5e1;font-size:10.5px">許願人：${esc(w.authorName || '組員')}（點擊硬幣附議 +1）</div>
@@ -264,22 +264,22 @@ export function mountWishes(el) {
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="display:inline-flex;background:#e2e8f0;padding:3px;border-radius:11px;gap:3px">
-            <a href="#/wishes" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:800;background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.1)">⛲ 皇家許願噴泉（許願池）</a>
-            <a href="#/vents" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:700;color:#475569">🌲 秘境解憂樹洞（意見箱）</a>
+            <a href="#/wishes" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:800;background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.1)">皇家許願噴泉（許願池）</a>
+            <a href="#/vents" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:700;color:#475569">秘境解憂樹洞（意見箱）</a>
           </div>
           <span class="info-pill-tip" data-tip="想要什麼實用工具、自動化報表或好用的系統介面？投下一枚金幣許願，或點擊池底金幣幫同事按 +1 集氣！">ⓘ 說明</span>
           <div class="compact-kpi-strip">
-            <span class="kpi-chip">🪙 池中願望金幣 <b>${wishes.length}</b></span>
-            <span class="kpi-chip">🙌 累積集氣 <b>${totalVotes}</b></span>
-            <span class="kpi-chip">💎 已實現 <b>${doneCount}</b></span>
+            <span class="kpi-chip">池中願望金幣 <b>${wishes.length}</b></span>
+            <span class="kpi-chip">累積集氣 <b>${totalVotes}</b></span>
+            <span class="kpi-chip">已實現 <b>${doneCount}</b></span>
           </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
-          <button class="btn primary sm" data-new-wish>🪙 投幣許一個願望</button>
+          <button class="btn primary sm" data-new-wish>投幣許一個願望</button>
         </div>
       </div>
 
-      <!-- ⛲ 電影級歐式庭園許願噴泉池（實景底圖 + SVG 流體水波折射濾鏡） -->
+      <!-- 電影級歐式庭園許願噴泉池（實景底圖 + SVG 流體水波折射濾鏡） -->
       <div class="wf-hero-stage" data-wf-stage>
         <!-- 隱藏的 SVG 光學水波流體折射濾鏡 (feTurbulence + feDisplacementMap) -->
         <svg width="0" height="0" style="position:absolute;pointer-events:none;overflow:hidden" aria-hidden="true">
@@ -295,18 +295,18 @@ export function mountWishes(el) {
 
         <div class="wf-hero-topbar">
           <div class="wf-hero-title-box">
-            <span class="wf-hero-badge">⛲ 經營 Team 皇家庭園許願噴泉</span>
+            <span class="wf-hero-badge">經營 Team 皇家庭園許願噴泉</span>
             <span class="wf-hero-sub">每一個願望都會化為池底閃耀金幣・點擊池水或右上角按鈕即可拋幣許願！</span>
           </div>
           <div class="wf-hero-actions">
             <button type="button" class="wf-sound-btn" data-wf-sound-toggle title="切換投幣與落水音效">
-              ${soundOn ? '🔊 音效開啟' : '🔇 音效靜音'}
+              ${soundOn ? '音效開啟' : '音效靜音'}
             </button>
             <button type="button" class="wf-toss-demo-btn" data-wf-quick-toss title="試丟一枚幸運金幣聽聽水聲">
-              🪙 試丟幸運幣
+              試丟幸運幣
             </button>
             <button type="button" class="wf-toss-demo-btn" data-new-wish style="background:linear-gradient(135deg,#38bdf8 0%,#0284c7 50%,#1d4ed8 100%);color:#fff;border-color:#bae6fd;box-shadow:0 4px 18px rgba(14,165,233,0.6)">
-              ✨ 許下新願望
+              許下新願望
             </button>
           </div>
         </div>
@@ -335,12 +335,11 @@ export function mountWishes(el) {
 
           ${wishes.length === 0 ? `
             <div class="wf-empty-floating-cta">
-              <span style="font-size:24px">🪙</span>
               <div style="text-align:left">
                 <div style="font-size:13.5px;font-weight:800;color:#fef08a">許願池水清澈見底，還沒有第一枚願望金幣</div>
                 <div style="font-size:11.5px;color:#cbd5e1">有任何希望加進平台的小工具、自動統計或介面優化，歡迎投下第一枚金幣！</div>
               </div>
-              <button type="button" class="wf-toss-demo-btn" data-new-wish>🪙 投下第一枚願望金幣</button>
+              <button type="button" class="wf-toss-demo-btn" data-new-wish>投下第一枚願望金幣</button>
             </div>
           ` : ''}
 
@@ -350,14 +349,14 @@ export function mountWishes(el) {
 
         <div class="wf-hero-foot">
           <div class="wf-legend-list">
-            <span style="font-weight:800;color:#fef08a">🪙 池底願望金幣：</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#facc15;box-shadow:0 0 8px #facc15"></i> 🚲 許願集氣中 (${wishes.filter(w => (w.status || 'open') === 'open').length})</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#38bdf8;box-shadow:0 0 8px #38bdf8"></i> 🔍 評估規劃中 (${wishes.filter(w => w.status === 'reviewing').length})</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#c084fc;box-shadow:0 0 8px #c084fc"></i> 🛠️ 排程開發中 (${wishes.filter(w => w.status === 'building').length})</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#10b981;box-shadow:0 0 8px #10b981"></i> 💎 已實現上線 (${doneCount})</span>
+            <span style="font-weight:800;color:#fef08a">池底願望金幣：</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#facc15;box-shadow:0 0 8px #facc15"></i> 許願集氣中 (${wishes.filter(w => (w.status || 'open') === 'open').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#38bdf8;box-shadow:0 0 8px #38bdf8"></i> 評估規劃中 (${wishes.filter(w => w.status === 'reviewing').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#c084fc;box-shadow:0 0 8px #c084fc"></i> 排程開發中 (${wishes.filter(w => w.status === 'building').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#10b981;box-shadow:0 0 8px #10b981"></i> 已實現上線 (${doneCount})</span>
           </div>
           <div style="color:#fde047;font-weight:700">
-            💡 提示：直接點擊池水可拋幣試玩；滑鼠移到池底金幣可檢視願望、點擊金幣即可 +1 附議！
+            提示：直接點擊池水可拋幣試玩；滑鼠移到池底金幣可檢視願望、點擊金幣即可 +1 附議！
           </div>
         </div>
       </div>
@@ -382,7 +381,7 @@ export function mountWishes(el) {
                     <p style="margin:0;font-size:13.5px;color:var(--text);line-height:1.55;white-space:pre-wrap">${esc(w.description || '')}</p>
                     ${w.adminNote ? `
                       <div style="margin-top:8px;background:#F8FAFC;border-left:3px solid var(--primary);padding:6px 10px;border-radius:6px;font-size:12.5px">
-                        <strong>🛠️ 開發評估回覆：</strong>${esc(w.adminNote)}
+                        <strong>開發評估回覆：</strong>${esc(w.adminNote)}
                       </div>
                     ` : ''}
                   </div>
@@ -393,11 +392,11 @@ export function mountWishes(el) {
                             data-coin-top="${pos.top}"
                             style="min-width:82px;flex-direction:column;padding:8px 12px;gap:2px"
                             title="點擊投幣附議 +1">
-                      <span style="font-size:15px">🪙 +1 投幣</span>
+                      <span style="font-size:14px;font-weight:800">+1 投幣</span>
                       <span style="font-size:12px;font-weight:800">${votes.length} 人附議</span>
                     </button>
                     <div style="display:flex;gap:4px">
-                      ${isAdmin() ? `<button class="btn sm ghost" data-status-wish="${esc(w.id)}" title="更新實現狀態">⚙️</button>` : ''}
+                      ${isAdmin() ? `<button class="btn sm ghost" data-status-wish="${esc(w.id)}" title="更新實現狀態">狀態</button>` : ''}
                       ${canDel ? `<button class="btn sm ghost" data-del-wish="${esc(w.id)}" title="刪除" style="color:var(--danger)">✕</button>` : ''}
                     </div>
                   </div>
@@ -432,14 +431,14 @@ export function mountWishes(el) {
     if (quickTossBtn) {
       quickTossBtn.onclick = () => {
         const blessings = [
-          '🪙 撲通！願外勤一路綠燈順暢！',
-          '🪙 撲通！願系統越來越好用！',
-          '🪙 撲通！願今日巡檢晴空萬里！',
-          '🪙 撲通！經營 Team 業績長紅！',
+          '撲通！願外勤一路綠燈順暢！',
+          '撲通！願系統越來越好用！',
+          '撲通！願今日巡檢晴空萬里！',
+          '撲通！經營 Team 業績長紅！',
         ];
         triggerCoinTossAnimation(el, {
           text: blessings[Math.floor(Math.random() * blessings.length)],
-          symbol: '🚲',
+          symbol: '',
         });
       };
     }
@@ -457,7 +456,7 @@ export function mountWishes(el) {
           triggerCoinTossAnimation(el, {
             leftPct,
             topPct,
-            text: '🪙 撲通！點擊右上角「投幣許一個願望」把點子留在池底吧！',
+            text: '撲通！點擊右上角「投幣許一個願望」把點子留在池底吧！',
           });
         }
       };
@@ -476,8 +475,8 @@ export function mountWishes(el) {
         pendingTossOpts = {
           leftPct,
           topPct,
-          text: alreadyVoted ? `✨ 已收回附議：${w?.title || ''}` : `🪙 +1 投幣集氣：${(w?.title || '').slice(0, 14)}`,
-          symbol: '🙌',
+          text: alreadyVoted ? ` 已收回附議：${w?.title || ''}` : ` +1 投幣集氣：${(w?.title || '').slice(0, 14)}`,
+          symbol: '',
         };
         await toggleWishVote(wid);
         render();
@@ -497,14 +496,14 @@ export function mountWishes(el) {
         pendingTossOpts = {
           leftPct: 44 + Math.random() * 12,
           topPct: 62 + Math.random() * 12,
-          text: `🪙 願望入池：${(wishTitle || '').slice(0, 15)}`,
-          symbol: '🌠',
+          text: ` 願望入池：${(wishTitle || '').slice(0, 15)}`,
+          symbol: '',
         };
         render();
       });
     });
 
-    // 下方願望卡片的「🪙 +1 投幣」按鈕
+    // 下方願望卡片的「 +1 投幣」按鈕
     el.querySelectorAll('[data-vote-wish]').forEach(btn => {
       btn.onclick = async () => {
         const wid = btn.dataset.voteWish;
@@ -518,8 +517,8 @@ export function mountWishes(el) {
         pendingTossOpts = {
           leftPct,
           topPct,
-          text: alreadyVoted ? '✨ 已取消附議' : `🪙 +1 附議投入池中！`,
-          symbol: '🙌',
+          text: alreadyVoted ? '已取消附議' : ` +1 附議投入池中！`,
+          symbol: '',
         };
         await toggleWishVote(wid);
         render();
@@ -552,7 +551,6 @@ function openNewWishModal(onDone) {
   openModal(`
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
       <div style="display:flex;align-items:center;gap:10px;min-width:0">
-        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fef08a 0%,#f59e0b 100%);display:grid;place-items:center;font-size:21px;box-shadow:0 4px 12px rgba(245,158,11,0.3);flex-shrink:0">🪙</div>
         <div style="min-width:0">
           <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">投幣許一個新願望</h3>
           <div style="font-size:12px;color:#64748b;margin-top:2px">實用小工具 · 自動化報表 · 系統介面優化</div>
@@ -563,23 +561,22 @@ function openNewWishModal(onDone) {
 
     <form class="form" id="wish-form" style="gap:16px">
       <div style="display:flex;align-items:flex-start;gap:10px;background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border:1px solid #fde68a;color:#92400e;padding:11px 14px;border-radius:12px;font-size:12.5px;line-height:1.55">
-        <span style="font-size:18px;line-height:1.2">⛲</span>
         <div>送出後將為您鑄造一枚專屬<b>願望金幣</b>並拋入團隊許願池中！同事們點擊池底金幣即可幫您按 <b>+1 附議集氣</b>。</div>
       </div>
 
       <div class="field">
-        <span>🏷️ 願望標題 <em>*</em></span>
+        <span>願望標題 <em>*</em></span>
         <input type="text" name="title" required placeholder="例如：希望小工具新增各縣市 YouBike 場站天氣預警地圖" style="width:100%;padding:10px 12px;border-radius:10px">
       </div>
 
       <div class="field">
-        <span>💡 具體想法或使用情境說明 <em>*</em></span>
+        <span>具體想法或使用情境說明 <em>*</em></span>
         <textarea name="description" rows="4" required placeholder="說明這個工具或功能可以幫大家省下什麼麻煩、或是希望怎麼呈現…" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical;line-height:1.55"></textarea>
       </div>
 
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9;margin-top:2px">
         <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
-        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;box-shadow:0 4px 14px rgba(245,172,0,0.35)">🪙 投幣送出許願</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;box-shadow:0 4px 14px rgba(245,172,0,0.35)">投幣送出許願</button>
       </div>
     </form>
   `);
@@ -590,7 +587,7 @@ function openNewWishModal(onDone) {
     const description = f.description.value.trim();
     await saveWishItem({ title, description });
     closeModal();
-    toast('🪙 撲通！願望金幣已投入許願池，快揪同事一起按 +1 附議！');
+    toast('撲通！願望金幣已投入許願池，快揪同事一起按 +1 附議！');
     onDone?.(title);
   };
 }
@@ -599,7 +596,6 @@ function openWishAdminModal(w, onDone) {
   openModal(`
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
       <div style="display:flex;align-items:center;gap:10px;min-width:0">
-        <div style="width:38px;height:38px;border-radius:10px;background:#f1f5f9;display:grid;place-items:center;font-size:19px;flex-shrink:0">⚙️</div>
         <div style="min-width:0">
           <h3 style="margin:0;font-size:16px;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">更新許願狀態</h3>
           <div style="font-size:12px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(w.title)}</div>
@@ -609,13 +605,13 @@ function openWishAdminModal(w, onDone) {
     </div>
     <form class="form" id="wish-admin-form" style="gap:16px">
       <div class="field">
-        <span>📌 目前處理狀態</span>
+        <span>目前處理狀態</span>
         <select name="status" style="width:100%;padding:9px 12px;border-radius:10px">
           ${WISH_STATUSES.map(s => `<option value="${s.id}" ${w.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
         </select>
       </div>
       <div class="field">
-        <span>🛠️ 開發評估／回覆說明（選填）</span>
+        <span>開發評估／回覆說明（選填）</span>
         <textarea name="adminNote" rows="3" placeholder="例如：已排入下週更新，預計週五上線！" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical">${esc(w.adminNote || '')}</textarea>
       </div>
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
@@ -638,7 +634,7 @@ function openWishAdminModal(w, onDone) {
 }
 
 // ============================================================
-// 🌲 意見箱（秘境森林解憂古樹洞）：支援「完全匿名」吐苦水、紙飛機入樹洞、枝頭微光燈籠與營火焚毀鳥事
+// 意見箱（秘境森林解憂古樹洞）：支援「完全匿名」吐苦水、紙飛機入樹洞、枝頭微光燈籠與營火焚毀鳥事
 // ============================================================
 
 // 森林空靈風鈴共鳴音效（紙飛機飛入樹洞／點亮燈籠）
@@ -736,8 +732,8 @@ function triggerPaperPlaneToHollow(rootEl, opts = {}) {
 
   const targetLeftPct = Number(opts.leftPct ?? 50);
   const targetTopPct = Number(opts.topPct ?? 54);
-  const labelText = opts.text || '✈️ 樹洞已溫柔收下您的心聲！';
-  const symbol = opts.symbol || '✈️';
+  const labelText = opts.text || '樹洞已溫柔收下您的心聲！';
+  const symbol = opts.symbol || '★';
 
   const sceneRect = fxLayer.getBoundingClientRect();
   const w = sceneRect.width || 900;
@@ -805,7 +801,7 @@ function triggerPaperPlaneToHollow(rootEl, opts = {}) {
   });
 }
 
-// 🔥 壓箱寶動畫：把煩惱紙條丟進左下角營火中燃燒殆盡、化為漫天火星灰燼（不留資料庫）
+// 壓箱寶動畫：把煩惱紙條丟進左下角營火中燃燒殆盡、化為漫天火星灰燼（不留資料庫）
 function triggerBurnWorryInCampfire(rootEl, worryText = '煩惱退散！') {
   const fxLayer = rootEl?.querySelector('[data-th-fx]');
   if (!fxLayer) return;
@@ -819,7 +815,7 @@ function triggerBurnWorryInCampfire(rootEl, worryText = '煩惱退散！') {
   paper.className = 'th-burn-paper';
   paper.style.left = `${fireLeftPct}%`;
   paper.style.top = `${fireTopPct}%`;
-  paper.textContent = `📜 ${worryText}`;
+  paper.textContent = ` ${worryText}`;
   fxLayer.appendChild(paper);
 
   // 營火竄出 24 顆沖天火星與灰燼
@@ -846,7 +842,7 @@ function triggerBurnWorryInCampfire(rootEl, worryText = '煩惱退散！') {
     floatToast.style.left = `${fireLeftPct}%`;
     floatToast.style.top = `${fireTopPct - 12}%`;
     floatToast.style.borderColor = '#fb923c';
-    floatToast.textContent = '🔥 鳥事已化為灰燼隨風消散！不留半點痕跡！';
+    floatToast.textContent = '鳥事已化為灰燼隨風消散！不留半點痕跡！';
     fxLayer.appendChild(floatToast);
     setTimeout(() => floatToast.remove(), 1700);
   }, 1150);
@@ -896,16 +892,16 @@ export function mountVents(el) {
              data-tree-lantern="${esc(v.id)}"
              style="left:${pos.left}%;top:${pos.top}%;animation-delay:${delay}s;z-index:${12 + idx}">
           <div class="th-lantern-body">
-            <span>${esc(v.mood || '😤')}</span>
-            ${rxCount > 0 ? `<span class="th-lantern-rx-badge">🫂${rxCount}</span>` : ''}
+            <span style="font-size:11px;font-weight:800">#${idx + 1}</span>
+            ${rxCount > 0 ? `<span class="th-lantern-rx-badge">+${rxCount}</span>` : ''}
           </div>
           <div class="th-lantern-pop">
             <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:4px">
               <span style="color:#6ee7b7;font-weight:800">${esc(cat.label)}</span>
-              <span style="color:#fda4af;font-size:10.5px">🫂 ${rxCount} 拍拍打氣</span>
+              <span style="color:#fda4af;font-size:10.5px">${rxCount} 拍拍打氣</span>
             </div>
             <div style="font-weight:700;color:#fff;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(v.content)}</div>
-            <div style="color:#cbd5e1;font-size:10.5px">${esc(v.authorName || '匿名單車客 🚲')}（點擊燈籠送出 🫂 拍拍）</div>
+            <div style="color:#cbd5e1;font-size:10.5px">${esc(v.authorName || '匿名單車客')}（點擊燈籠送出拍拍）</div>
           </div>
         </div>
       `;
@@ -915,21 +911,21 @@ export function mountVents(el) {
       <div class="toolbar">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="display:inline-flex;background:#e2e8f0;padding:3px;border-radius:11px;gap:3px">
-            <a href="#/wishes" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:700;color:#475569">⛲ 皇家許願噴泉（許願池）</a>
-            <a href="#/vents" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:800;background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.1)">🌲 秘境解憂樹洞（意見箱）</a>
+            <a href="#/wishes" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:700;color:#475569">皇家許願噴泉（許願池）</a>
+            <a href="#/vents" style="text-decoration:none;padding:5px 13px;border-radius:8px;font-size:13.5px;font-weight:800;background:#fff;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.1)">秘境解憂樹洞（意見箱）</a>
           </div>
-          <span class="info-pill-tip" data-tip="選擇『🥷 完全匿名』發表時，系統連資料庫都不會寫入您的真實帳號 UID，管理員與任何人都無法反查身分，請安心抒發！">🛡️ 100% 零追蹤匿名保護</span>
+          <span class="info-pill-tip" data-tip="選擇『 完全匿名』發表時，系統連資料庫都不會寫入您的真實帳號 UID，管理員與任何人都無法反查身分，請安心抒發！">100% 零追蹤匿名保護</span>
           <div class="compact-kpi-strip">
-            <span class="kpi-chip">🏮 枝頭心聲燈籠 <b>${vents.length}</b></span>
-            <span class="kpi-chip">🫂 累計溫暖拍拍 <b>${totalReactions}</b></span>
+            <span class="kpi-chip">枝頭心聲燈籠 <b>${vents.length}</b></span>
+            <span class="kpi-chip">累計溫暖拍拍 <b>${totalReactions}</b></span>
           </div>
         </div>
         <div class="toolbar-end" style="display:flex;gap:8px">
-          <button class="btn primary sm" data-new-vent>✈️ 摺紙飛機吐苦水</button>
+          <button class="btn primary sm" data-new-vent>摺紙飛機吐苦水</button>
         </div>
       </div>
 
-      <!-- 🌲 電影級秘境森林千年發光古樹洞 ＆ 療癒營火舞台 -->
+      <!-- 電影級秘境森林千年發光古樹洞 ＆ 療癒營火舞台 -->
       <div class="th-hero-stage" data-th-stage>
         <!-- 隱藏的 SVG 溪流與營火熱氣搖曳光學濾鏡 -->
         <svg width="0" height="0" style="position:absolute;pointer-events:none;overflow:hidden" aria-hidden="true">
@@ -945,18 +941,18 @@ export function mountVents(el) {
 
         <div class="wf-hero-topbar">
           <div class="wf-hero-title-box">
-            <span class="wf-hero-badge" style="border-color:rgba(52,211,153,0.6);color:#6ee7b7">🌲 秘境森林千年解憂古樹洞</span>
+            <span class="wf-hero-badge" style="border-color:rgba(52,211,153,0.6);color:#6ee7b7">秘境森林千年解憂古樹洞</span>
             <span class="wf-hero-sub">把委屈摺成紙飛機射入樹洞化為枝頭暖燈，或丟進左下角營火燒成灰燼（純發洩不留存）！</span>
           </div>
           <div class="wf-hero-actions">
             <button type="button" class="wf-sound-btn" data-th-sound-toggle title="切換森林風鈴與營火音效">
-              ${soundOn ? '🔊 音效開啟' : '🔇 音效靜音'}
+              ${soundOn ? '音效開啟' : '音效靜音'}
             </button>
             <button type="button" class="wf-toss-demo-btn" data-th-burn-btn style="background:linear-gradient(135deg,#fb923c 0%,#ea580c 50%,#dc2626 100%);color:#fff;border-color:#fed7aa;box-shadow:0 4px 18px rgba(234,88,12,0.6)" title="純發洩不存檔！寫張紙條丟進營火燒成灰燼">
-              🔥 燒毀煩惱紙條
+              燒毀煩惱紙條
             </button>
             <button type="button" class="wf-toss-demo-btn" data-new-vent style="background:linear-gradient(135deg,#34d399 0%,#059669 100%);color:#022c22;border-color:#a7f3d0;box-shadow:0 4px 18px rgba(16,185,129,0.55)">
-              ✈️ 匿名投遞樹洞
+              匿名投遞樹洞
             </button>
           </div>
         </div>
@@ -988,22 +984,21 @@ export function mountVents(el) {
 
           <!-- 第 6 層：中央古樹洞互動入口 -->
           <div class="th-hollow-portal" data-new-vent title="點擊將心聲或建議摺成紙飛機投入古樹洞">
-            <span class="th-hollow-portal-tag">✈️ 點擊樹洞傾訴心聲</span>
+            <span class="th-hollow-portal-tag">點擊樹洞傾訴心聲</span>
           </div>
 
           <!-- 第 7 層：左下角療癒營火互動區（純發洩燒紙條） -->
           <div class="th-campfire-zone" data-th-burn-btn title="不想留下記錄？點此寫張紙條直接丟進營火燒成灰燼！">
-            <span class="th-campfire-tag">🔥 點擊營火燒毀鳥事</span>
+            <span class="th-campfire-tag">點擊營火燒毀鳥事</span>
           </div>
 
           ${vents.length === 0 ? `
             <div class="wf-empty-floating-cta" style="bottom:8%;border-color:rgba(52,211,153,0.55)">
-              <span style="font-size:24px">🌲</span>
               <div style="text-align:left">
                 <div style="font-size:13.5px;font-weight:800;color:#6ee7b7">古樹洞裡目前風平浪靜，枝頭還沒有心聲燈籠</div>
-                <div style="font-size:11.5px;color:#cbd5e1">開啟「🥷 完全匿名模式」把委屈或建議射進樹洞，或點左下角「🔥 營火」把鳥事燒成灰燼！</div>
+                <div style="font-size:11.5px;color:#cbd5e1">開啟「完全匿名模式」把委屈或建議射進樹洞，或點左下角「營火」把鳥事燒成灰燼！</div>
               </div>
-              <button type="button" class="wf-toss-demo-btn" data-new-vent style="background:linear-gradient(135deg,#34d399 0%,#059669 100%);color:#022c22;border-color:#a7f3d0">✈️ 投遞第一架紙飛機</button>
+              <button type="button" class="wf-toss-demo-btn" data-new-vent style="background:linear-gradient(135deg,#34d399 0%,#059669 100%);color:#022c22;border-color:#a7f3d0">投遞第一架紙飛機</button>
             </div>
           ` : ''}
 
@@ -1013,14 +1008,14 @@ export function mountVents(el) {
 
         <div class="wf-hero-foot" style="border-top-color:rgba(52,211,153,0.25)">
           <div class="wf-legend-list">
-            <span style="font-weight:800;color:#6ee7b7">🏮 枝頭心聲燈籠：</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b"></i> 💼 工作制度 (${vents.filter(v => (v.category || 'work') === 'work').length})</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#10b981;box-shadow:0 0 8px #10b981"></i> 🚲 外勤辛酸 (${vents.filter(v => v.category === 'field').length})</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#0ea5e9;box-shadow:0 0 8px #0ea5e9"></i> 📞 跨部門溝通 (${vents.filter(v => v.category === 'comm').length})</span>
-            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#c084fc;box-shadow:0 0 8px #c084fc"></i> ☕ 心情抒發 (${vents.filter(v => v.category === 'life').length})</span>
+            <span style="font-weight:800;color:#6ee7b7">枝頭心聲燈籠：</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b"></i> 工作制度 (${vents.filter(v => (v.category || 'work') === 'work').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#10b981;box-shadow:0 0 8px #10b981"></i> 外勤辛酸 (${vents.filter(v => v.category === 'field').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#0ea5e9;box-shadow:0 0 8px #0ea5e9"></i> 跨部門溝通 (${vents.filter(v => v.category === 'comm').length})</span>
+            <span class="wf-legend-item"><i class="wf-legend-dot" style="background:#c084fc;box-shadow:0 0 8px #c084fc"></i> 心情抒發 (${vents.filter(v => v.category === 'life').length})</span>
           </div>
           <div style="color:#fed7aa;font-weight:700">
-            🔥 解壓秘技：點左下角「營火」可寫紙條直接燒成灰燼（100% 不留存）；點枝頭燈籠可幫夥伴拍拍打氣！
+            解壓秘技：點左下角「營火」可寫紙條直接燒成灰燼（100% 不留存）；點枝頭燈籠可幫夥伴拍拍打氣！
           </div>
         </div>
       </div>
@@ -1041,9 +1036,8 @@ export function mountVents(el) {
               <div class="card pad vent-card" data-vent-card="${esc(v.id)}">
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
                   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                    <span style="font-size:20px">${esc(v.mood || '😤')}</span>
-                    <strong style="font-size:13.5px;color:${v.isAnonymous ? '#475569' : 'var(--text)'}">${esc(v.authorName || '匿名單車客 🚲')}</strong>
-                    ${v.isAnonymous ? `<span class="badge" style="background:#F1F5F9;color:#475569;font-size:11px">🥷 完全匿名</span>` : ''}
+                    <strong style="font-size:13.5px;color:${v.isAnonymous ? '#475569' : 'var(--text)'}">${esc(v.authorName || '匿名單車客')}</strong>
+                    ${v.isAnonymous ? `<span class="badge" style="background:#F1F5F9;color:#475569;font-size:11px">完全匿名</span>` : ''}
                     <span class="badge" style="background:#FEF3C7;color:#92400E;font-size:11px">${esc(cat.label)}</span>
                     <span class="muted" style="font-size:11.5px">${esc((v.createdAtIso || '').slice(0, 16).replace('T', ' '))}</span>
                   </div>
@@ -1053,11 +1047,11 @@ export function mountVents(el) {
                 <div style="font-size:14.5px;line-height:1.65;color:var(--text);white-space:pre-wrap;background:#F8FAFC;padding:12px 14px;border-radius:10px;border:1px solid var(--border)">${esc(v.content)}</div>
 
                 <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap">
-                  <button class="btn sm ${myHug ? 'primary' : ''}" data-vent-rx="${esc(v.id)}" data-rx-type="hug">🫂 拍拍 (${(rx.hug || []).length})</button>
-                  <button class="btn sm ${myCry ? 'primary' : ''}" data-vent-rx="${esc(v.id)}" data-rx-type="cry">😭 懂你 (${(rx.cry || []).length})</button>
-                  <button class="btn sm ${myCheer ? 'primary' : ''}" data-vent-rx="${esc(v.id)}" data-rx-type="cheer">💪 加油 (${(rx.cheer || []).length})</button>
+                  <button class="btn sm ${myHug ? 'primary' : ''}" data-vent-rx="${esc(v.id)}" data-rx-type="hug">拍拍 (${(rx.hug || []).length})</button>
+                  <button class="btn sm ${myCry ? 'primary' : ''}" data-vent-rx="${esc(v.id)}" data-rx-type="cry">懂你 (${(rx.cry || []).length})</button>
+                  <button class="btn sm ${myCheer ? 'primary' : ''}" data-vent-rx="${esc(v.id)}" data-rx-type="cheer">加油 (${(rx.cheer || []).length})</button>
                   <button class="btn sm ghost" data-toggle-vreply="${esc(v.id)}" style="margin-left:auto">
-                    💬 暖心留言 (${replies.length}) ${isRepOpen ? '▴' : '▾'}
+                    暖心留言 (${replies.length}) ${isRepOpen ? '▴' : '▾'}
                   </button>
                 </div>
 
@@ -1106,7 +1100,7 @@ export function mountVents(el) {
       };
     }
 
-    // 🔥 燒毀煩惱紙條（純發洩不存檔）
+    // 燒毀煩惱紙條（純發洩不存檔）
     el.querySelectorAll('[data-th-burn-btn]').forEach(btn => {
       btn.onclick = e => {
         e.stopPropagation();
@@ -1116,7 +1110,7 @@ export function mountVents(el) {
       };
     });
 
-    // 點擊枝頭微光燈籠：送出「🫂 拍拍」並飛入暖心光點
+    // 點擊枝頭微光燈籠：送出「 拍拍」並飛入暖心光點
     el.querySelectorAll('[data-tree-lantern]').forEach(lantern => {
       lantern.onclick = async e => {
         e.stopPropagation();
@@ -1124,8 +1118,8 @@ export function mountVents(el) {
         pendingPlaneOpts = {
           leftPct: 50,
           topPct: 53,
-          text: '🫂 已為夥伴送上溫暖拍拍與打氣星光！',
-          symbol: '🫂',
+          text: '已為夥伴送上溫暖拍拍與打氣星光！',
+          symbol: '',
         };
         await toggleVentReaction(vid, 'hug');
         render();
@@ -1147,8 +1141,8 @@ export function mountVents(el) {
         triggerPaperPlaneToHollow(el, {
           leftPct: 50,
           topPct: 53,
-          text: '✈️ 點擊中央「古樹洞」寫下心聲，或點左下「營火」燒掉鳥事！',
-          symbol: '🍃',
+          text: '點擊中央「古樹洞」寫下心聲，或點左下「營火」燒掉鳥事！',
+          symbol: '',
         });
       };
     }
@@ -1160,8 +1154,8 @@ export function mountVents(el) {
           pendingPlaneOpts = {
             leftPct: 50,
             topPct: 53,
-            text: '✈️ 心聲已飛入千年樹洞，並化為枝頭暖燈！',
-            symbol: '✈️',
+            text: '心聲已飛入千年樹洞，並化為枝頭暖燈！',
+            symbol: '',
           };
           render();
         });
@@ -1171,13 +1165,13 @@ export function mountVents(el) {
     el.querySelectorAll('[data-vent-rx]').forEach(btn => {
       btn.onclick = async () => {
         const rxType = btn.dataset.rxType;
-        const emojiMap = { hug: '🫂', cry: '😭', cheer: '💪' };
+        const emojiMap = { hug: '', cry: '', cheer: '' };
         el.querySelector('[data-th-stage]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         pendingPlaneOpts = {
           leftPct: 50,
           topPct: 53,
-          text: `${emojiMap[rxType] || '🫂'} 溫暖打氣已傳遞至古樹洞！`,
-          symbol: emojiMap[rxType] || '🫂',
+          text: `${emojiMap[rxType] || ''} 溫暖打氣已傳遞至古樹洞！`,
+          symbol: emojiMap[rxType] || '',
         };
         await toggleVentReaction(btn.dataset.ventRx, rxType);
         render();
@@ -1221,12 +1215,11 @@ export function mountVents(el) {
   return { onData: render };
 }
 
-// 🔥 壓箱寶彈窗：純發洩、不進資料庫的「把煩惱丟進營火燒成灰燼」
+// 壓箱寶彈窗：純發洩、不進資料庫的「把煩惱丟進營火燒成灰燼」
 function openBurnWorryModal(onBurn) {
   openModal(`
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
       <div style="display:flex;align-items:center;gap:10px;min-width:0">
-        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#fb923c 0%,#dc2626 100%);display:grid;place-items:center;font-size:21px;box-shadow:0 4px 12px rgba(220,38,38,0.3);flex-shrink:0">🔥</div>
         <div style="min-width:0">
           <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">把鳥事丟進營火燒成灰燼</h3>
           <div style="font-size:12px;color:#64748b;margin-top:2px">100% 純發洩解壓 · 絕不寫入資料庫 · 燒完隨風消散</div>
@@ -1237,18 +1230,17 @@ function openBurnWorryModal(onBurn) {
 
     <form class="form" id="burn-worry-form" style="gap:16px">
       <div style="display:flex;align-items:flex-start;gap:10px;background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);border:1px solid #fed7aa;color:#9a3412;padding:11px 14px;border-radius:12px;font-size:12.5px;line-height:1.55">
-        <span style="font-size:18px;line-height:1.2">🔥</span>
         <div>有些話只想痛快罵出來、不想留在版上？寫在這張森林羊皮紙上，按下「<b>丟進營火燒毀</b>」，它會在營火中化為灰燼與漫天火星徹底消失！</div>
       </div>
 
       <div class="field">
-        <span>📜 想燒掉的鳥事、委屈或怒氣 <em>*</em></span>
+        <span>想燒掉的鳥事、委屈或怒氣 <em>*</em></span>
         <textarea name="worry" rows="4" required placeholder="盡情把今天遇到的雷包、鳥事或壞心情寫下來，寫完直接丟進火裡燒掉…" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical;line-height:1.55;background:#fffbeb;border-color:#fcd34d"></textarea>
       </div>
 
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
         <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
-        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;background:linear-gradient(135deg,#f97316,#dc2626);border-color:#ea580c;color:#fff;box-shadow:0 4px 14px rgba(220,38,38,0.35)">🔥 丟進營火燒成灰燼</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;background:linear-gradient(135deg,#f97316,#dc2626);border-color:#ea580c;color:#fff;box-shadow:0 4px 14px rgba(220,38,38,0.35)">丟進營火燒成灰燼</button>
       </div>
     </form>
   `);
@@ -1262,11 +1254,9 @@ function openBurnWorryModal(onBurn) {
 }
 
 function openNewVentModal(onDone) {
-  const moods = ['😤', '😮‍💨', '🤯', '🌧️', '🫠', '🤬', '🙏', '💡'];
   openModal(`
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
       <div style="display:flex;align-items:center;gap:10px;min-width:0">
-        <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#34d399 0%,#059669 100%);display:grid;place-items:center;font-size:21px;box-shadow:0 4px 12px rgba(16,185,129,0.3);flex-shrink:0">✈️</div>
         <div style="min-width:0">
           <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">向古樹洞傾訴心聲／提意見</h3>
           <div style="font-size:12px;color:#64748b;margin-top:2px">100% 零追蹤匿名保護 · 化為枝頭暖燈讓夥伴拍拍打氣</div>
@@ -1277,20 +1267,19 @@ function openNewVentModal(onDone) {
 
     <form class="form" id="vent-form" style="gap:16px">
       <div style="display:flex;align-items:flex-start;gap:10px;background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;padding:11px 14px;border-radius:12px;font-size:12.5px;line-height:1.55">
-        <span style="font-size:18px;line-height:1.2">🛡️</span>
-        <div><b>隱私保證：</b>勾選「🥷 完全匿名發表」時，系統會隨機分配一個單車代號（如：匿名單車客 🚲），且<b>連資料庫都不會記錄您的 UID</b>，任何人與管理員皆無法得知您的身分。</div>
+        <div><b>隱私保證：</b>勾選「完全匿名發表」時，系統會隨機分配一個單車代號（如：匿名單車客），且<b>連資料庫都不會記錄您的 UID</b>，任何人與管理員皆無法得知您的身分。</div>
       </div>
 
       <div class="row2">
         <div class="field">
-          <span>🙋 發表身分</span>
+          <span>發表身分</span>
           <select name="isAnonymous" style="width:100%;padding:9px 12px;border-radius:10px">
-            <option value="1" selected>🥷 完全匿名發表（隨機單車代號）</option>
-            <option value="0">🙋‍♂️ 具名發表（顯示我的名字）</option>
+            <option value="1" selected>完全匿名發表（隨機單車代號）</option>
+            <option value="0">具名發表（顯示我的名字）</option>
           </select>
         </div>
         <div class="field">
-          <span>🏷️ 主題分類</span>
+          <span>主題分類</span>
           <select name="category" style="width:100%;padding:9px 12px;border-radius:10px">
             ${VENT_CATEGORIES.map(c => `<option value="${c.id}">${c.label}</option>`).join('')}
           </select>
@@ -1298,25 +1287,13 @@ function openNewVentModal(onDone) {
       </div>
 
       <div class="field">
-        <span>🎭 當下心情圖示（將顯示於古樹枝頭燈籠上）</span>
-        <div class="chips" style="padding:4px 0;display:flex;gap:8px;flex-wrap:wrap">
-          ${moods.map((m, idx) => `
-            <label class="chip-check" style="cursor:pointer">
-              <input type="radio" name="mood" value="${m}" ${idx === 0 ? 'checked' : ''}>
-              <span style="font-size:19px;padding:4px 8px">${m}</span>
-            </label>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="field">
-        <span>💬 想吐的苦水或建議內容 <em>*</em></span>
+        <span>想吐的苦水或建議內容 <em>*</em></span>
         <textarea name="content" rows="4" required placeholder="把在職場上遇到的鳥事、跨部門卡關、外勤委屈或真心建議暢快寫下來吧…" style="width:100%;padding:10px 12px;border-radius:10px;resize:vertical;line-height:1.55"></textarea>
       </div>
 
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
         <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
-        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;box-shadow:0 4px 14px rgba(245,172,0,0.35)">✈️ 摺成紙飛機送入樹洞</button>
+        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px;box-shadow:0 4px 14px rgba(245,172,0,0.35)">摺成紙飛機送入樹洞</button>
       </div>
     </form>
   `);
@@ -1325,15 +1302,14 @@ function openNewVentModal(onDone) {
     e.preventDefault();
     const f = e.target;
     const isAnonymous = f.isAnonymous.value === '1';
-    const mood = f.querySelector('input[name="mood"]:checked')?.value || '😤';
     await createVentItem({
       content: f.content.value.trim(),
       category: f.category.value,
       isAnonymous,
-      mood,
+      mood: '',
     });
     closeModal();
-    toast(isAnonymous ? '🥷 已完全匿名射入古樹洞！辛苦了，給你一個擁抱 🫂' : '✈️ 心聲已射入古樹洞並化為枝頭暖燈！');
+    toast(isAnonymous ? '已完全匿名射入古樹洞！辛苦了！' : '心聲已射入古樹洞並化為枝頭暖燈！');
     onDone?.();
   };
 }

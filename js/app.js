@@ -8,7 +8,7 @@ const app = document.getElementById('app');
 if (!isConfigured) {
   app.innerHTML = `
     <div class="center-page"><div class="card pad narrow">
-      <h2>⚙️ 尚未設定 Firebase</h2>
+      <h2>尚未設定 Firebase</h2>
       <p>請開啟 <code>js/config.js</code>，將 Firebase 控制台中的 <code>firebaseConfig</code> 貼上後重新整理。</p>
       <p class="hint">詳細步驟請見專案中的 README.md。</p>
     </div></div>`;
@@ -113,16 +113,16 @@ async function boot() {
           <p class="muted">出差外勤行程、品管巡檢規劃、團隊會議與協同作業管理</p>
           ${isLineInApp ? `
             <div style="background:#FFFBEB;border:1px solid #F59E0B;color:#92400E;padding:12px 14px;border-radius:12px;font-size:13px;margin-bottom:14px;text-align:left;line-height:1.55">
-              ⚠️ <b>偵測到 LINE 內建瀏覽器：</b><br>
+              <b>偵測到 LINE 內建瀏覽器：</b><br>
               為避免手機登入被阻擋，請點選下方按鈕或右下角「<b>…</b>」→「<b>以預設瀏覽器開啟（Safari / Chrome）</b>」：
               <div style="margin-top:8px">
-                <a href="${esc(externalUrl)}" target="_blank" rel="noopener" class="btn sm" style="display:inline-flex;background:#F59E0B;color:#fff;border:none;font-weight:700;text-decoration:none">🌐 點此以預設瀏覽器開啟</a>
+                <a href="${esc(externalUrl)}" target="_blank" rel="noopener" class="btn sm" style="display:inline-flex;background:#F59E0B;color:#fff;border:none;font-weight:700;text-decoration:none">點此以預設瀏覽器開啟</a>
               </div>
             </div>
           ` : ''}
           <div style="text-align:left;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;margin-bottom:14px">
             <label style="display:block;font-size:12.5px;font-weight:700;color:#334155;margin-bottom:6px">
-              🛡️ 步驟 1：選擇您的姓名或輸入公司信箱（防呆避免誤登私人 Gmail）
+              步驟 1：選擇您的姓名或輸入公司信箱（防呆避免誤登私人 Gmail）
             </label>
             <select data-member-select style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #CBD5E1;font-size:14px;margin-bottom:8px;background:#fff;color:#0F172A;font-weight:600">
               <option value="">-- 點此快速選擇您的姓名（或於下方手動輸入） --</option>
@@ -133,7 +133,7 @@ async function boot() {
               <span style="background:#FEF3C7;color:#92400E;font-weight:700;font-size:13px;padding:9px 10px;border-left:1px solid #CBD5E1;white-space:nowrap">@youbike.com.tw</span>
             </div>
             <div style="font-size:11.5px;color:#64748B;margin-top:6px;line-height:1.4">
-              💡 系統會自動帶入您的 <b>@youbike.com.tw</b> 帳號至 Google 驗證頁，防止手機自動跳去個人 <code>@gmail.com</code>。
+              系統會自動帶入您的 <b>@youbike.com.tw</b> 帳號至 Google 驗證頁，防止手機自動跳去個人 <code>@gmail.com</code>。
             </div>
           </div>
           <button class="btn primary big" data-login style="width:100%;justify-content:center">
@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261023v58';
+    const V = '20261023v59';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -211,18 +211,18 @@ async function boot() {
     };
 
     const routes = {
-      today: { label: '今日動態', icon: '🧭', mount: mountToday },
-      schedule: { label: '行事曆', icon: '🗓️', mount: lazyMount('./views/schedule.js', 'mountSchedule') },
-      meeting: { label: '月會', icon: '💼', mount: lazyMount('./views/meeting.js', 'mountMeeting') },
-      cases: { label: '例案追蹤', icon: '📌', mount: lazyMount('./views/cases.js', 'mountCases') },
-      simulation: { label: '模擬體驗', icon: '🚲', mount: lazyMount('./views/simulation.js', 'mountSimulation'), permission: 'simulation' },
-      dailyReport: { label: '每日回報', icon: '📝', mount: mountDailyReport, permission: 'dailyReport' },
-      bulletin: { label: '採購佈告欄', icon: '📢', mount: lazyMount('./views/bulletin.js', 'mountBulletin'), permission: 'bulletin' },
-      tools: { label: '實用小工具', icon: '🧰', mount: lazyMount('./views/tools.js', 'mountTools'), inMoreMenu: true },
-      wishes: { label: '許願池', icon: '🌠', mount: lazyMount('./views/feedback.js', 'mountWishes'), inMoreMenu: true },
-      vents: { label: '意見箱(抱怨箱)', icon: '🗣️', mount: lazyMount('./views/feedback.js', 'mountVents'), inMoreMenu: true },
-      kaizen: { label: '改善提案', icon: '💡', mount: lazyMount('./views/kaizen.js', 'mountKaizen'), inMoreMenu: true, admin: true },
-      admin: { label: '管理', icon: '⚙️', mount: lazyMount('./views/admin.js', 'mountAdmin'), admin: true },
+      today: { label: '今日動態', mount: mountToday },
+      schedule: { label: '行事曆', mount: lazyMount('./views/schedule.js', 'mountSchedule') },
+      meeting: { label: '月會', mount: lazyMount('./views/meeting.js', 'mountMeeting') },
+      cases: { label: '例案追蹤', mount: lazyMount('./views/cases.js', 'mountCases') },
+      simulation: { label: '模擬體驗', mount: lazyMount('./views/simulation.js', 'mountSimulation'), permission: 'simulation' },
+      dailyReport: { label: '每日回報', mount: mountDailyReport, permission: 'dailyReport' },
+      bulletin: { label: '採購佈告欄', mount: lazyMount('./views/bulletin.js', 'mountBulletin'), permission: 'bulletin' },
+      tools: { label: '實用小工具', mount: lazyMount('./views/tools.js', 'mountTools'), inMoreMenu: true },
+      wishes: { label: '許願池', mount: lazyMount('./views/feedback.js', 'mountWishes'), inMoreMenu: true },
+      vents: { label: '意見箱(抱怨箱)', mount: lazyMount('./views/feedback.js', 'mountVents'), inMoreMenu: true },
+      kaizen: { label: '改善提案', mount: lazyMount('./views/kaizen.js', 'mountKaizen'), inMoreMenu: true, admin: true },
+      admin: { label: '管理', mount: lazyMount('./views/admin.js', 'mountAdmin'), admin: true },
     };
     const ctx = { month: ymd().slice(0, 7) };
 
@@ -243,13 +243,13 @@ async function boot() {
           <nav class="tabs" data-tabs></nav>
           <div class="top-actions">
             <button class="btn ghost chat-top-btn" data-open-chat-top title="開啟團隊即時聊天室" style="position:relative">
-              💬 <span class="hide-sm">聊天室</span>
+              <span>聊天室</span>
               <span class="badge" data-topbar-chat-badge hidden style="position:absolute;top:-5px;right:-5px"></span>
             </button>
-            <button class="btn guide-btn" data-guide title="系統操作指引">📖 <span class="hide-sm">導覽</span></button>
+            <button class="btn guide-btn" data-guide title="系統操作指引"><span>導覽</span></button>
             <button class="btn primary" data-new>＋ <span class="hide-sm">新增行程</span></button>
             <div class="bell-wrap">
-              <button class="icon-btn bell" data-bell aria-label="通知">🔔<span class="badge" data-badge hidden></span></button>
+              <button class="btn ghost bell" data-bell aria-label="通知" style="position:relative;padding:6px 10px;font-size:13px">通知<span class="badge" data-badge hidden></span></button>
               <div class="dropdown notif-panel" data-panel hidden></div>
             </div>
             <div class="user-wrap">
@@ -259,7 +259,7 @@ async function boot() {
           </div>
         </div>
       </header>
-      ${d.DEMO ? '<div class="demo-ribbon">🧪 示範模式：9 位虛擬組員與自動產生的行程，資料只存在此頁面（不會寫入資料庫），重新整理即重置。<a href="./">離開示範模式</a></div>' : ''}
+      ${d.DEMO ? '<div class="demo-ribbon">示範模式：9 位虛擬組員與自動產生的行程，資料只存在此頁面（不會寫入資料庫），重新整理即重置。<a href="./">離開示範模式</a></div>' : ''}
       <main class="main" data-main></main>
       <footer class="yb-foot">
         <div class="lane"><span class="rider">${yb.bike(40, { spin: true })}</span></div>
@@ -290,16 +290,16 @@ async function boot() {
 
       const moreDropdownHtml = `
         <div class="nav-more-dropdown" tabindex="0">
-          <span class="nav-more-trigger ${isMoreActive ? 'active' : ''}">✨ ${esc(activeMoreLabel)} ▾</span>
+          <span class="nav-more-trigger ${isMoreActive ? 'active' : ''}">${esc(activeMoreLabel)} ▾</span>
           <div class="nav-more-menu">
-            <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">🧰 實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
-            <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">⛲ 許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
-            ${d.isAdmin() ? `<a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">💡 改善提案 <small>管理員專屬 · 圖卡與對照</small></a>` : ''}
+            <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
+            <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
+            ${d.isAdmin() ? `<a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">改善提案 <small>管理員專屬 · 圖卡與對照</small></a>` : ''}
           </div>
         </div>
       `;
 
-      // 將「✨ 百寶箱」插在「管理」之前（若管理存在）或最後
+      // 將「 百寶箱」插在「管理」之前（若管理存在）或最後
       if (d.isAdmin()) {
         const adminLink = mainLinksHtml.pop();
         $('[data-tabs]').innerHTML = [...mainLinksHtml, moreDropdownHtml, adminLink].join('');
@@ -495,7 +495,7 @@ async function boot() {
         // 開會前 10 分鐘至開始後 5 分鐘內提醒
         if (nowMin >= mStartMin - 10 && nowMin <= mStartMin + 5) {
           remindedMeetings.add(m.id);
-          toast(`📢 月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
+          toast(` 月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
         }
       }
     };

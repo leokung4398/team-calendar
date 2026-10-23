@@ -18,12 +18,6 @@ export function openAchievementsModal() {
       .filter(([key]) => key !== 'all')
       .map(([key, cat]) => {
         const count = ACHIEVEMENTS.filter(m => m.category === key).length;
-        const iconSvg = {
-          core: '⚙️',
-          security: '🛡️',
-          design: '🎨',
-          data: '💼',
-        }[key] || '📌';
         const isSelected = currentCat === key;
         return `
           <button type="button" class="achieve-cat-card ${isSelected ? 'active' : ''}" data-cat="${key}" style="
@@ -33,7 +27,6 @@ export function openAchievementsModal() {
             --cat-badge-bg: ${cat.badgeBg};
             --cat-badge-text: ${cat.badgeText};
           ">
-            <div class="achieve-cat-icon">${iconSvg}</div>
             <div class="achieve-cat-info">
               <div class="achieve-cat-name-row">
                 <span class="achieve-cat-name">${esc(cat.name)}</span>
@@ -89,13 +82,13 @@ export function openAchievementsModal() {
             </div>
             <div class="milestone-detail-wrap" style="${isExpanded ? 'display:block;' : 'display:none;'}">
               <div class="milestone-need-box">
-                <strong>🎯 需求重點：</strong>
+                <strong>需求重點：</strong>
                 <ul>
                   ${item.need.map(n => `<li>${esc(n)}</li>`).join('')}
                 </ul>
               </div>
               <div class="milestone-result-box">
-                ✨ <b>實作成果：</b>${esc(item.result)}
+                <b>實作成果：</b>${esc(item.result)}
               </div>
             </div>
           </div>
@@ -108,11 +101,9 @@ export function openAchievementsModal() {
     const isAllExp = expandedSet.size === ACHIEVEMENTS.length;
     return `
       <button type="button" class="btn small" data-toggle-all>
-        <span>${isAllExp ? '📁' : '📂'}</span>
         <span>${isAllExp ? '全部收合' : '全部展開'}</span>
       </button>
       <button type="button" class="btn small" data-reset-cat title="還原原始順序">
-        <span>🔄</span>
         <span>重置排序 (${ACHIEVEMENTS.length}項)</span>
       </button>
     `;
@@ -122,7 +113,6 @@ export function openAchievementsModal() {
     <div class="modal achieve-modal" role="dialog" aria-modal="true">
       <div class="modal-head" style="padding: 14px 20px; border-bottom: 1px solid #f1f5f9; background:#fff;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size: 20px;">🏆</span>
           <h3 style="margin:0; font-size:18px; font-weight:700; color:var(--ink);">專案開發成果與里程碑</h3>
           <span style="font-size:12px; background:var(--yb); color:var(--yb-ink); padding:2px 8px; border-radius:12px; font-weight:700;">經營 Team 營運協同平台</span>
         </div>
@@ -134,7 +124,7 @@ export function openAchievementsModal() {
           <div class="achieve-hero">
             <div class="achieve-hero-top">
               <div class="achieve-hero-title">
-                <span class="achieve-hero-badge">💡 互動置頂</span>
+                <span class="achieve-hero-badge">互動置頂</span>
                 <h4>專案開發成果構面分類</h4>
               </div>
               <div class="achieve-hero-actions" data-actions-container>
@@ -142,7 +132,7 @@ export function openAchievementsModal() {
               </div>
             </div>
             <p class="achieve-hero-desc">
-              系統導入四大技術色彩體系。<span class="hero-desc-highlight">💡 點擊下方任一構面卡片，即可將該技術成果「置頂排列到最上方」</span>，方便長官與組員聚焦審查！
+              系統導入四大技術色彩體系。<span class="hero-desc-highlight">點擊下方任一構面卡片，即可將該技術成果「置頂排列到最上方」</span>，方便長官與組員聚焦審查！
             </p>
             <div class="achieve-cats-grid" data-cats-container>
               ${renderCategoryCards()}

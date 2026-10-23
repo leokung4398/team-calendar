@@ -140,7 +140,7 @@ export function openMeetingEditor(m = null) {
       <div class="field" style="margin-top: 8px; border-top: 1px solid var(--line); padding-top: 14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
           <div>
-            <b>📋 會議報告議題清單 (Agenda)</b>
+            <b>會議報告議題清單 (Agenda)</b>
             <div class="muted tiny">排定後會議紀錄系統將自動為每個議題建立討論重點與裁示輸入區塊</div>
           </div>
           <div style="display:flex; gap:6px;">
@@ -426,7 +426,7 @@ export function openMinutesEditor(meeting) {
       <!-- 快速報告人導覽與速記錨點 -->
       ${agenda.length ? `
         <div style="background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 12px;">
-          <div style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px;">⚡ 快速跳轉至正在報告的組員議題：</div>
+          <div style="font-size:12px; font-weight:700; color:var(--muted); margin-bottom:6px;">快速跳轉至正在報告的組員議題：</div>
           <div class="min-nav-anchors">
             ${agenda.map((ag, idx) => {
               const notes = agendaNotes[idx] || {};
@@ -438,7 +438,7 @@ export function openMinutesEditor(meeting) {
               </button>`;
             }).join('')}
             <button type="button" class="min-nav-btn" data-jump-general style="background:#fef3c7; color:#92400e; border-color:#fde68a;">
-              📝 綜合與主管裁示
+              綜合與主管裁示
             </button>
           </div>
         </div>` : ''}
@@ -448,11 +448,11 @@ export function openMinutesEditor(meeting) {
         <div class="min-sec-title">
           <div class="collapsible-trigger" data-toggle-collapse title="點擊收合/展開出席名單">
             <span class="collapsible-chevron">▼</span>
-            <span>👥 出席狀況盤點</span>
+            <span>出席狀況盤點</span>
           </div>
           <div style="display:flex; gap:6px;">
             <button type="button" class="btn small ok-btn ghost" data-set-all-present style="font-size:12px; padding:3px 8px;">
-              ⚡ 全員現場 (一鍵到齊)
+              全員現場 (一鍵到齊)
             </button>
             <button type="button" class="btn small ghost" data-reset-default-attendees style="font-size:12px; padding:3px 8px;">
               帶入預設出勤
@@ -491,10 +491,10 @@ export function openMinutesEditor(meeting) {
       ${agenda.length ? `
         <div class="min-section">
           <div class="min-sec-title">
-            <span>📋 各議題討論紀錄與結論</span>
+            <span>各議題討論紀錄與結論</span>
             <div style="display:flex; gap:6px;">
               <button type="button" class="btn small ghost" data-toggle-all-agenda style="font-size:11px; padding:2px 8px;">
-                🔄 全部收合/展開
+                全部收合/展開
               </button>
             </div>
           </div>
@@ -526,7 +526,7 @@ export function openMinutesEditor(meeting) {
                         <input type="hidden" class="mac-presenter-input" value="${owner ? esc(owner.displayName) : '全體'}">
                       `}
                       <button type="button" class="btn small ghost mac-postpone-btn" data-postpone-agenda title="報告人請假時，一鍵標記本議題暫緩討論" style="font-size:11px; padding:2px 8px; color:var(--muted, #64748b); border:1px solid #cbd5e1; border-radius:4px; background:#fff; margin-left:4px;">
-                        ⏸️ 請假暫緩
+                        請假暫緩
                       </button>
                     </div>
                   </div>
@@ -550,7 +550,7 @@ export function openMinutesEditor(meeting) {
         <div class="min-sec-title">
           <div class="collapsible-trigger" data-toggle-collapse title="點擊收合/展開綜合討論">
             <span class="collapsible-chevron">▼</span>
-            <span>📝 臨時動議與主席/主管裁示</span>
+            <span>臨時動議與主席/主管裁示</span>
           </div>
         </div>
         <div class="collapsible-content">
@@ -560,14 +560,14 @@ export function openMinutesEditor(meeting) {
 
       <!-- 4. 重點決議事項 -->
       <div class="min-section">
-        <div class="min-sec-title">⚖️ 本次會議重大決議彙整</div>
+        <div class="min-sec-title">本次會議重大決議彙整</div>
         <textarea name="resolutions" rows="3" class="full-textarea" placeholder="例：1. 全員落實行事曆雙週預審。\n2. 庫存去化調撥案通過執行。">${esc(resolutions)}</textarea>
       </div>
 
       <!-- 5. 待辦事項追蹤 (Action Items) -->
       <div class="min-section">
         <div class="min-sec-title">
-          <span>🎯 待辦追蹤項目 (Action Items)</span>
+          <span>待辦追蹤項目 (Action Items)</span>
           <button type="button" class="btn small" data-add-ai>＋ 新增待辦</button>
         </div>
         <div class="action-items-list" data-ai-list>
@@ -577,7 +577,7 @@ export function openMinutesEditor(meeting) {
 
       <!-- 6. 下次會議時間與紀錄人預排 -->
       <div class="min-section">
-        <div class="min-sec-title">📅 下次會議資訊預排</div>
+        <div class="min-sec-title">下次會議資訊預排</div>
         <div class="next-meeting-preview-box">
           <div class="next-m-left">
             <span>預估下次月會：<b class="next-m-val"><input type="date" name="next_date" value="${esc(nextMeetingInfo.date)}" style="padding:2px 6px; font-size:13px; font-weight:700;"></b></span>
@@ -590,7 +590,7 @@ export function openMinutesEditor(meeting) {
             </span>
           </div>
           <button type="button" class="btn small ok-btn ghost" data-insert-next-to-general style="font-size:12px; padding:3px 8px;">
-            📥 將下次資訊貼入紀錄文末
+            將下次資訊貼入紀錄文末
           </button>
         </div>
       </div>
@@ -598,19 +598,19 @@ export function openMinutesEditor(meeting) {
 
   const foot = `
     <div class="min-foot-left">
-      <small class="muted">💡 系統每 12 秒自動暫存草稿。發布後將自動開啟 Outlook 寄信與複製助手</small>
+      <small class="muted">系統每 12 秒自動暫存草稿。發布後將自動開啟 Outlook 寄信與複製助手</small>
     </div>
     <div class="spacer"></div>
     <button class="btn ghost" data-close>關閉</button>
-    <button class="btn ghost" data-editor-email title="預覽並複製 Outlook 信件格式">✉️ 寄信/複製助手</button>
-    <button class="btn ghost ok-btn" data-save-draft>💾 手動存草稿</button>
-    <button class="btn primary" data-publish>🚀 正式發布會議紀錄</button>`;
+    <button class="btn ghost" data-editor-email title="預覽並複製 Outlook 信件格式">寄信/複製助手</button>
+    <button class="btn ghost ok-btn" data-save-draft>手動存草稿</button>
+    <button class="btn primary" data-publish>正式發布會議紀錄</button>`;
 
   const modal = openModal({
     title: '月會會議紀錄輸入系統',
     extraHead: `
       <button type="button" class="btn small ghost guide-btn" data-open-minutes-tour style="font-size:12px; padding:2px 8px; border-radius:6px; font-weight:600;">
-        📖 紀錄操作指引
+        紀錄操作指引
       </button>
     `,
     body,
@@ -803,7 +803,7 @@ export function openMinutesEditor(meeting) {
         postponeBtn.style.background = '#fef2f2';
         postponeBtn.style.color = '#dc2626';
         postponeBtn.style.borderColor = '#fca5a5';
-        postponeBtn.textContent = '⏸️ 已標記暫緩';
+        postponeBtn.textContent = '已標記暫緩';
 
         // 隨後合閉該卡片，節省垂直版面
         setTimeout(() => {
@@ -1190,7 +1190,7 @@ export async function copyMinutesToClipboard(meeting, mode = 'rich') {
   }
 }
 
-/** 開啟「✉️ Outlook 寄信與一鍵複製助手」彈窗 */
+/** 開啟「 Outlook 寄信與一鍵複製助手」彈窗 */
 export function openMinutesEmailHelper(meeting) {
   const { subject, plainText, htmlContent } = buildMinutesEmailPayload(meeting);
   const recipientsExcludeSelf = getTeamRecipientEmails(true);
@@ -1202,7 +1202,7 @@ export function openMinutesEmailHelper(meeting) {
       <div style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border:1.5px solid #93c5fd; border-radius:12px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div style="flex:1; min-width:240px;">
           <div style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:15px; color:#1e3a8a; margin-bottom:4px;">
-            <span>🚀 最快寄信方式（一鍵喚起 Outlook）</span>
+            <span>最快寄信方式（一鍵喚起 Outlook）</span>
             <span class="badge-tag ok tiny">推薦</span>
           </div>
           <div style="font-size:12.5px; color:#1e40af; line-height:1.5;">
@@ -1210,20 +1210,20 @@ export function openMinutesEmailHelper(meeting) {
           </div>
         </div>
         <button type="button" class="btn primary" data-launch-outlook style="padding:10px 18px; font-size:14px; font-weight:700; box-shadow:0 4px 12px rgba(37,99,235,0.25); white-space:nowrap;">
-          ✉️ 複製內文並開啟 Outlook
+          複製內文並開啟 Outlook
         </button>
       </div>
 
       <!-- 提醒高重要性標記 -->
       <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; font-size:12.5px; color:#92400e; display:flex; align-items:center; gap:8px;">
-        <span>❗</span>
+        <span></span>
         <span><b>小提醒：</b>貼上內文後，可於 Outlook 上方工具列點選「<b>高重要性 (!)</b>」標記後再傳送，符合組內例會信件慣例。</span>
       </div>
 
       <!-- 三段式手動複製區（收件者 / 主旨 / 內文） -->
       <div style="background:#f8fafc; border:1px solid var(--line); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:10px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-          <b style="font-size:13.5px; color:#334155;">📋 分項一鍵複製（若您使用網頁版 Outlook 或想手動貼上）</b>
+          <b style="font-size:13.5px; color:#334155;">分項一鍵複製（若您使用網頁版 Outlook 或想手動貼上）</b>
           <label style="font-size:12px; color:#475569; display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
             <input type="checkbox" data-exclude-self checked>
             <span>收件者自動排除自己（其餘 9 位組員）</span>
@@ -1232,29 +1232,29 @@ export function openMinutesEmailHelper(meeting) {
 
         <!-- 1. 收件者 -->
         <div style="display:flex; align-items:center; gap:8px;">
-          <span style="width:76px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">👥 收件者：</span>
+          <span style="width:76px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">收件者：</span>
           <input type="text" data-recipients-input readonly value="${esc(recipientsExcludeSelf)}" style="flex:1; font-size:12px; padding:6px 10px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; color:#334155;">
-          <button type="button" class="btn small ghost" data-copy-recipients style="white-space:nowrap; font-weight:600;">📋 複製收件者</button>
+          <button type="button" class="btn small ghost" data-copy-recipients style="white-space:nowrap; font-weight:600;">複製收件者</button>
         </div>
 
         <!-- 2. 信件主旨 -->
         <div style="display:flex; align-items:center; gap:8px;">
-          <span style="width:76px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">📌 主　旨：</span>
+          <span style="width:76px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">主　旨：</span>
           <input type="text" data-subject-input value="${esc(subject)}" style="flex:1; font-size:13px; font-weight:700; padding:6px 10px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
-          <button type="button" class="btn small ghost" data-copy-subject style="white-space:nowrap; font-weight:600;">📋 複製主旨</button>
+          <button type="button" class="btn small ghost" data-copy-subject style="white-space:nowrap; font-weight:600;">複製主旨</button>
         </div>
       </div>
 
       <!-- 3. 信件內文預覽與複製 -->
       <div style="display:flex; flex-direction:column; gap:6px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-          <span style="font-size:13px; font-weight:700; color:#334155;">📄 會議紀錄信件內文預覽（已自動依大綱與編號排版）：</span>
+          <span style="font-size:13px; font-weight:700; color:#334155;">會議紀錄信件內文預覽（已自動依大綱與編號排版）：</span>
           <div style="display:flex; gap:6px;">
             <button type="button" class="btn small ok-btn" data-copy-rich style="font-weight:700;">
-              📋 複製內文（含藍色標題排版）
+              複製內文（含藍色標題排版）
             </button>
             <button type="button" class="btn small ghost" data-copy-plain>
-              📄 僅複製純文字
+              僅複製純文字
             </button>
           </div>
         </div>
@@ -1271,7 +1271,7 @@ export function openMinutesEmailHelper(meeting) {
   `;
 
   const modal = openModal({
-    title: '✉️ Outlook 會議紀錄寄信與複製助手',
+    title: 'Outlook 會議紀錄寄信與複製助手',
     body,
     footer: foot,
     wide: true,
@@ -1329,8 +1329,8 @@ export function openMinutesViewer(meeting) {
           <span class="muted small-text" style="margin-left:8px;">紀錄人：${esc(rec?.displayName || '未指定')}</span>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <button type="button" class="btn small ghost" data-viewer-copy title="複製會議紀錄內文">📋 一鍵複製紀錄</button>
-          <button type="button" class="btn small ok-btn" data-viewer-email title="開啟 Outlook 寄信助手">✉️ Outlook 寄信助手</button>
+          <button type="button" class="btn small ghost" data-viewer-copy title="複製會議紀錄內文">一鍵複製紀錄</button>
+          <button type="button" class="btn small ok-btn" data-viewer-email title="開啟 Outlook 寄信助手">Outlook 寄信助手</button>
           ${meeting.status === 'published' ? '<span class="badge-tag ok">狀態：已正式發布</span>' : '<span class="badge-tag warn">狀態：草稿暫存中</span>'}
         </div>
       </div>
@@ -1338,7 +1338,7 @@ export function openMinutesViewer(meeting) {
       <!-- 出席 -->
       ${minutes.attendees ? `
         <div class="min-section">
-          <div class="min-sec-title">👥 出席狀況</div>
+          <div class="min-sec-title">出席狀況</div>
           <div class="min-disp-chips">
             ${Object.entries(minutes.attendees).map(([uid, st]) => {
               const u = state.users.get(uid);
@@ -1353,7 +1353,7 @@ export function openMinutesViewer(meeting) {
       <!-- 各議題討論與裁示 -->
       ${minutes.agendaNotes && meeting.agenda && meeting.agenda.length ? `
         <div class="min-section">
-          <div class="min-sec-title">📋 各議題討論紀錄與結論</div>
+          <div class="min-sec-title">各議題討論紀錄與結論</div>
           <div class="min-agenda-records">
             ${meeting.agenda.map((ag, idx) => {
               const notes = minutes.agendaNotes[idx];
@@ -1378,21 +1378,21 @@ export function openMinutesViewer(meeting) {
       <!-- 重大決議 -->
       ${minutes.resolutions ? `
         <div class="min-section">
-          <div class="min-sec-title">⚖️ 重大決議事項</div>
+          <div class="min-sec-title">重大決議事項</div>
           <div class="min-block-content text-pre-wrap">${esc(minutes.resolutions)}</div>
         </div>` : ''}
 
       <!-- 臨時動議與裁示 -->
       ${minutes.generalNotes ? `
         <div class="min-section">
-          <div class="min-sec-title">💬 綜合討論與主管裁示</div>
+          <div class="min-sec-title">綜合討論與主管裁示</div>
           <div class="min-block-content text-pre-wrap">${esc(minutes.generalNotes)}</div>
         </div>` : ''}
 
       <!-- 待辦追蹤項目 -->
       ${Array.isArray(minutes.actionItems) && minutes.actionItems.length ? `
         <div class="min-section">
-          <div class="min-sec-title">🎯 待辦事項追蹤 (Action Items)</div>
+          <div class="min-sec-title">待辦事項追蹤 (Action Items)</div>
           <div class="min-action-table">
             ${minutes.actionItems.map((ai, i) => {
               const assignee = state.users.get(ai.ownerUid);
@@ -1410,7 +1410,7 @@ export function openMinutesViewer(meeting) {
       <!-- 下次會議預排資訊 -->
       ${minutes.nextMeeting && minutes.nextMeeting.date ? `
         <div class="min-section">
-          <div class="min-sec-title">📅 下次會議資訊預排</div>
+          <div class="min-sec-title">下次會議資訊預排</div>
           <div class="next-meeting-preview-box">
             <div class="next-m-left">
               <span>預定下次月會：<b class="next-m-val">${esc(minutes.nextMeeting.date)}</b></span>
@@ -1423,10 +1423,10 @@ export function openMinutesViewer(meeting) {
     </div>`;
 
   const foot = `
-    <button class="btn ghost" data-viewer-copy-foot>📋 一鍵複製內文</button>
-    <button class="btn ok-btn" data-viewer-email-foot>✉️ Outlook 寄信助手</button>
+    <button class="btn ghost" data-viewer-copy-foot>一鍵複製內文</button>
+    <button class="btn ok-btn" data-viewer-email-foot>Outlook 寄信助手</button>
     <div class="spacer"></div>
-    ${isRecorder ? `<button class="btn ok-btn ghost" data-open-edit>✏️ 編輯紀錄</button>` : ''}
+    ${isRecorder ? `<button class="btn ok-btn ghost" data-open-edit>編輯紀錄</button>` : ''}
     <button class="btn primary" data-close>關閉</button>`;
 
   const modal = openModal({

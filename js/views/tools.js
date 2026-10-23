@@ -1,8 +1,8 @@
-// 🧰 辦公室＆外勤百寶箱小工具（全面內建免跳轉互動版：YouBike 即時場站與電輔車查詢、氣象雷達與鄉鎮預報、台鐵/高鐵時刻與票價試算、1968 國道即時路況、採購佈告欄、里程與工作日計算機）
+// 辦公室＆外勤百寶箱小工具（全面內建免跳轉互動版：YouBike 即時場站與電輔車查詢、氣象雷達與鄉鎮預報、台鐵/高鐵時刻與票價試算、1968 國道即時路況、採購佈告欄、里程與工作日計算機）
 import { state, myUid, isAdmin, saveToolsDoc } from '../data.js';
 import { esc, ymd, toast, openModal, closeModal } from '../utils.js';
 
-// ================= 1. 🌦️ 中央氣象署雷達迴波 & 全台鄉鎮天氣預報資料 =================
+// ================= 1. 中央氣象署雷達迴波 & 全台鄉鎮天氣預報資料 =================
 const WEATHER_REGIONS = [
   {
     id: 'north', label: '雙北基宜',
@@ -79,13 +79,13 @@ const WEATHER_REGIONS = [
 ];
 
 const CWA_LIVE_MAPS = [
-  { id: 'radar', label: '📡 即時雷達迴波', type: 'img', url: 'https://www.cwa.gov.tw/Data/radar/CV1_3600.png', desc: '中央氣象署最新台灣降雨雷達迴波（每 10 分鐘自動更新）' },
-  { id: 'rain', label: '🌧️ 今日累積雨量', type: 'img', url: 'https://www.cwa.gov.tw/Data/rainfall/QZJ.jpg', desc: '中央氣象署今日 00:00 至今全台日累積雨量分佈' },
-  { id: 'temp', label: '🌡️ 全台即時溫度', type: 'img', url: 'https://www.cwa.gov.tw/Data/temperature/temp.jpg', desc: '中央氣象署全台地面觀測等溫線分佈圖' },
-  { id: 'windy', label: '🌀 Windy 颱風動態', type: 'iframe', url: 'https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=kt&zoom=5&overlay=wind&product=ecmwf&level=surface&lat=25.000&lon=121.483&message=true', extUrl: 'https://www.windy.com/?25.000,121.483,5', desc: 'Windy 全球颱風路徑、陣風與氣壓即時互動預報（可直接拖曳地圖、播放時間軸關心颱風假動向！）' },
+  { id: 'radar', label: '即時雷達迴波', type: 'img', url: 'https://www.cwa.gov.tw/Data/radar/CV1_3600.png', desc: '中央氣象署最新台灣降雨雷達迴波（每 10 分鐘自動更新）' },
+  { id: 'rain', label: '今日累積雨量', type: 'img', url: 'https://www.cwa.gov.tw/Data/rainfall/QZJ.jpg', desc: '中央氣象署今日 00:00 至今全台日累積雨量分佈' },
+  { id: 'temp', label: '全台即時溫度', type: 'img', url: 'https://www.cwa.gov.tw/Data/temperature/temp.jpg', desc: '中央氣象署全台地面觀測等溫線分佈圖' },
+  { id: 'windy', label: 'Windy 颱風動態', type: 'iframe', url: 'https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=%C2%B0C&metricWind=kt&zoom=5&overlay=wind&product=ecmwf&level=surface&lat=25.000&lon=121.483&message=true', extUrl: 'https://www.windy.com/?25.000,121.483,5', desc: 'Windy 全球颱風路徑、陣風與氣壓即時互動預報（可直接拖曳地圖、播放時間軸關心颱風假動向！）' },
 ];
 
-// ================= 2. 🚲 YouBike 官方全台即時場站 API 對照表 =================
+// ================= 2. YouBike 官方全台即時場站 API 對照表 =================
 const YB_AREAS = [
   { code: '00', name: '台北市' },
   { code: '05', name: '新北市' },
@@ -127,7 +127,7 @@ async function ensureYouBikeStations(onDone, force = false) {
   }
 }
 
-// ================= 3. 🚄 台灣高鐵 12 站票價與行車時間矩陣 & 🚆 台鐵時刻與誤點試算 =================
+// ================= 3. 台灣高鐵 12 站票價與行車時間矩陣 & 台鐵時刻與誤點試算 =================
 const THSR_STATIONS = [
   { name: '南港', km: 0, min: 0 },
   { name: '台北', km: 9, min: 8 },
@@ -192,7 +192,7 @@ function getTraEstimate(fromName, toName) {
   return { distKm, tzeChiangFare, chuKuangFare, localFare, expressMin, localMin };
 }
 
-// ================= 4. 🛣️ 1968 國道五大外勤走廊即時路況與旅行時間 =================
+// ================= 4. 1968 國道五大外勤走廊即時路況與旅行時間 =================
 const FREEWAY_CORRIDORS = [
   {
     id: 'n1_north',
@@ -257,23 +257,23 @@ function getCorridorStatus(corridor) {
 
 // ================= 5. 預設書籤捷徑 =================
 const DEFAULT_BOOKMARKS = [
-  { id: 'bm_1', title: 'YouBike 官方場站地圖', url: 'https://www.youbike.com.tw/region/main/stations/', tag: '場站查詢', icon: '🚲', builtinTab: 'youbike' },
-  { id: 'bm_2', title: '中央氣象署－鄉鎮天氣預報', url: 'https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6300100', tag: '天氣雷達', icon: '🌦️', builtinTab: 'weather' },
-  { id: 'bm_windy', title: 'Windy 颱風路徑與風場動態', url: 'https://www.windy.com/?25.000,121.483,5', tag: '颱風假觀測', icon: '🌀', builtinTab: 'weather', builtinCwaMap: 'windy' },
-  { id: 'bm_3', title: '台鐵列車時刻／誤點即時查詢', url: 'https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime', tag: '交通時刻', icon: '🚆', builtinTab: 'rail' },
-  { id: 'bm_4', title: '台灣高鐵時刻表與票價查詢', url: 'https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c', tag: '交通時刻', icon: '🚄', builtinTab: 'rail' },
-  { id: 'bm_5', title: '1968 高速公路即時路況影像', url: 'https://1968.freeway.gov.tw/roadcctv', tag: '外勤路況', icon: '🛣️', builtinTab: 'freeway' },
+  { id: 'bm_1', title: 'YouBike 官方場站地圖', url: 'https://www.youbike.com.tw/region/main/stations/', tag: '場站查詢', icon: '', builtinTab: 'youbike' },
+  { id: 'bm_2', title: '中央氣象署－鄉鎮天氣預報', url: 'https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6300100', tag: '天氣雷達', icon: '', builtinTab: 'weather' },
+  { id: 'bm_windy', title: 'Windy 颱風路徑與風場動態', url: 'https://www.windy.com/?25.000,121.483,5', tag: '颱風假觀測', icon: '', builtinTab: 'weather', builtinCwaMap: 'windy' },
+  { id: 'bm_3', title: '台鐵列車時刻／誤點即時查詢', url: 'https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime', tag: '交通時刻', icon: '', builtinTab: 'rail' },
+  { id: 'bm_4', title: '台灣高鐵時刻表與票價查詢', url: 'https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c', tag: '交通時刻', icon: '', builtinTab: 'rail' },
+  { id: 'bm_5', title: '1968 高速公路即時路況影像', url: 'https://1968.freeway.gov.tw/roadcctv', tag: '外勤路況', icon: '', builtinTab: 'freeway' },
 ];
 
 let weatherCache = new Map();
 
 function weatherCodeToText(code) {
-  if (code === 0) return { icon: '☀️', text: '晴朗' };
-  if (code <= 3) return { icon: '⛅', text: '多雲時晴' };
-  if (code <= 48) return { icon: '🌫️', text: '有霧/陰' };
-  if (code <= 67) return { icon: '🌧️', text: '陣雨' };
-  if (code <= 82) return { icon: '⛈️', text: '強陣雨' };
-  return { icon: '🌩️', text: '雷雨' };
+  if (code === 0) return { icon: '', text: '晴朗' };
+  if (code <= 3) return { icon: '', text: '多雲時晴' };
+  if (code <= 48) return { icon: '', text: '有霧/陰' };
+  if (code <= 67) return { icon: '', text: '陣雨' };
+  if (code <= 82) return { icon: '', text: '強陣雨' };
+  return { icon: '', text: '雷雨' };
 }
 
 async function fetchRegionWeather(region, onDone) {
@@ -366,7 +366,7 @@ export function mountTools(el) {
     el.innerHTML = `
       <div class="toolbar" style="margin-bottom:10px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 class="view-title" style="margin:0">🧰 實用小工具</h2>
+          <h2 class="view-title" style="margin:0">實用小工具</h2>
           <span class="info-pill-tip" data-tip="已將常用系統直接內建於本頁！免跳出外部網站即可直接查詢全台 YouBike 2.0/2.0E 車位、氣象署即時雷達與 Windy 颱風動態、高鐵/台鐵票價與車程、以及 1968 國道即時路況">ⓘ 操作提示</span>
         </div>
         <div class="toolbar-end">
@@ -376,52 +376,52 @@ export function mountTools(el) {
 
       <!-- 頂部常用系統內建切換導覽列 -->
       <div class="tools-sys-nav">
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'all' ? 'active' : ''}" data-sys-tab="all">✨ 全部工具總覽</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'youbike' ? 'active' : ''}" data-sys-tab="youbike">🚲 YouBike 場站即時查</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'weather' ? 'active' : ''}" data-sys-tab="weather">🌦️ 氣象署雷達＆颱風動態</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'rail' ? 'active' : ''}" data-sys-tab="rail">🚄 高鐵／🚆 台鐵時刻票價</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'freeway' ? 'active' : ''}" data-sys-tab="freeway">🛣️ 1968 國道即時路況</button>
-        <button type="button" class="tools-sys-tab ${activeSubTab === 'calc' ? 'active' : ''}" data-sys-tab="calc">🧮 差旅試算＆常用捷徑</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'all' ? 'active' : ''}" data-sys-tab="all">全部工具總覽</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'youbike' ? 'active' : ''}" data-sys-tab="youbike">YouBike 場站即時查</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'weather' ? 'active' : ''}" data-sys-tab="weather">氣象署雷達＆颱風動態</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'rail' ? 'active' : ''}" data-sys-tab="rail">高鐵／ 台鐵時刻票價</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'freeway' ? 'active' : ''}" data-sys-tab="freeway">1968 國道即時路況</button>
+        <button type="button" class="tools-sys-tab ${activeSubTab === 'calc' ? 'active' : ''}" data-sys-tab="calc">差旅試算＆常用捷徑</button>
       </div>
 
       <div class="tools-bento-stack">
         ${showSection('youbike') ? `
-        <!-- 系統 1：🚲 YouBike 官方全台場站即時車位與 2.0E 電輔車查詢器 -->
+        <!-- 系統 1： YouBike 官方全台場站即時車位與 2.0E 電輔車查詢器 -->
         <div class="card pad tools-builtin-card">
           <div class="tools-card-header">
             <div>
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                <h3 style="margin:0;font-size:16px">🚲 YouBike 全台場站即時車位／2.0E 電輔車直查</h3>
-                <span class="tools-live-badge">🟢 官方即時連線 (${allYb.length.toLocaleString()} 站${ybLastSync ? ` · ${ybLastSync} 更新` : ''})</span>
+                <h3 style="margin:0;font-size:16px">YouBike 全台場站即時車位／2.0E 電輔車直查</h3>
+                <span class="tools-live-badge">官方即時連線 (${allYb.length.toLocaleString()} 站${ybLastSync ? ` · ${ybLastSync} 更新` : ''})</span>
               </div>
               <div class="muted tiny" style="margin-top:3px">直接串接 YouBike 官方即時資料庫，輸入場站名稱、路名或行政區即可秒查可借車輛與可還空位</div>
             </div>
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-              <button type="button" class="btn sm ghost" data-yb-refresh title="立即重新同步最新車位">🔄 重新整理</button>
+              <button type="button" class="btn sm ghost" data-yb-refresh title="立即重新同步最新車位">重新整理</button>
               <a href="https://www.youbike.com.tw/region/main/stations/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">官網地圖 ↗</a>
             </div>
           </div>
 
           <div class="yb-search-bar">
             <select data-yb-area class="yb-area-select">
-              <option value="ALL" ${ybArea === 'ALL' ? 'selected' : ''}>🌏 全台所有縣市 (${allYb.length})</option>
-              ${YB_AREAS.map(a => `<option value="${a.code}" ${ybArea === a.code ? 'selected' : ''}>📍 ${esc(a.name)}</option>`).join('')}
+              <option value="ALL" ${ybArea === 'ALL' ? 'selected' : ''}>全台所有縣市 (${allYb.length})</option>
+              ${YB_AREAS.map(a => `<option value="${a.code}" ${ybArea === a.code ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}
             </select>
-            <input type="search" data-yb-query value="${esc(ybQuery)}" placeholder="🔍 搜尋場站名稱、行政區、路名或場站編號（如：科技大樓、板橋、大安區、5001）…" class="yb-search-input">
+            <input type="search" data-yb-query value="${esc(ybQuery)}" placeholder="搜尋場站名稱、行政區、路名或場站編號（如：科技大樓、板橋、大安區、5001）…" class="yb-search-input">
             <label class="yb-ebike-toggle">
               <input type="checkbox" data-yb-ebike ${ybOnlyEbike ? 'checked' : ''}>
-              <span>⚡ 只看有 2.0E 電輔車</span>
+              <span>只看有 2.0E 電輔車</span>
             </label>
           </div>
 
           <div class="yb-summary-strip">
             <span>符合條件共 <b>${areaStations.length.toLocaleString()}</b> 站（顯示前 ${displayYbStations.length} 站）</span>
-            <span class="yb-sum-pill yb2">🚲 2.0 可借合計：<b>${totalYb2InArea.toLocaleString()}</b> 輛</span>
-            <span class="yb-sum-pill eyb">⚡ 2.0E 電輔車合計：<b>${totalEybInArea.toLocaleString()}</b> 輛</span>
+            <span class="yb-sum-pill yb2">2.0 可借合計：<b>${totalYb2InArea.toLocaleString()}</b> 輛</span>
+            <span class="yb-sum-pill eyb">2.0E 電輔車合計：<b>${totalEybInArea.toLocaleString()}</b> 輛</span>
           </div>
 
           ${ybLoading && !ybStationsCache ? `
-            <div class="bw-empty" style="padding:24px">⏳ 正在從 YouBike 官方伺服器同步全台 9,700+ 場站即時車位資料…</div>
+            <div class="bw-empty" style="padding:24px">正在從 YouBike 官方伺服器同步全台 9,700+ 場站即時車位資料…</div>
           ` : ybError ? `
             <div class="bw-empty" style="color:#DC2626">${esc(ybError)}</div>
           ` : displayYbStations.length === 0 ? `
@@ -440,26 +440,26 @@ export function mountTools(el) {
                     <div class="yb-st-head">
                       <span class="yb-st-dist">${esc(s.district_tw || '場站')}</span>
                       <strong class="yb-st-name" title="${esc(s.name_tw)}">${esc(s.name_tw)}</strong>
-                      <a href="${mapUrl}" target="_blank" rel="noopener" class="yb-st-map-btn" title="在 Google Maps 開啟導航 (${esc(s.address_tw || '')})">📍導航</a>
+                      <a href="${mapUrl}" target="_blank" rel="noopener" class="yb-st-map-btn" title="在 Google Maps 開啟導航 (${esc(s.address_tw || '')})">導航</a>
                     </div>
                     <div class="yb-st-addr" title="${esc(s.address_tw || '')}">${esc(s.address_tw || '無地址資訊')} · #${esc(s.station_no || '')}</div>
                     <div class="yb-st-metrics">
                       <div class="yb-m-box yb2 ${yb2 === 0 ? 'zero' : ''}">
-                        <span class="yb-m-lbl">🚲 2.0 一般</span>
+                        <span class="yb-m-lbl">2.0 一般</span>
                         <strong class="yb-m-val">${yb2}</strong>
                       </div>
                       <div class="yb-m-box eyb ${eyb === 0 ? 'zero' : ''}">
-                        <span class="yb-m-lbl">⚡ 2.0E 電輔</span>
+                        <span class="yb-m-lbl">2.0E 電輔</span>
                         <strong class="yb-m-val">${eyb}</strong>
                       </div>
                       <div class="yb-m-box empty ${empty === 0 ? 'zero' : ''}">
-                        <span class="yb-m-lbl">🅿️ 可還空位</span>
+                        <span class="yb-m-lbl">可還空位</span>
                         <strong class="yb-m-val">${empty}</strong>
                       </div>
                     </div>
                     <div class="yb-st-foot">
                       <span>總柱數 ${total}</span>
-                      <span>${active ? `🕒 ${(s.updated_at || '').slice(11, 16) || '即時'}` : '⛔ 暫停營運'}</span>
+                      <span>${active ? ` ${(s.updated_at || '').slice(11, 16) || '即時'}` : '暫停營運'}</span>
                     </div>
                   </div>
                 `;
@@ -470,16 +470,16 @@ export function mountTools(el) {
         ` : ''}
 
         ${showSection('weather') ? `
-        <!-- 系統 2：🌦️ 中央氣象署即時雷達迴波圖、🌀 Windy 颱風動態 ＆ 全台鄉鎮天氣預報 -->
+        <!-- 系統 2： 中央氣象署即時雷達迴波圖、 Windy 颱風動態 ＆ 全台鄉鎮天氣預報 -->
         <div class="card pad tools-builtin-card">
           <div class="tools-card-header">
             <div>
-              <h3 style="margin:0;font-size:16px">🌦️ 中央氣象署－即時雷達迴波圖、🌀 Windy 颱風動態 ＆ 各區鄉鎮預報</h3>
+              <h3 style="margin:0;font-size:16px">中央氣象署－即時雷達迴波圖、 Windy 颱風動態 ＆ 各區鄉鎮預報</h3>
               <div class="muted tiny" style="margin-top:3px">左方直通氣象署雷達迴波／雨量／溫度與 Windy 全球颱風路徑動態，右方提供全台五大營運區重點鄉鎮即時氣溫與降雨率</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button type="button" class="btn sm ghost" data-cwa-reload>🔄 更新氣象圖</button>
-              <a href="https://www.windy.com/?25.000,121.483,5" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🌀 Windy 颱風官網 ↗</a>
+              <button type="button" class="btn sm ghost" data-cwa-reload>更新氣象圖</button>
+              <a href="https://www.windy.com/?25.000,121.483,5" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">Windy 颱風官網 ↗</a>
               <a href="https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6300100" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">氣象署鄉鎮預報 ↗</a>
             </div>
           </div>
@@ -502,14 +502,14 @@ export function mountTools(el) {
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px">
                   <span class="muted tiny">${esc(curCwaMap.desc)}</span>
                   <div style="display:flex;gap:4px;flex-shrink:0">
-                    <button type="button" class="btn sm ghost" data-open-cwa-zoom style="padding:3px 8px;font-size:11px">🔍 放大互動</button>
-                    <a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn sm primary" style="padding:3px 8px;font-size:11px;text-decoration:none">🌀 開啟 Windy ↗</a>
+                    <button type="button" class="btn sm ghost" data-open-cwa-zoom style="padding:3px 8px;font-size:11px">放大互動</button>
+                    <a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn sm primary" style="padding:3px 8px;font-size:11px;text-decoration:none">開啟 Windy ↗</a>
                   </div>
                 </div>
               ` : `
                 <div class="cwa-img-frame" data-open-cwa-zoom title="點擊放大檢視高解析度氣象圖">
                   <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" loading="lazy">
-                  <span class="cwa-zoom-hint">🔍 點擊放大全螢幕檢視</span>
+                  <span class="cwa-zoom-hint">點擊放大全螢幕檢視</span>
                 </div>
                 <div class="muted tiny" style="margin-top:6px;text-align:center">${esc(curCwaMap.desc)}</div>
               `}
@@ -518,7 +518,7 @@ export function mountTools(el) {
             <!-- 右側：五大營運區鄉鎮即時天氣與未來降雨預報 -->
             <div class="cwa-towns-box">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-                <strong style="font-size:13.5px;color:#0F172A">📍 選擇外勤巡檢區域（重點鄉鎮即時觀測）</strong>
+                <strong style="font-size:13.5px;color:#0F172A">選擇外勤巡檢區域（重點鄉鎮即時觀測）</strong>
                 <div class="seg">
                   ${WEATHER_REGIONS.map(r => `<button type="button" class="${r.id === activeRegionId ? 'active' : ''}" data-w-region="${r.id}">${esc(r.label)}</button>`).join('')}
                 </div>
@@ -542,18 +542,18 @@ export function mountTools(el) {
                     <div class="weather-mini-card" style="text-align:left;padding:11px 13px;display:flex;flex-direction:column;justify-content:space-between;gap:5px">
                       <div style="display:flex;justify-content:space-between;align-items:center;gap:6px">
                         <strong style="font-size:13.5px;color:#0F172A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.name)}</strong>
-                        <span style="font-size:20px;line-height:1;flex-shrink:0">${wc.icon}</span>
+                        <span style="font-size:11.5px;font-weight:700;color:#475569;flex-shrink:0">${esc(wc.text)}</span>
                       </div>
                       <div>
                         <div style="font-size:23px;font-weight:800;line-height:1.15;color:var(--text)">${Math.round(cur.temperature_2m ?? 24)}°C</div>
                         <div style="font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px;white-space:nowrap">(${esc(wc.text)} · 體感 ${feel}°C)</div>
                       </div>
                       <div style="display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);white-space:nowrap;margin-top:2px">
-                        <span>🌡️ 今日 ${Math.round(tMin)}°~${Math.round(tMax)}°</span>
-                        <span style="color:${pop >= 50 ? '#DC2626' : '#0284C7'};font-weight:800">☔ 今降雨 ${pop}%</span>
+                        <span>今日 ${Math.round(tMin)}°~${Math.round(tMax)}°</span>
+                        <span style="color:${pop >= 50 ? '#DC2626' : '#0284C7'};font-weight:800">今降雨 ${pop}%</span>
                       </div>
                       <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748B;border-top:1px dashed #CBD5E1;padding-top:5px;white-space:nowrap">
-                        <span>💨 風速 ${wind} km/h</span>
+                        <span>風速 ${wind} km/h</span>
                         <span>明日降雨 ${popTom}%</span>
                       </div>
                     </div>
@@ -566,27 +566,27 @@ export function mountTools(el) {
         ` : ''}
 
         ${showSection('rail') ? `
-        <!-- 系統 3 & 4：🚄 台灣高鐵 ＆ 🚆 台鐵列車時刻表、車程與官方票價試算器 -->
+        <!-- 系統 3 & 4： 台灣高鐵 ＆ 台鐵列車時刻表、車程與官方票價試算器 -->
         <div class="card pad tools-builtin-card">
           <div class="tools-card-header">
             <div>
-              <h3 style="margin:0;font-size:16px">🚄 台灣高鐵 ＆ 🚆 台鐵列車時刻、票價與車程即時試算</h3>
+              <h3 style="margin:0;font-size:16px">台灣高鐵 ＆ 台鐵列車時刻、票價與車程即時試算</h3>
               <div class="muted tiny" style="margin-top:3px">選擇起訖車站立即算出官方標準/自由座/自強/區間車票價與預估行車時間，並支援一鍵帶入 Google 大眾運輸最新班次時刻</div>
             </div>
             <div class="seg">
-              <button type="button" class="${railMode === 'thsr' ? 'active' : ''}" data-rail-mode="thsr">🚄 台灣高鐵 (12 站票價/車程)</button>
-              <button type="button" class="${railMode === 'tra' ? 'active' : ''}" data-rail-mode="tra">🚆 台鐵列車 (時刻/票價/誤點)</button>
+              <button type="button" class="${railMode === 'thsr' ? 'active' : ''}" data-rail-mode="thsr">台灣高鐵 (12 站票價/車程)</button>
+              <button type="button" class="${railMode === 'tra' ? 'active' : ''}" data-rail-mode="tra">台鐵列車 (時刻/票價/誤點)</button>
             </div>
           </div>
 
           ${railMode === 'thsr' ? `
             <div class="rail-control-bar">
               <select data-thsr-from class="rail-st-select">
-                ${THSR_STATIONS.map(s => `<option value="${s.name}" ${s.name === thsrFrom ? 'selected' : ''}>🚄 起點：高鐵${s.name}站</option>`).join('')}
+                ${THSR_STATIONS.map(s => `<option value="${s.name}" ${s.name === thsrFrom ? 'selected' : ''}>起點：高鐵${s.name}站</option>`).join('')}
               </select>
               <button type="button" class="btn sm ghost" data-thsr-swap title="交換起訖站">⇄ 互換</button>
               <select data-thsr-to class="rail-st-select">
-                ${THSR_STATIONS.map(s => `<option value="${s.name}" ${s.name === thsrTo ? 'selected' : ''}>🚄 終點：高鐵${s.name}站</option>`).join('')}
+                ${THSR_STATIONS.map(s => `<option value="${s.name}" ${s.name === thsrTo ? 'selected' : ''}>終點：高鐵${s.name}站</option>`).join('')}
               </select>
               <input type="date" data-rail-date value="${esc(travelDate)}" class="rail-date-input">
             </div>
@@ -596,40 +596,40 @@ export function mountTools(el) {
             ` : `
               <div class="rail-result-grid">
                 <div class="rail-fare-card primary">
-                  <div class="rf-label">🎫 標準車廂（對號座）</div>
+                  <div class="rf-label">標準車廂（對號座）</div>
                   <div class="rf-price">NT$ ${thsrEst.stdFare.toLocaleString()}</div>
                   <div class="rf-sub">來回 NT$ ${(thsrEst.stdFare * 2).toLocaleString()}</div>
                 </div>
                 <div class="rail-fare-card">
-                  <div class="rf-label">💺 自由座車廂（97折）</div>
+                  <div class="rf-label">自由座車廂（97折）</div>
                   <div class="rf-price">NT$ ${thsrEst.freeFare.toLocaleString()}</div>
                   <div class="rf-sub">隨到隨搭免劃位</div>
                 </div>
                 <div class="rail-fare-card">
-                  <div class="rf-label">🥂 商務車廂</div>
+                  <div class="rf-label">商務車廂</div>
                   <div class="rf-price">NT$ ${thsrEst.bizFare.toLocaleString()}</div>
                   <div class="rf-sub">含免費茶點與插座</div>
                 </div>
                 <div class="rail-fare-card info">
-                  <div class="rf-label">⏱️ 預估行車時間 & 里程</div>
+                  <div class="rf-label">預估行車時間 & 里程</div>
                   <div class="rf-price">約 ${thsrEst.expressMin} ~ ${thsrEst.stopMin} 分鐘</div>
                   <div class="rf-sub">直達車約 ${thsrEst.expressMin} 分 · 站站停約 ${thsrEst.stopMin} 分（${thsrEst.distKm} km）</div>
                 </div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-                <a href="https://www.google.com/maps/dir/${encodeURIComponent('高鐵' + thsrFrom + '站')}/${encodeURIComponent('高鐵' + thsrTo + '站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none">⚡ 查看 Google 即時下一班高鐵時刻 (${esc(thsrFrom)} → ${esc(thsrTo)}) ↗</a>
-                <a href="https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🚄 高鐵官網時刻表 ↗</a>
-                <a href="https://irs.thsrc.com.tw/IMINT/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🎟️ 高鐵網路訂票系統 ↗</a>
+                <a href="https://www.google.com/maps/dir/${encodeURIComponent('高鐵' + thsrFrom + '站')}/${encodeURIComponent('高鐵' + thsrTo + '站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none">查看 Google 即時下一班高鐵時刻 (${esc(thsrFrom)} → ${esc(thsrTo)}) ↗</a>
+                <a href="https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">高鐵官網時刻表 ↗</a>
+                <a href="https://irs.thsrc.com.tw/IMINT/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">高鐵網路訂票系統 ↗</a>
               </div>
             `}
           ` : `
             <div class="rail-control-bar">
               <select data-tra-from class="rail-st-select">
-                ${TRA_STATIONS.map(s => `<option value="${s.name}" ${s.name === traFrom ? 'selected' : ''}>🚆 起點：${s.name}車站</option>`).join('')}
+                ${TRA_STATIONS.map(s => `<option value="${s.name}" ${s.name === traFrom ? 'selected' : ''}>起點：${s.name}車站</option>`).join('')}
               </select>
               <button type="button" class="btn sm ghost" data-tra-swap title="交換起訖站">⇄ 互換</button>
               <select data-tra-to class="rail-st-select">
-                ${TRA_STATIONS.map(s => `<option value="${s.name}" ${s.name === traTo ? 'selected' : ''}>🚆 終點：${s.name}車站</option>`).join('')}
+                ${TRA_STATIONS.map(s => `<option value="${s.name}" ${s.name === traTo ? 'selected' : ''}>終點：${s.name}車站</option>`).join('')}
               </select>
               <input type="date" data-rail-date value="${esc(travelDate)}" class="rail-date-input">
             </div>
@@ -639,30 +639,30 @@ export function mountTools(el) {
             ` : `
               <div class="rail-result-grid">
                 <div class="rail-fare-card primary">
-                  <div class="rf-label">🚄 自強號 / 新自強 (3000)</div>
+                  <div class="rf-label">自強號 / 新自強 (3000)</div>
                   <div class="rf-price">NT$ ${traEst.tzeChiangFare.toLocaleString()}</div>
                   <div class="rf-sub">預估車程約 ${traEst.expressMin} 分鐘</div>
                 </div>
                 <div class="rail-fare-card">
-                  <div class="rf-label">🚃 區間快 / 區間車 (刷卡)</div>
+                  <div class="rf-label">區間快 / 區間車 (刷卡)</div>
                   <div class="rf-price">NT$ ${traEst.localFare.toLocaleString()}</div>
                   <div class="rf-sub">預估車程約 ${traEst.localMin} 分鐘（TPASS/電子票證適用）</div>
                 </div>
                 <div class="rail-fare-card">
-                  <div class="rf-label">🚋 莒光號</div>
+                  <div class="rf-label">莒光號</div>
                   <div class="rf-price">NT$ ${traEst.chuKuangFare.toLocaleString()}</div>
                   <div class="rf-sub">來回約 NT$ ${(traEst.chuKuangFare * 2).toLocaleString()}</div>
                 </div>
                 <div class="rail-fare-card info">
-                  <div class="rf-label">📏 鐵路營業里程</div>
+                  <div class="rf-label">鐵路營業里程</div>
                   <div class="rf-price">約 ${traEst.distKm} 公里</div>
                   <div class="rf-sub">${esc(traFrom)}車站 ⇄ ${esc(traTo)}車站</div>
                 </div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-                <a href="https://www.google.com/maps/dir/${encodeURIComponent(traFrom + '車站')}/${encodeURIComponent(traTo + '車站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none">⚡ 查看即時下一班台鐵＆誤點動態 (${esc(traFrom)} → ${esc(traTo)}) ↗</a>
-                <a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🚆 台鐵官網時刻查詢 ↗</a>
-                <a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobystation" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">⏱️ 各站列車即時誤點看板 ↗</a>
+                <a href="https://www.google.com/maps/dir/${encodeURIComponent(traFrom + '車站')}/${encodeURIComponent(traTo + '車站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none">查看即時下一班台鐵＆誤點動態 (${esc(traFrom)} → ${esc(traTo)}) ↗</a>
+                <a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">台鐵官網時刻查詢 ↗</a>
+                <a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobystation" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">各站列車即時誤點看板 ↗</a>
               </div>
             `}
           `}
@@ -670,16 +670,16 @@ export function mountTools(el) {
         ` : ''}
 
         ${showSection('freeway') ? `
-        <!-- 系統 5：🛣️ 1968 高速公路五大外勤走廊即時路況＆嵌合路況地圖 -->
+        <!-- 系統 5： 1968 高速公路五大外勤走廊即時路況＆嵌合路況地圖 -->
         <div class="card pad tools-builtin-card">
           <div class="tools-card-header">
             <div>
-              <h3 style="margin:0;font-size:16px">🛣️ 1968 國道高速公路－五大外勤走廊即時路況與車速雷達</h3>
+              <h3 style="margin:0;font-size:16px">1968 國道高速公路－五大外勤走廊即時路況與車速雷達</h3>
               <div class="muted tiny" style="margin-top:3px">點選左側外勤常走國道區段，右側地圖立即切換顯示該走廊最新車流路況與行車時間</div>
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <a href="https://1968.freeway.gov.tw/roadcctv" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">📹 1968 即時路況影像 ↗</a>
-              <a href="https://1968.freeway.gov.tw/n_speed" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">🚗 國道各段車速 ↗</a>
+              <a href="https://1968.freeway.gov.tw/roadcctv" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">1968 即時路況影像 ↗</a>
+              <a href="https://1968.freeway.gov.tw/n_speed" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">國道各段車速 ↗</a>
               <a href="https://1968.freeway.gov.tw/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">1968 官網 ↗</a>
             </div>
           </div>
@@ -697,7 +697,7 @@ export function mountTools(el) {
                     </div>
                     <div class="fw-route-title">${esc(c.route)}</div>
                     <div class="fw-meta-row">
-                      <span>📏 約 ${c.distKm} km · 預估 <b>${st.estMin} 分鐘</b></span>
+                      <span>約 ${c.distKm} km · 預估 <b>${st.estMin} 分鐘</b></span>
                       <span class="muted tiny">重點：${esc(c.hotspots)}</span>
                     </div>
                   </div>
@@ -707,7 +707,7 @@ export function mountTools(el) {
 
             <div class="freeway-map-box">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-shrink:0">
-                <strong style="font-size:13px;color:#0F172A">🗺️ 即時路況導航預覽：${esc(activeCorridor.route)}</strong>
+                <strong style="font-size:13px;color:#0F172A">即時路況導航預覽：${esc(activeCorridor.route)}</strong>
                 <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeCorridor.mapQuery)}" target="_blank" rel="noopener" class="link tiny">全螢幕路況 ↗</a>
               </div>
               <iframe
@@ -721,20 +721,20 @@ export function mountTools(el) {
         ` : ''}
 
         ${showSection('calc') ? `
-        <!-- 輔助工具：🧮 差旅里程試算、工作日計算機 ＆ 團隊自訂書籤捷徑 -->
+        <!-- 輔助工具： 差旅里程試算、工作日計算機 ＆ 團隊自訂書籤捷徑 -->
         <div class="tools-grid">
           <div class="card pad">
-            <h3 style="margin:0 0 10px;font-size:15px">🧮 出差里程試算 ＆ 日期工作日計算機</h3>
+            <h3 style="margin:0 0 10px;font-size:15px">出差里程試算 ＆ 日期工作日計算機</h3>
             <div class="grid2" style="gap:14px">
               <div style="background:#F8FAFC;padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
                 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-                  <div style="font-size:12.5px;font-weight:700">🛵🚗 外勤里程／油資津貼試算</div>
+                  <div style="font-size:12.5px;font-weight:700">外勤里程／油資津貼試算</div>
                   <div style="display:inline-flex;background:#E2E8F0;padding:2px;border-radius:8px;gap:2px">
                     <button type="button" data-calc-vehicle="scooter" style="border:none;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;background:${calcVehicle === 'scooter' ? '#fff' : 'transparent'};color:${calcVehicle === 'scooter' ? 'var(--primary)' : '#475569'};box-shadow:${calcVehicle === 'scooter' ? '0 1px 2px rgba(0,0,0,.08)' : 'none'}">
-                      🛵 機車 (1.8元/km)
+                      機車 (1.8元/km)
                     </button>
                     <button type="button" data-calc-vehicle="car" style="border:none;padding:3px 9px;border-radius:6px;font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;background:${calcVehicle === 'car' ? '#fff' : 'transparent'};color:${calcVehicle === 'car' ? 'var(--primary)' : '#475569'};box-shadow:${calcVehicle === 'car' ? '0 1px 2px rgba(0,0,0,.08)' : 'none'}">
-                      🚗 汽車 (5.7元/km)
+                      汽車 (5.7元/km)
                     </button>
                   </div>
                 </div>
@@ -754,13 +754,13 @@ export function mountTools(el) {
                     預估合計：NT$ ${Math.round(calcKm * calcRate + calcToll).toLocaleString()} 元
                   </span>
                   <span style="font-size:11px;color:var(--muted)">
-                    （🛵 機車 $${Math.round(calcKm * 1.8 + calcToll).toLocaleString()} ／ 🚗 汽車 $${Math.round(calcKm * 5.7 + calcToll).toLocaleString()}）
+                    （ 機車 $${Math.round(calcKm * 1.8 + calcToll).toLocaleString()} ／ 汽車 $${Math.round(calcKm * 5.7 + calcToll).toLocaleString()}）
                   </span>
                 </div>
               </div>
 
               <div style="background:#F8FAFC;padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
-                <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">📅 區間天數／工作日計算</div>
+                <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">區間天數／工作日計算</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
                   <label style="font-size:11px;color:var(--muted)">起始日
                     <input type="date" data-d-start value="${esc(dateStart)}" style="width:100%;padding:4px;border-radius:6px;border:1px solid var(--border)">
@@ -779,7 +779,7 @@ export function mountTools(el) {
           <div class="card pad">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
               <div>
-                <h3 style="margin:0;font-size:15px">🔖 團隊常用系統與表單捷徑</h3>
+                <h3 style="margin:0;font-size:15px">團隊常用系統與表單捷徑</h3>
                 <div class="muted tiny">點選「內建直開」可直接在上方互動面板操作；點選「↗」可另開官方網頁</div>
               </div>
               <button class="btn sm ghost" data-add-bm>＋ 新增書籤</button>
@@ -791,10 +791,9 @@ export function mountTools(el) {
                 return `
                   <div class="bm-chip-card">
                     <a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" class="bm-chip-link" ${b.builtinTab ? `data-jump-builtin="${b.builtinTab}"` : ''} ${b.builtinCwaMap ? `data-jump-cwa-map="${b.builtinCwaMap}"` : ''}>
-                      <span class="bm-chip-icon">${esc(b.icon || '🔗')}</span>
                       <div style="min-width:0;flex:1">
                         <div class="bm-chip-title">${esc(b.title)}</div>
-                        <div class="bm-chip-tag">${b.builtinTab ? '⚡ 點此內建直查 · ' : ''}${esc(b.tag || '常用連結')} ↗</div>
+                        <div class="bm-chip-tag">${b.builtinTab ? '點此內建直查 · ' : ''}${esc(b.tag || '常用連結')} ↗</div>
                       </div>
                     </a>
                     ${b.builtinTab ? `<a href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" class="icon-btn" title="另開外部官網" style="font-size:12px;text-decoration:none">↗</a>` : ''}
@@ -895,7 +894,7 @@ export function mountTools(el) {
           <div class="modal-foot">
             <span class="muted tiny">${esc(curCwaMap.desc)}</span>
             <span class="spacer"></span>
-            ${curCwaMap.extUrl ? `<a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn primary" style="text-decoration:none">🌀 前往 Windy 官網完整版 ↗</a>` : ''}
+            ${curCwaMap.extUrl ? `<a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn primary" style="text-decoration:none">前往 Windy 官網完整版 ↗</a>` : ''}
             <button class="btn" data-close>關閉</button>
           </div>
         `, { wide: true });
@@ -962,7 +961,7 @@ export function mountTools(el) {
             預估合計：NT$ ${Math.round(calcKm * calcRate + calcToll).toLocaleString()} 元
           </span>
           <span style="font-size:11px;color:var(--muted)">
-            （🛵 機車 $${Math.round(calcKm * 1.8 + calcToll).toLocaleString()} ／ 🚗 汽車 $${Math.round(calcKm * 5.7 + calcToll).toLocaleString()}）
+            （ 機車 $${Math.round(calcKm * 1.8 + calcToll).toLocaleString()} ／ 汽車 $${Math.round(calcKm * 5.7 + calcToll).toLocaleString()}）
           </span>
         `;
       }
@@ -1028,7 +1027,7 @@ function calcDateDiffText(s1, s2) {
 function openAddBookmarkModal(customBms, onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>🔖 新增團隊共用書籤捷徑</h3>
+      <h3>新增團隊共用書籤捷徑</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="bm-form">
@@ -1038,14 +1037,9 @@ function openAddBookmarkModal(customBms, onDone) {
       <label>網址連結 (URL) <span class="req">*</span>
         <input type="url" name="url" required placeholder="https://...">
       </label>
-      <div class="grid2">
-        <label>分類標籤
-          <input type="text" name="tag" value="團隊共用" placeholder="例如：常用表單">
-        </label>
-        <label>圖示 Emoji
-          <input type="text" name="icon" value="🔗" maxlength="4">
-        </label>
-      </div>
+      <label>分類標籤
+        <input type="text" name="tag" value="團隊共用" placeholder="例如：常用表單">
+      </label>
       <div class="modal-foot">
         <button type="button" class="btn" data-close>取消</button>
         <button type="submit" class="btn primary">儲存捷徑</button>
@@ -1061,7 +1055,7 @@ function openAddBookmarkModal(customBms, onDone) {
         title: f.title.value.trim(),
         url: f.url.value.trim(),
         tag: f.tag.value.trim() || '團隊共用',
-        icon: f.icon.value.trim() || '🔗',
+        icon: '',
         uid: myUid(),
       },
       ...customBms,

@@ -5,7 +5,7 @@ import {
 } from './data.js';
 import { PERIODS, periodText, dateRangeText, findOverlaps } from './schedule.js';
 import { esc, ymd, openModal, confirmDialog, toast, avatar, $, $$, timeAgo } from './utils.js';
-import { openDayMemoModal } from './views/stickyHub.js?v=20261023v58';
+import { openDayMemoModal } from './views/stickyHub.js?v=20261023v59';
 
 const PHONE_KEY = 'team-cal-last-phone';
 
@@ -91,10 +91,10 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
 
   const modeSwitchBar = !ev ? `
     <div style="display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:6px 10px;margin-bottom:12px">
-      <span style="font-size:12.5px;font-weight:700;color:#334155">🎯 選擇要建立的項目：</span>
+      <span style="font-size:12.5px;font-weight:700;color:#334155">選擇要建立的項目：</span>
       <div style="display:flex;gap:6px">
-        <button type="button" class="btn small primary" style="padding:4px 12px">🗓️ 差勤行程</button>
-        <button type="button" class="btn small ghost" data-switch-to-memo style="padding:4px 12px;border-color:#FCD34D;background:#FFFBEB;color:#B45309;font-weight:700">📌 備忘錄提醒</button>
+        <button type="button" class="btn small primary" style="padding:4px 12px">差勤行程</button>
+        <button type="button" class="btn small ghost" data-switch-to-memo style="padding:4px 12px;border-color:#FCD34D;background:#FFFBEB;color:#B45309;font-weight:700">備忘錄提醒</button>
       </div>
     </div>
   ` : '';

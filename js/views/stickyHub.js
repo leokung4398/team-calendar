@@ -1,4 +1,4 @@
-// 🎯 團隊黏著度與日常互動中樞（今日備忘錄 Memo / 下午茶午餐揪團 / 團隊感謝貼紙 Kudos / 每日微投票 / 五區即時天氣）
+// 團隊黏著度與日常互動中樞（今日備忘錄 Memo / 下午茶午餐揪團 / 團隊感謝貼紙 Kudos / 每日微投票 / 五區即時天氣）
 import { state, myUid, isAdmin, activeUsers, userOf, saveVibeDoc, saveToolsDoc } from '../data.js';
 import { esc, ymd, fmtMD, weekdayZh, eachDay, avatar, toast, openModal, closeModal } from '../utils.js';
 
@@ -15,7 +15,7 @@ export function getMemosOnDay(dayStr) {
   return getVisibleMemos().filter(m => m.date === dayStr);
 }
 
-/** 開啟特定日期的「📌 備忘錄管理與快速新增」彈窗（供月曆、總表、或新增行程視窗直接呼叫） */
+/** 開啟特定日期的「 備忘錄管理與快速新增」彈窗（供月曆、總表、或新增行程視窗直接呼叫） */
 export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
   const uid = myUid();
   let curDate = defaultDate || ymd();
@@ -29,12 +29,12 @@ export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
 
     return `
       <div class="modal-head">
-        <h3>📌 ${fmtMD(curDate)}（${weekdayZh(curDate)}）備忘錄提醒</h3>
+        <h3>${fmtMD(curDate)}（${weekdayZh(curDate)}）備忘錄提醒</h3>
         <button class="icon-btn" data-close>✕</button>
       </div>
       <div class="modal-body">
         <form id="cal-memo-add-form" class="form" style="background:#FFFDF5;border:1px solid #FDE68A;padding:12px 14px;border-radius:12px;margin-bottom:14px">
-          <div style="font-size:12.5px;font-weight:800;color:#B45309;margin-bottom:8px">✨ 新增備忘提醒（支援單日或連續多日預排）</div>
+          <div style="font-size:12.5px;font-weight:800;color:#B45309;margin-bottom:8px">新增備忘提醒（支援單日或連續多日預排）</div>
           <div class="row2">
             <label class="field"><span>開始日期 <em>*</em></span>
               <input type="date" name="startDate" value="${esc(curDate)}" required>
@@ -46,8 +46,8 @@ export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
           <div class="row2">
             <label class="field"><span>可見範圍</span>
               <select name="scope">
-                <option value="mine">🔒 個人備忘（僅自己可見）</option>
-                <option value="team">📢 全組共享（提醒全體組員）</option>
+                <option value="mine">個人備忘（僅自己可見）</option>
+                <option value="team">全組共享（提醒全體組員）</option>
               </select>
             </label>
             <label class="field"><span>備忘內容 <em>*</em></span>
@@ -60,19 +60,19 @@ export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
         </form>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <strong style="font-size:13.5px;color:#0F172A">📋 當日備忘清單（點擊項目即可勾選完成消除）</strong>
+          <strong style="font-size:13.5px;color:#0F172A">當日備忘清單（點擊項目即可勾選完成消除）</strong>
           <span class="muted tiny">共 ${dayMemos.length} 筆 · 未完成 ${dayMemos.filter(x => !x.done).length} 筆</span>
         </div>
         <div class="memo-list-wrap" style="max-height:280px">
           ${dayMemos.length === 0 ? `
-            <div class="bw-empty">✨ ${fmtMD(curDate)} 尚無備忘事項，可由上方直接新增！</div>
+            <div class="bw-empty">${fmtMD(curDate)} 尚無備忘事項，可由上方直接新增！</div>
           ` : dayMemos.map(m => `
             <div class="memo-item-row ${m.done ? 'is-done' : ''}" data-modal-toggle-memo="${esc(m.id)}" title="點擊即可打勾完成 / 消除">
-              <span class="memo-check-box">${m.done ? '✅' : '⬜'}</span>
+              <span class="memo-check-box" style="font-size:12px;font-weight:800;color:${m.done ? '#16a34a' : '#94a3b8'}">${m.done ? '[✓]' : '[ ]'}</span>
               <div class="memo-item-body">
                 <div class="memo-item-text">${esc(m.text)}</div>
                 <div class="memo-item-meta">
-                  <span class="memo-scope-badge">${m.scope === 'team' ? `📢 ${esc(m.authorName)} 共享` : '🔒 個人私密'}</span>
+                  <span class="memo-scope-badge">${m.scope === 'team' ? `${esc(m.authorName)} 共享` : '個人私密'}</span>
                 </div>
               </div>
               ${(m.uid === uid || isAdmin()) ? `<button type="button" class="memo-del-btn" data-modal-del-memo="${esc(m.id)}" title="永久刪除">✕</button>` : ''}
@@ -81,7 +81,7 @@ export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
         </div>
       </div>
       <div class="modal-foot">
-        <span class="hint">💡 提示：在月曆與總表上點擊「📌」角標，皆可隨時查看或打勾消除！</span>
+        <span class="hint">提示：在月曆與總表上點擊備忘角標，皆可隨時查看或打勾消除！</span>
         <span class="spacer"></span>
         <button type="button" class="btn" data-close>關閉</button>
       </div>
@@ -165,13 +165,13 @@ export function openDayMemoModal(defaultDate = ymd(), onUpdated = null) {
 
 // 每日微投票題庫（依日期 Hash 自動輪播，全組同一天看到同一題）
 const DAILY_POLL_QUESTIONS = [
-  { q: '🧋 今天下午工作體感，你想來杯什麼？', a: '🧊 冰搖茶飲提神', b: '☕ 濃醇熱咖啡續命' },
-  { q: '🚲 外出或通勤時，你最常依賴哪種運具？', a: '⚡ YouBike 2.0E 電輔車', b: '🛵 機車 / 大眾運輸' },
-  { q: '🍱 中午吃飯最困擾你的是什麼？', a: '🤔 不知道要吃什麼', b: '⏳ 排隊等太久' },
-  { q: '🌧️ 遇到午後雷陣雨，你的第一反應是？', a: '🧥 雨衣穿好照樣衝', b: '🏠 先躲超商喝杯東西' },
-  { q: '📅 一週裡面哪一天最有戰鬥力？', a: '🔥 週二週三效率王', b: '🎉 週五準備放假最嗨' },
-  { q: '🎧 整理報表或寫資料時習慣？', a: '🎵 戴耳機聽音樂專注', b: '🤫 保持安靜聽環境音' },
-  { q: '🧾 去超商結帳時，你的發票習慣是？', a: '📱 手機條碼載具秒刷', b: '💳 直接存悠遊卡/信用卡' },
+  { q: '今天下午工作體感，你想來杯什麼？', a: '冰搖茶飲提神', b: '濃醇熱咖啡續命' },
+  { q: '外出或通勤時，你最常依賴哪種運具？', a: 'YouBike 2.0E 電輔車', b: '機車 / 大眾運輸' },
+  { q: '中午吃飯最困擾你的是什麼？', a: '不知道要吃什麼', b: '排隊等太久' },
+  { q: '遇到午後雷陣雨，你的第一反應是？', a: '雨衣穿好照樣衝', b: '先躲超商喝杯東西' },
+  { q: '一週裡面哪一天最有戰鬥力？', a: '週二週三效率王', b: '週五準備放假最嗨' },
+  { q: '整理報表或寫資料時習慣？', a: '戴耳機聽音樂專注', b: '保持安靜聽環境音' },
+  { q: '去超商結帳時，你的發票習慣是？', a: '手機條碼載具秒刷', b: '直接存悠遊卡/信用卡' },
 ];
 
 // 五大外勤區域座標（台北、桃園、新竹、台中、高雄）
@@ -211,7 +211,7 @@ async function ensureQuickWeather(onUpdate) {
       const j = await res.json();
       const temp = Math.round(j.current?.temperature_2m ?? 26);
       const rain = j.daily?.precipitation_probability_max?.[0] ?? 10;
-      const icon = rain >= 60 ? '🌧️' : rain >= 30 ? '⛅' : '☀️';
+      const icon = rain >= 60 ? '' : rain >= 30 ? '' : '';
       return { ...r, temp, rain, icon };
     }));
     cachedWeather = results;
@@ -220,7 +220,7 @@ async function ensureQuickWeather(onUpdate) {
     } catch {}
     onUpdate?.();
   } catch {
-    cachedWeather = WEATHER_REGIONS.map(r => ({ ...r, temp: 26, rain: 20, icon: '⛅' }));
+    cachedWeather = WEATHER_REGIONS.map(r => ({ ...r, temp: 26, rain: 20, icon: '' }));
   } finally {
     weatherLoading = false;
   }
@@ -288,15 +288,14 @@ export function renderStickyHub(container, selectedDay, onRerender) {
   const kudosList = Array.isArray(kudosDoc.list) ? kudosDoc.list : [];
 
   // 5. 五區天氣
-  const weathers = cachedWeather || WEATHER_REGIONS.map(r => ({ ...r, temp: '--', rain: '--', icon: '🌤️' }));
+  const weathers = cachedWeather || WEATHER_REGIONS.map(r => ({ ...r, temp: '--', rain: '--', icon: '' }));
 
   container.innerHTML = `
     <div class="sticky-bento-hub">
-      <!-- 模組 A：📌 智慧備忘錄（可提早預排某幾天、點擊即打勾消除） -->
+      <!-- 模組 A：智慧備忘錄（可提早預排某幾天、點擊即打勾消除） -->
       <div class="card bento-widget memo-widget">
         <div class="bw-head">
           <div class="bw-title-wrap">
-            <span class="bw-icon">📌</span>
             <div>
               <h3 class="bw-title">隨手備忘錄 & 預排提醒</h3>
               <div class="bw-sub">正在檢視：<b>${fmtMD(targetDay)} (${weekdayZh(targetDay)})</b> ${upcomingCount ? `· 未來預排 ${upcomingCount} 筆` : ''}</div>
@@ -312,8 +311,8 @@ export function renderStickyHub(container, selectedDay, onRerender) {
         <form class="memo-quick-form" id="memo-quick-form">
           <input type="date" name="date" value="${esc(targetDay)}" class="memo-date-pick" title="選擇備忘生效日期（可提早預排未來幾天的事項）" required>
           <select name="scope" class="memo-scope-pick" title="僅自己可見或全組共享">
-            <option value="mine">🔒 個人</option>
-            <option value="team">📢 全組</option>
+            <option value="mine">個人</option>
+            <option value="team">全組</option>
           </select>
           <input type="text" name="text" placeholder="輸入待辦或備忘（如：早上記得寄合約、週五帶樣品）…" required maxlength="120" class="memo-text-in">
           <button type="submit" class="btn small primary">＋ 記下</button>
@@ -322,18 +321,18 @@ export function renderStickyHub(container, selectedDay, onRerender) {
         <!-- 備忘錄清單（點選即可打勾消除） -->
         <div class="memo-list-wrap">
           ${filteredMemos.length === 0 ? `
-            <div class="bw-empty">✨ ${fmtMD(targetDay)} 尚無待辦備忘，可於上方提早建立今天或未來幾天的提醒！</div>
+            <div class="bw-empty">${fmtMD(targetDay)} 尚無待辦備忘，可於上方提早建立今天或未來幾天的提醒！</div>
           ` : filteredMemos.map(m => {
             const isOverdue = !m.done && m.date < today;
             const isFuture = m.date > targetDay;
             return `
               <div class="memo-item-row ${m.done ? 'is-done' : ''} ${isOverdue ? 'is-overdue' : ''}" data-toggle-memo="${esc(m.id)}" title="點擊即可勾選完成 / 消除">
-                <span class="memo-check-box">${m.done ? '✅' : '⬜'}</span>
+                <span class="memo-check-box" style="font-size:12px;font-weight:800;color:${m.done ? '#16a34a' : '#94a3b8'}">${m.done ? '[✓]' : '[ ]'}</span>
                 <div class="memo-item-body">
                   <div class="memo-item-text">${esc(m.text)}</div>
                   <div class="memo-item-meta">
-                    <span class="memo-date-badge ${isOverdue ? 'overdue' : isFuture ? 'future' : ''}">📅 ${fmtMD(m.date)} (${weekdayZh(m.date)})</span>
-                    <span class="memo-scope-badge">${m.scope === 'team' ? `📢 ${esc(m.authorName)} 共享` : '🔒 個人'}</span>
+                    <span class="memo-date-badge ${isOverdue ? 'overdue' : isFuture ? 'future' : ''}">${fmtMD(m.date)} (${weekdayZh(m.date)})</span>
+                    <span class="memo-scope-badge">${m.scope === 'team' ? `${esc(m.authorName)} 共享` : '個人'}</span>
                   </div>
                 </div>
                 <button type="button" class="memo-del-btn" data-del-memo="${esc(m.id)}" title="直接刪除此備忘">✕</button>
@@ -342,24 +341,24 @@ export function renderStickyHub(container, selectedDay, onRerender) {
           }).join('')}
           ${visibleMemos.some(m => m.done) ? `
             <div style="text-align:right;margin-top:4px">
-              <button type="button" class="link tiny" data-clear-done-memos>🧹 清除所有已勾選完成項目</button>
+              <button type="button" class="link tiny" data-clear-done-memos>清除所有已勾選完成項目</button>
             </div>
           ` : ''}
         </div>
       </div>
 
-      <!-- 模組 B：🌤️ 五區外勤穿搭/天氣雷達 ＋ 📊 每日 5 秒微投票 -->
+      <!-- 模組 B：五區外勤穿搭/天氣雷達 ＋ 每日 5 秒微投票 -->
       <div class="card bento-widget weather-poll-widget">
         <div class="bw-head" style="margin-bottom:6px">
-          <span class="bw-title">🌤️ 全台五區即時天氣雷達</span>
+          <span class="bw-title">全台五區即時天氣雷達</span>
           <a href="#/tools" class="link tiny">詳細預報 ▸</a>
         </div>
         <div class="hub-weather-strip">
           ${weathers.map(w => `
             <div class="hub-w-pill ${Number(w.rain) >= 50 ? 'rainy' : ''}" title="${esc(w.name)}：氣溫 ${w.temp}°C / 降雨機率 ${w.rain}%">
               <span class="hw-name">${esc(w.name)}</span>
-              <span class="hw-icon">${w.icon} ${w.temp}°</span>
-              <span class="hw-rain">💧${w.rain}%</span>
+              <span class="hw-icon">${w.temp}°C</span>
+              <span class="hw-rain">降雨 ${w.rain}%</span>
             </div>
           `).join('')}
         </div>
@@ -368,7 +367,7 @@ export function renderStickyHub(container, selectedDay, onRerender) {
 
         <!-- 每日微投票 PK -->
         <div class="bw-head" style="margin-bottom:6px">
-          <span class="bw-title">📊 今日隨手投 PK</span>
+          <span class="bw-title">今日隨手投 PK</span>
           <span class="muted tiny">已有 ${totalVotes} 人表態</span>
         </div>
         <div class="poll-question-text">${esc(pollInfo.q)}</div>
@@ -390,14 +389,13 @@ export function renderStickyHub(container, selectedDay, onRerender) {
         </div>
       </div>
 
-      <!-- 模組 C：🧋 下午茶 / 午餐揪團小幫手 -->
+      <!-- 模組 C：下午茶 / 午餐揪團小幫手 -->
       <div class="card bento-widget groupbuy-widget">
         <div class="bw-head">
           <div class="bw-title-wrap">
-            <span class="bw-icon">🧋</span>
             <div>
               <h3 class="bw-title">下午茶 / 午餐揪團板</h3>
-              <div class="bw-sub">${activeOrder ? `🔥 <b>${esc(activeOrder.storeName)}</b> 揪團中（${esc(activeOrder.deadline || '隨時結單')}）` : '辦公室訂飲料、訂便當一鍵統計不洗版'}</div>
+              <div class="bw-sub">${activeOrder ? `<b>${esc(activeOrder.storeName)}</b> 揪團中（${esc(activeOrder.deadline || '隨時結單')}）` : '辦公室訂飲料、訂便當一鍵統計不洗版'}</div>
             </div>
           </div>
           <div class="bw-actions">
@@ -405,17 +403,17 @@ export function renderStickyHub(container, selectedDay, onRerender) {
               <button type="button" class="btn small primary" data-join-order>＋ 我要點餐</button>
               ${(activeOrder.hostUid === uid || isAdmin()) ? `<button type="button" class="btn small danger ghost" data-close-order title="結單或結束揪團">結束</button>` : ''}
             ` : `
-              <button type="button" class="btn small primary" data-start-order>📣 發起揪團</button>
+              <button type="button" class="btn small primary" data-start-order>發起揪團</button>
             `}
           </div>
         </div>
 
         ${!activeOrder ? `
-          <div class="bw-empty">目前沒有進行中的揪團，想喝手搖飲或訂午餐嗎？點右上角「📣 發起揪團」召集大家！</div>
+          <div class="bw-empty">目前沒有進行中的揪團，想喝手搖飲或訂午餐嗎？點右上角「發起揪團」召集大家！</div>
         ` : `
           <div class="gb-info-bar">
-            <span>👑 主揪：<b>${esc(activeOrder.hostName)}</b></span>
-            ${activeOrder.menuUrl ? `<a href="${esc(activeOrder.menuUrl)}" target="_blank" rel="noopener" class="gb-menu-link">📖 查看店家菜單 ↗</a>` : ''}
+            <span>主揪：<b>${esc(activeOrder.hostName)}</b></span>
+            ${activeOrder.menuUrl ? `<a href="${esc(activeOrder.menuUrl)}" target="_blank" rel="noopener" class="gb-menu-link">查看店家菜單 ↗</a>` : ''}
             <span class="gb-summary">共 <b>${orderItems.length}</b> 份 · 總計 <b>$${totalOrderAmount}</b></span>
           </div>
           <div class="gb-items-list">
@@ -424,7 +422,7 @@ export function renderStickyHub(container, selectedDay, onRerender) {
                 <span class="gb-who">${esc(it.userName)}</span>
                 <span class="gb-what">${esc(it.item)}</span>
                 ${it.price ? `<span class="gb-price">$${esc(it.price)}</span>` : ''}
-                <button type="button" class="gb-paid-btn ${it.paid ? 'paid' : ''}" data-toggle-paid="${esc(it.id)}" title="點擊切換已付錢/未付錢">${it.paid ? '💰已付' : '未付'}</button>
+                <button type="button" class="gb-paid-btn ${it.paid ? 'paid' : ''}" data-toggle-paid="${esc(it.id)}" title="點擊切換已付錢/未付錢">${it.paid ? '已付' : '未付'}</button>
                 ${(it.uid === uid || activeOrder.hostUid === uid || isAdmin()) ? `<button type="button" class="memo-del-btn" data-del-order-item="${esc(it.id)}">✕</button>` : ''}
               </div>
             `).join('')}
@@ -432,29 +430,28 @@ export function renderStickyHub(container, selectedDay, onRerender) {
         `}
       </div>
 
-      <!-- 模組 D：🏆 經營 Team 感謝貼紙牆 (Kudos 誇誇牆) -->
+      <!-- 模組 D：經營 Team 感謝貼紙牆 (Kudos 誇誇牆) -->
       <div class="card bento-widget kudos-widget">
         <div class="bw-head">
           <div class="bw-title-wrap">
-            <span class="bw-icon">🏆</span>
             <div>
               <h3 class="bw-title">團隊感謝貼紙 (Kudos 誇誇牆)</h3>
               <div class="bw-sub">給神隊友一張暖心感謝貼紙，凝聚團隊向心力</div>
             </div>
           </div>
-          <button type="button" class="btn small primary" data-add-kudos>💌 送出感謝</button>
+          <button type="button" class="btn small primary" data-add-kudos>送出感謝</button>
         </div>
 
         <div class="kudos-wall-list">
           ${kudosList.length === 0 ? `
-            <div class="bw-empty">今天有夥伴幫了你一個大忙，或外勤冒雨巡檢很辛苦嗎？點「💌 送出感謝」貼張暖心貼紙吧！</div>
+            <div class="bw-empty">今天有夥伴幫了你一個大忙，或外勤冒雨巡檢很辛苦嗎？點「送出感謝」貼張暖心貼紙吧！</div>
           ` : kudosList.slice(0, 4).map(k => {
             const hearts = Array.isArray(k.hearts) ? k.hearts : [];
             const liked = hearts.includes(uid);
             return `
               <div class="kudos-note-card">
                 <div class="kudos-note-top">
-                  <span class="kudos-badge">${esc(k.sticker || '🌟 神隊友')}</span>
+                  <span class="kudos-badge">${esc(k.sticker || '神隊友')}</span>
                   <span class="kudos-to">致 <b>@${esc(k.toName)}</b></span>
                   <span class="muted tiny" style="margin-left:auto">來自 ${esc(k.fromName)}</span>
                 </div>
@@ -462,7 +459,7 @@ export function renderStickyHub(container, selectedDay, onRerender) {
                 <div class="kudos-note-foot">
                   <span class="muted tiny">${esc((k.at || '').slice(5, 10))}</span>
                   <div style="display:flex;gap:4px;align-items:center">
-                    <button type="button" class="kudos-heart-btn ${liked ? 'active' : ''}" data-heart-kudos="${esc(k.id)}">❤️ ${hearts.length}</button>
+                    <button type="button" class="kudos-heart-btn ${liked ? 'active' : ''}" data-heart-kudos="${esc(k.id)}">讚 ${hearts.length}</button>
                     ${(k.fromUid === uid || isAdmin()) ? `<button type="button" class="memo-del-btn" data-del-kudos="${esc(k.id)}">✕</button>` : ''}
                   </div>
                 </div>
@@ -624,7 +621,7 @@ export function renderStickyHub(container, selectedDay, onRerender) {
 function openStartOrderModal(onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>🧋 發起下午茶 / 午餐揪團</h3>
+      <h3>發起下午茶 / 午餐揪團</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="start-gb-form">
@@ -666,7 +663,7 @@ function openStartOrderModal(onDone) {
 function openJoinOrderModal(activeOrder, onDone) {
   openModal(`
     <div class="modal-head">
-      <h3>🧋 跟團點餐：${esc(activeOrder.storeName)}</h3>
+      <h3>跟團點餐：${esc(activeOrder.storeName)}</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="join-gb-form">
@@ -703,16 +700,16 @@ function openJoinOrderModal(activeOrder, onDone) {
 
 function openAddKudosModal(kudosList, onDone) {
   const users = activeUsers();
-  const stickers = ['🌟 神隊友救援', '🚲 外勤超給力', '☕ 暖心好夥伴', '⚡ 效率天花板', '🙌 感謝大幫忙'];
+  const stickers = ['神隊友救援', '外勤超給力', '暖心好夥伴', '效率天花板', '感謝大幫忙'];
   openModal(`
     <div class="modal-head">
-      <h3>💌 送出團隊感謝貼紙 (Kudos)</h3>
+      <h3>送出團隊感謝貼紙 (Kudos)</h3>
       <button class="icon-btn" data-close>✕</button>
     </div>
     <form class="form" id="kudos-form">
       <label class="field"><span>想感謝哪位夥伴？ <em>*</em></span>
         <select name="toName" required>
-          <option value="全體經營 Team">💖 全體經營 Team</option>
+          <option value="全體經營 Team">全體經營 Team</option>
           ${users.map(u => `<option value="${esc(u.displayName)}">${esc(u.displayName)}</option>`).join('')}
         </select>
       </label>

@@ -67,8 +67,8 @@ export function rideBar(now) {
   const pct = Math.max(0, Math.min(1, (now - S) / (E - S))) * 100;
   let msg;
   if (now < S) msg = `還沒出發，<b>${amS}</b> 準時發車`;
-  else if (now >= E) msg = `已抵達終點站，<b>下班囉！</b>騎車小心 🌙`;
-  else if (now >= L1 && now < L2) msg = `午休補給站 🍱 <b>${pmS}</b> 再出發`;
+  else if (now >= E) msg = `已抵達終點站，<b>下班囉！</b>騎車小心 `;
+  else if (now >= L1 && now < L2) msg = `午休補給站 <b>${pmS}</b> 再出發`;
   else {
     const left = E - now;
     msg = `距離下班站還有 <b>${Math.floor(left / 60)} 小時 ${left % 60} 分</b>`;

@@ -2,7 +2,7 @@
 // - 內勤 6 位同仁：每日下班回報工作進度（1. 今日完成事項 2. 明日預計待辦 3. 備註），比照 LINE 群組做法全體組員皆可公開查看
 // - 外勤品管 3 位同仁（孔令淳、葉爵豪、陸逸群）：每日下班制式化回報 3 項（地區、稽查場站數、2.0 與 2.0E 數量），因採另外回報機制，內容僅「代理副理（徐嘉鴻）」、「外勤代理人（包于巧）」與「填寫者本人」可見
 // - 防代填保護：嚴格鎖定僅本人可填寫或編輯自己的回報
-// - 支援「🌀 颱風停班停課（全員免回報）」彈性切換、休假與例假日自動連動
+// - 支援「 颱風停班停課（全員免回報）」彈性切換、休假與例假日自動連動
 // - 支援 17:30 智慧溫和下班提醒 Toast + 行動端通勤拇指熱區懸浮按鈕（FAB）與置中快填彈窗（Modal）
 
 import {
@@ -246,14 +246,14 @@ export function formatPersonalLineReport(u, dateStr, report) {
 
   const lines = [
     `【${md} (${wd}) 每日工作進度回報 - ${name}】`,
-    `✅ 今日完成事項：`,
+    ` 今日完成事項：`,
     todayTasks,
   ];
   if (tomorrowTasks) {
-    lines.push('', `📅 明日預計工作 / 後續待辦：`, tomorrowTasks);
+    lines.push('', ` 明日預計工作 / 後續待辦：`, tomorrowTasks);
   }
   if (notes) {
-    lines.push('', `💡 需主管協助 / 備註事項：`, notes);
+    lines.push('', ` 需主管協助 / 備註事項：`, notes);
   }
   return lines.join('\n');
 }
@@ -280,34 +280,34 @@ export function evaluateMemberReportStatus(u, dateStr) {
   const hasSubmitted = isReportSubmitted(rep, u);
 
   if (hasSubmitted) {
-    return { code: 'submitted', label: '✅ 已回報', tone: 'ok', report: rep, leaveEv };
+    return { code: 'submitted', label: '已回報', tone: 'ok', report: rep, leaveEv };
   }
   if (isSupervisor(u)) {
-    return { code: 'supervisor', label: '👔 代理副理（審閱）', tone: 'supervisor', report: rep, leaveEv };
+    return { code: 'supervisor', label: '代理副理（審閱）', tone: 'supervisor', report: rep, leaveEv };
   }
   if (doc.isTyphoonDay) {
-    return { code: 'typhoon_exempt', label: '🌀 颱風假（免回報）', tone: 'typhoon', report: rep, leaveEv };
+    return { code: 'typhoon_exempt', label: '颱風假（免回報）', tone: 'typhoon', report: rep, leaveEv };
   }
   if (leaveEv || rep?.status === 'leave_exempt') {
-    return { code: 'leave_exempt', label: '🏖️ 今日休假（免回報）', tone: 'leave', report: rep, leaveEv };
+    return { code: 'leave_exempt', label: '今日休假（免回報）', tone: 'leave', report: rep, leaveEv };
   }
   if (info.off) {
-    return { code: 'holiday_exempt', label: `🎉 ${info.name || '例假日'}（免回報）`, tone: 'exempt', report: rep, leaveEv };
+    return { code: 'holiday_exempt', label: ` ${info.name || '例假日'}（免回報）`, tone: 'exempt', report: rep, leaveEv };
   }
-  return { code: 'pending', label: '⏳ 待回報', tone: 'pending', report: rep, leaveEv };
+  return { code: 'pending', label: '待回報', tone: 'pending', report: rep, leaveEv };
 }
 
 // ============================================================
-// 👾 外勤品管遊戲化：月度區域魔王部位破壞系統（連動模擬體驗排班矩陣）
-// - 雙北 920 台（孔令淳 & 葉爵豪平分各 460 HP）與 高雄 265 台（陸逸群 265 HP）設定於魔王「🧠 大腦 / 🫀 身體核心」
-// - 外縣市出差配額（桃園、新竹縣市、苗栗、台中、嘉義、台南、屏東、台東）設定於魔王「💪 四肢部位（左臂、右臂、左腿、右腿）」
+// 外勤品管遊戲化：月度區域魔王部位破壞系統（連動模擬體驗排班矩陣）
+// - 雙北 920 台（孔令淳 & 葉爵豪平分各 460 HP）與 高雄 265 台（陸逸群 265 HP）設定於魔王「 大腦 / 身體核心」
+// - 外縣市出差配額（桃園、新竹縣市、苗栗、台中、嘉義、台南、屏東、台東）設定於魔王「 四肢部位（左臂、右臂、左腿、右腿）」
 // ============================================================
 const FIELD_BOSS_META = {
   'Leo': {
     bossName: '寒冰王座・巫妖死騎領主',
     bossTitle: 'LV.99 MYTHIC RAID｜雙北核心與中北遠征守護魔王',
     raidClass: 'DEATHLORD',
-    avatarEmoji: '👑',
+    avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_leo.jpg?v=20261023v55',
     themeColor: '#38bdf8',
     themeBg: 'linear-gradient(145deg, #040914 0%, #091931 52%, #0c2b4e 100%)',
@@ -328,7 +328,7 @@ const FIELD_BOSS_META = {
     bossName: '次元終焉・深淵星界魔神',
     bossTitle: 'LV.99 ABYSSAL RAID｜雙北核心與桃竹中遠征魔王',
     raidClass: 'ASTRAL ARCHON',
-    avatarEmoji: '⚔️',
+    avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_hao.jpg?v=20261023v55',
     themeColor: '#a855f7',
     themeBg: 'linear-gradient(145deg, #070512 0%, #160d31 52%, #2e1065 100%)',
@@ -349,7 +349,7 @@ const FIELD_BOSS_META = {
     bossName: '大災變・滅世黑龍死亡之翼',
     bossTitle: 'LV.99 CATACLYSM RAID｜高雄核心與雲嘉南東遠征魔王',
     raidClass: 'DRAGONLORD',
-    avatarEmoji: '🐉',
+    avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_chun.jpg?v=20261023v55',
     themeColor: '#f97316',
     themeBg: 'linear-gradient(145deg, #110604 0%, #2a0c06 52%, #5c190b 100%)',
@@ -379,7 +379,7 @@ function getFieldNick(u) {
 // 紀錄已展開魔王戰場畫布的外勤人員 UID（預設全部收合）
 const expandedBossStages = new Set();
 
-/** 將每日回報填寫的「1️⃣ 地區」文字（例如：新北市（板橋區）、桃園市（中壢區））解析為對應的排班矩陣縣市 */
+/** 將每日回報填寫的「1 地區」文字（例如：新北市（板橋區）、桃園市（中壢區））解析為對應的排班矩陣縣市 */
 export function matchRegionToQuotaKey(regionText, nick) {
   const txt = String(regionText || '').trim();
   if (!txt) return nick === 'Chun' ? '高雄' : '雙北';
@@ -410,21 +410,21 @@ export function computeFieldBossStatus(u, dateStr) {
   const meta = FIELD_BOSS_META[nick] || FIELD_BOSS_META['Leo'];
   const { quotas, assignments } = getMergedMonthSimulationData(monthKey);
 
-  // 1. 建立「🧠 大腦 + 🫀 身體核心」與「💪 四肢部位」目標血量（Max HP）
+  // 1. 建立「 大腦 + 身體核心」與「 四肢部位」目標血量（Max HP）
   const parts = [];
   const LIMB_SLOTS = [
-    { slotKey: 'left_arm', slotLabel: '🦾 左臂裝甲', icon: '🦾' },
-    { slotKey: 'right_arm', slotLabel: '⚔️ 右臂巨刃', icon: '⚔️' },
-    { slotKey: 'left_leg', slotLabel: '🦿 左腿推進器', icon: '🦿' },
-    { slotKey: 'right_leg', slotLabel: '🛡️ 右腿護脛', icon: '🛡️' },
-    { slotKey: 'wing', slotLabel: '🪽 背部雙翼', icon: '🪽' },
+    { slotKey: 'left_arm', slotLabel: '左臂裝甲', icon: '' },
+    { slotKey: 'right_arm', slotLabel: '右臂巨刃', icon: '' },
+    { slotKey: 'left_leg', slotLabel: '左腿推進器', icon: '' },
+    { slotKey: 'right_leg', slotLabel: '右腿護脛', icon: '' },
+    { slotKey: 'wing', slotLabel: '背部雙翼', icon: '' },
   ];
 
   if (nick === 'Leo' || nick === 'Hao') {
     const taipeiQ = quotas.find(q => q.region === '雙北');
     const taipeiTotal = Number(taipeiQ?.totalVehicles) || 920;
     const myShare = Math.round(taipeiTotal / 2); // 雙北兩人 920 平分 = 460 HP
-    // 拆分為「🧠 魔王大腦（台北市核心 230 HP）」與「🫀 魔王身體（新北市核心 230 HP）」，總和為雙北 460 HP
+    // 拆分為「 魔王大腦（台北市核心 230 HP）」與「 魔王身體（新北市核心 230 HP）」，總和為雙北 460 HP
     const brainHp = Math.round(myShare / 2);
     const bodyHp = myShare - brainHp;
     parts.push({
@@ -432,7 +432,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '雙北',
       subMatch: '台北',
       partType: 'core',
-      slotLabel: '🧠 魔王大腦',
+      slotLabel: '魔王大腦',
       regionLabel: '雙北平分・大腦中樞',
       maxHp: brainHp,
       damage: 0,
@@ -445,7 +445,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '雙北',
       subMatch: '新北',
       partType: 'core',
-      slotLabel: '🫀 魔王身體',
+      slotLabel: '魔王身體',
       regionLabel: '雙北平分・身體核心',
       maxHp: bodyHp,
       damage: 0,
@@ -463,7 +463,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '高雄',
       subMatch: '高雄_大腦',
       partType: 'core',
-      slotLabel: '🧠 魔王大腦',
+      slotLabel: '魔王大腦',
       regionLabel: '高雄駐地・大腦中樞',
       maxHp: brainHp,
       damage: 0,
@@ -476,7 +476,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '高雄',
       subMatch: '高雄_身體',
       partType: 'core',
-      slotLabel: '🫀 魔王身體',
+      slotLabel: '魔王身體',
       regionLabel: '高雄駐地・身體核心',
       maxHp: bodyHp,
       damage: 0,
@@ -635,13 +635,13 @@ export function computeFieldBossStatus(u, dateStr) {
   const totalOverkill = Math.max(0, totalDamageDealt - totalMaxHp);
   const bossHpPct = totalMaxHp > 0 ? Math.max(0, Math.min(100, Math.round((totalRemainHp / totalMaxHp) * 100))) : 0;
 
-  let bossPhase = { label: '🟢 裝甲完好', tone: 'full', desc: '蓄勢待發，每一台品管都在削弱魔王護甲！' };
+  let bossPhase = { label: '裝甲完好', tone: 'full', desc: '蓄勢待發，每一台品管都在削弱魔王護甲！' };
   if (totalRemainHp === 0 && totalMaxHp > 0) {
-    bossPhase = { label: '🏆 部位全破・討伐成功！', tone: 'clear', desc: `本月配額已全數擊破！目前累積超額爆擊 +${totalOverkill} HP！` };
+    bossPhase = { label: '部位全破・討伐成功！', tone: 'clear', desc: `本月配額已全數擊破！目前累積超額爆擊 +${totalOverkill} HP！` };
   } else if (bossHpPct <= 25) {
-    bossPhase = { label: '🔴 瀕死斬殺期', tone: 'critical', desc: '魔王血量見底，即將完成本月討伐！' };
+    bossPhase = { label: '瀕死斬殺期', tone: 'critical', desc: '魔王血量見底，即將完成本月討伐！' };
   } else if (bossHpPct <= 65) {
-    bossPhase = { label: '🟡 護甲碎裂期', tone: 'damaged', desc: '持續穩定削血中，多部位護甲已出現裂痕！' };
+    bossPhase = { label: '護甲碎裂期', tone: 'damaged', desc: '持續穩定削血中，多部位護甲已出現裂痕！' };
   }
 
   const coreParts = parts.filter(p => p.partType === 'core');
@@ -668,7 +668,7 @@ export function computeFieldBossStatus(u, dateStr) {
   };
 }
 
-/** 渲染外勤人員卡片內的「👾 專屬區域魔王・立繪部位鎖定破壞討伐戰（大腦/身體核心 ＋ 四肢地區）」面板 */
+/** 渲染外勤人員卡片內的「 專屬區域魔王・立繪部位鎖定破壞討伐戰（大腦/身體核心 ＋ 四肢地區）」面板 */
 function renderFieldBossWidget(u, dateStr, canSeeDetails) {
   const bs = computeFieldBossStatus(u, dateStr);
   const [yStr, mStr] = bs.monthKey.split('-');
@@ -691,7 +691,7 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
     hotspotItems.push({ part: lp, x: coord.x, y: coord.y, posClass: `pos-limb align-${coord.align || 'left'}` });
   });
 
-  // 輔助渲染魔王立繪上的「🎯 部位鎖定 HUD 準星與微型血條」
+  // 輔助渲染魔王立繪上的「 部位鎖定 HUD 準星與微型血條」
   const renderCanvasHotspot = (item) => {
     const p = item.part;
     const toneClass = p.isBroken ? 'is-broken' : (p.hpPct <= 30 ? 'is-critical' : (p.damage > 0 ? 'is-damaged' : 'is-full'));
@@ -704,17 +704,15 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
            data-boss-part-trigger="${esc(u.uid)}"
            data-boss-part-region="${esc(p.regionKey)}"
            data-boss-part-sub="${esc(p.subMatch || '')}"
-           title="🎯 點擊鎖定攻擊【${esc(p.slotLabel)}・${esc(p.regionLabel)}】｜剩餘 ${p.remainHp} / ${p.maxHp} HP（已削 -${p.damage} HP）">
+           title="點擊鎖定攻擊【${esc(p.slotLabel)}・${esc(p.regionLabel)}】｜剩餘 ${p.remainHp} / ${p.maxHp} HP（已削 -${p.damage} HP）">
         <div class="dr-bh-reticle">
           <span class="dr-bh-ring"></span>
           <span class="dr-bh-dot"></span>
-          ${p.damage > 0 && !p.isBroken ? '<span class="dr-bh-spark">💥</span>' : ''}
-          ${p.isBroken ? '<span class="dr-bh-broken-icon">⚡</span>' : ''}
         </div>
         <div class="dr-bh-tag">
           <div class="dr-bh-tag-top">
             <span class="dr-bh-slot">${esc(p.slotLabel)}</span>
-            <span class="dr-bh-hp">${p.isBroken ? '💥擊破' : `${p.remainHp}<small>/${p.maxHp}</small>`}</span>
+            <span class="dr-bh-hp">${p.isBroken ? '擊破' : `${p.remainHp}<small>/${p.maxHp}</small>`}</span>
           </div>
           <div class="dr-bh-region">${esc(p.regionLabel)}</div>
           <div class="dr-bh-bar">
@@ -735,11 +733,11 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
            data-boss-part-trigger="${esc(u.uid)}"
            data-boss-part-region="${esc(p.regionKey)}"
            data-boss-part-sub="${esc(p.subMatch || '')}"
-           title="🎯 點擊直接對【${esc(p.slotLabel)}｜${esc(p.regionLabel)}】發動今日品管回報攻擊！">
+           title="點擊直接對【${esc(p.slotLabel)}｜${esc(p.regionLabel)}】發動今日品管回報攻擊！">
         <div class="dr-bp-top">
           <span class="dr-bp-slot">${esc(p.slotLabel)}</span>
           <span class="dr-bp-status ${p.isBroken ? 'broken' : ''}">
-            ${p.isBroken ? `💥 已擊破!${p.overkill > 0 ? ` (+${p.overkill})` : ''}` : `剩 <b>${p.remainHp}</b> <small>/${p.maxHp}</small>`}
+            ${p.isBroken ? ` 已擊破!${p.overkill > 0 ? ` (+${p.overkill})` : ''}` : `剩 <b>${p.remainHp}</b> <small>/${p.maxHp}</small>`}
           </span>
         </div>
         <div class="dr-bp-region">${esc(p.regionLabel)}</div>
@@ -762,12 +760,11 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
         <div class="dr-boss-identity">
           <div class="dr-boss-avatar-wrap ${bs.todayDamage > 0 ? 'hit-today' : ''}">
             <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-avatar-img">
-            <span class="dr-boss-skull-badge">💀</span>
-            ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">⚔️ -${bs.todayDamage}</span>` : ''}
+            ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">-${bs.todayDamage}</span>` : ''}
           </div>
           <div>
             <div class="dr-boss-title-row">
-              <span class="dr-boss-raid-tier">⚔️ ${esc(bs.meta.raidClass || 'MYTHIC RAID')}</span>
+              <span class="dr-boss-raid-tier">${esc(bs.meta.raidClass || 'MYTHIC RAID')}</span>
               <span class="dr-boss-month-tag">${Number(mStr)}月副本</span>
               <span class="dr-boss-phase-pill tone-${bs.bossPhase.tone}">${bs.bossPhase.label}</span>
             </div>
@@ -776,7 +773,7 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
         </div>
 
         <div class="dr-boss-total-hp-box">
-          <div class="dr-boss-hp-label">🩸 BOSS HP (X10)</div>
+          <div class="dr-boss-hp-label">BOSS HP (X10)</div>
           <div class="dr-boss-hp-numbers">
             <strong class="dr-boss-remain-num">${bs.totalRemainHp}</strong>
             <span class="dr-boss-max-num">/ ${bs.totalMaxHp} HP</span>
@@ -794,14 +791,14 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
         <div class="dr-boss-main-bar-meta">
           <button type="button" class="dr-boss-stage-toggle-btn" data-toggle-boss-stage="${esc(u.uid)}">
             <span class="dr-bst-icon">${isStageOpen ? '▴' : '▾'}</span>
-            <span class="dr-bst-text">${isStageOpen ? '收合魔王討伐戰場' : `展開魔王部位鎖定戰場（🧠中樞 ${coreRemainSum}/${coreMaxSum}・🦾四肢 ${bs.limbParts.length} 部位）`}</span>
+            <span class="dr-bst-text">${isStageOpen ? '收合魔王討伐戰場' : `展開魔王部位鎖定戰場（中樞 ${coreRemainSum}/${coreMaxSum}・四肢 ${bs.limbParts.length} 部位）`}</span>
           </button>
           <span>BOSS 殘血 <b>${bs.bossHpPct}%</b></span>
         </div>
       </div>
 
       <div class="dr-boss-collapsible-body" ${isStageOpen ? '' : 'hidden'}>
-        <!-- 🖼️ 視覺化魔王立繪戰場舞台（全身部位 HUD 準星鎖定） -->
+        <!-- 視覺化魔王立繪戰場舞台（全身部位 HUD 準星鎖定） -->
         <div class="dr-boss-visual-stage ${bs.bossPhase.tone}">
           <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-stage-img" loading="lazy">
           <div class="dr-boss-stage-vignette"></div>
@@ -816,13 +813,13 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
             </div>
           ` : `
             <div class="dr-boss-stage-locked-badge">
-              🔒 部位鎖定準星與明細僅代理副理、代理人與本人可見
+              部位鎖定準星與明細僅代理副理、代理人與本人可見
             </div>
           `}
 
           ${bs.todayDamage > 0 ? `
             <div class="dr-boss-today-slash-banner">
-              ⚔️ 今日已重創魔王 <b>-${bs.todayDamage} HP</b>！
+              今日已重創魔王 <b>-${bs.todayDamage} HP</b>！
             </div>
           ` : ''}
         </div>
@@ -831,13 +828,13 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
           <!-- 可收合或一覽的部位詳細血量矩陣 -->
           <details class="dr-boss-anatomy-details">
             <summary class="dr-boss-anatomy-summary">
-              <span>📊 展開部位血量明細（🧠🫀 中樞剩 <b>${coreRemainSum}</b>/${coreMaxSum} HP ・ 🦾 四肢共 ${bs.limbParts.length} 部位）</span>
+              <span>展開部位血量明細（ 中樞剩 <b>${coreRemainSum}</b>/${coreMaxSum} HP ・ 四肢共 ${bs.limbParts.length} 部位）</span>
               <span class="dr-ba-arrow">▾</span>
             </summary>
             <div class="dr-boss-anatomy">
               <div class="dr-boss-part-group core-group">
                 <div class="dr-bpg-title">
-                  <span>🧠🫀 魔王中樞部位（${bs.nick === 'Chun' ? '高雄駐地 265 台核心' : '雙北 920 台平分＝460 HP 核心'}）</span>
+                  <span>魔王中樞部位（${bs.nick === 'Chun' ? '高雄駐地 265 台核心' : '雙北 920 台平分＝460 HP 核心'}）</span>
                   <small>中樞剩餘 <b>${coreRemainSum}</b> / ${coreMaxSum} HP</small>
                 </div>
                 <div class="dr-boss-parts-grid cols-2">
@@ -847,7 +844,7 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
 
               <div class="dr-boss-part-group limbs-group">
                 <div class="dr-bpg-title">
-                  <span>🦾🦿 魔王四肢部位（外縣市出差配額連動）</span>
+                  <span>魔王四肢部位（外縣市出差配額連動）</span>
                   <small>點擊部位可直接帶入地區</small>
                 </div>
                 <div class="dr-boss-parts-grid cols-2">
@@ -862,7 +859,7 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
   `;
 }
 
-/** 渲染外勤專區頂部的「⚔️ 模擬體驗連動・外勤三人月度魔王討伐總覽橫幅」 */
+/** 渲染外勤專區頂部的「 模擬體驗連動・外勤三人月度魔王討伐總覽橫幅」 */
 function renderFieldRaidBanner(fieldMembers, selectedDate) {
   const statuses = fieldMembers.map(u => computeFieldBossStatus(u, selectedDate));
   const grandMaxHp = statuses.reduce((s, x) => s + x.totalMaxHp, 0);
@@ -876,14 +873,13 @@ function renderFieldRaidBanner(fieldMembers, selectedDate) {
   return `
     <div class="dr-raid-world-banner">
       <div class="dr-rwb-left">
-        <span class="dr-rwb-icon">⚔️</span>
         <div>
           <div class="dr-rwb-title">
             <strong>${yStr} 年 ${Number(mStr)} 月《外勤品管魔王討伐戰》・扣血減壓模式</strong>
-            <a href="#/simulation" class="dr-rwb-link" title="前往模擬體驗排班矩陣查看各縣市配額">🔗 已連動模擬體驗排班矩陣 ↗</a>
+            <a href="#/simulation" class="dr-rwb-link" title="前往模擬體驗排班矩陣查看各縣市配額">已連動模擬體驗排班矩陣 ↗</a>
           </div>
           <div class="dr-rwb-desc">
-            🧠🫀 <b>魔王大腦＆身體</b>＝雙北 920 台平分（各 460 HP）／高雄 265 HP；🦾🦿 <b>魔王四肢</b>＝外縣市出差配額。每回報 1 台車即扣除 1 HP，無須焦慮單日是否滿 40 台！
+            <b>魔王大腦＆身體</b>＝雙北 920 台平分（各 460 HP）／高雄 265 HP；<b>魔王四肢</b>＝外縣市出差配額。每回報 1 台車即扣除 1 HP，無須焦慮單日是否滿 40 台！
           </div>
         </div>
       </div>
@@ -905,7 +901,7 @@ function renderFieldRaidBanner(fieldMembers, selectedDate) {
 }
 
 // ============================================================
-// 主畫面：📝 每日回報（#/dailyReport）
+// 主畫面： 每日回報（#/dailyReport）
 // ============================================================
 export function mountDailyReport(root) {
   let selectedDate = ymd();
@@ -951,26 +947,26 @@ export function mountDailyReport(root) {
         <section class="card dr-hero-card" style="padding:14px 18px">
           <div class="dr-hero-top" style="margin-bottom:10px">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-              <h1 class="dr-title" style="margin:0;font-size:19px">📝 每日工作進度回報</h1>
-              <span class="info-pill-tip" data-tip="🏢 內勤同仁填寫今日工作進度（全員可見，每月支援外勤日可切換外勤回報分頁）；🚲 外勤三人制式回報 3 題（僅副理徐嘉鴻、代理人包于巧與本人可見）。🔒 嚴格防代填保護。">ⓘ 規則說明</span>
+              <h1 class="dr-title" style="margin:0;font-size:19px">每日工作進度回報</h1>
+              <span class="info-pill-tip" data-tip="內勤同仁填寫今日工作進度（全員可見，每月支援外勤日可切換外勤回報分頁）； 外勤三人制式回報 3 題（僅副理徐嘉鴻、代理人包于巧與本人可見）。 嚴格防代填保護。">ⓘ 規則說明</span>
               <div class="compact-kpi-strip">
-                <span class="kpi-chip" style="background:#F0FDF4;border-color:#BBF7D0;color:#166534">✅ 已回報 <b>${submittedCount}/${allReporters.length}</b></span>
-                <span class="kpi-chip ${pendingCount > 0 ? 'danger' : ''}">⏳ 待回報 <b>${pendingCount}</b></span>
-                ${exemptCount > 0 ? `<span class="kpi-chip">🏖️ 免回報 <b>${exemptCount}</b></span>` : ''}
+                <span class="kpi-chip" style="background:#F0FDF4;border-color:#BBF7D0;color:#166534">已回報 <b>${submittedCount}/${allReporters.length}</b></span>
+                <span class="kpi-chip ${pendingCount > 0 ? 'danger' : ''}">待回報 <b>${pendingCount}</b></span>
+                ${exemptCount > 0 ? `<span class="kpi-chip">免回報 <b>${exemptCount}</b></span>` : ''}
               </div>
             </div>
             <div class="dr-hero-actions">
               <button type="button" class="btn sm ghost guide-btn" data-open-dr-tour title="啟動每日回報 6 步實景聚焦導覽">
-                🎯 導覽
+                導覽
               </button>
               ${!isSup ? `
                 <button class="btn sm primary dr-quick-btn" data-open-quick="${esc(selectedDate)}">
-                  ✍️ ${mySubmitted ? '修改我的回報' : '填寫今日回報'}
+                  ${mySubmitted ? '修改我的回報' : '填寫今日回報'}
                 </button>
               ` : ''}
               ${mySubmitted ? `
                 <button class="btn sm dr-copy-mine-btn" data-copy-personal="${esc(myId)}">
-                  📋 複製 LINE 格式
+                  複製 LINE 格式
                 </button>
               ` : ''}
             </div>
@@ -979,8 +975,8 @@ export function mountDailyReport(root) {
           <!-- 模式切換與日期導覽列 -->
           <div class="dr-toolbar">
             <div class="dr-view-tabs">
-              <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">📅 單日看板</button>
-              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">🔍 歷史檢索</button>
+              <button class="dr-tab-btn ${viewMode === 'daily' ? 'active' : ''}" data-view-mode="daily">單日看板</button>
+              <button class="dr-tab-btn ${viewMode === 'history' ? 'active' : ''}" data-view-mode="history">歷史檢索</button>
             </div>
 
             ${viewMode === 'daily' ? `
@@ -990,7 +986,7 @@ export function mountDailyReport(root) {
                 <span class="dr-date-label">
                   ${esc(fmtMD(selectedDate))}（${esc(weekdayZh(selectedDate))}）
                   ${selectedDate === today ? '<span class="dr-today-pill">今天</span>' : ''}
-                  ${info.off ? `<span class="dr-holiday-pill">🎉 ${esc(info.name || '例假日')}</span>` : ''}
+                  ${info.off ? `<span class="dr-holiday-pill">${esc(info.name || '例假日')}</span>` : ''}
                 </span>
                 <button class="btn sm" data-shift-day="1" title="後一天">›</button>
                 ${selectedDate !== today ? `<button class="btn sm" data-go-today>今天</button>` : ''}
@@ -999,14 +995,13 @@ export function mountDailyReport(root) {
 
             <div class="dr-typhoon-ctrl">
               <button class="btn sm ${doc.isTyphoonDay ? 'dr-typhoon-active' : ''}" data-toggle-typhoon>
-                🌀 ${doc.isTyphoonDay ? '取消颱風免回報' : '颱風免回報'}
+                ${doc.isTyphoonDay ? '取消颱風免回報' : '颱風免回報'}
               </button>
             </div>
           </div>
 
           ${doc.isTyphoonDay ? `
             <div class="dr-typhoon-banner">
-              <span class="dr-typhoon-icon">🌀</span>
               <div><strong>${esc(doc.typhoonNote || '今日為颱風停班停課日 — 全體同仁免回報')}</strong></div>
             </div>
           ` : ''}
@@ -1030,8 +1025,8 @@ export function mountDailyReport(root) {
       <!-- 外勤品管 3 位同仁制式回報區（連動模擬體驗排班矩陣・魔王部位扣血減壓系統） -->
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
-          <h2>🚲 外勤品管稽查回報（${fieldMembers.length} 位）</h2>
-          <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見；魔王血量與模擬體驗各縣市配額矩陣即時連動">🔒 權限保護 ＆ ⚔️ 魔王扣血減壓</span>
+          <h2>外勤品管稽查回報（${fieldMembers.length} 位）</h2>
+          <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見；魔王血量與模擬體驗各縣市配額矩陣即時連動">權限保護 ＆ 魔王扣血減壓</span>
         </div>
         ${renderFieldRaidBanner(fieldMembers, selectedDate)}
         <div class="dr-cards-grid">
@@ -1042,8 +1037,8 @@ export function mountDailyReport(root) {
       <!-- 內勤 6 位組員每日回報卡片區 -->
       <section class="dr-section" id="dr-office-section">
         <div class="dr-section-head">
-          <h2>🏢 內勤同仁工作進度（${officeMembers.length} 位）</h2>
-          <span class="info-pill-tip" data-tip="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『🚲 外勤支援回報』分頁">👥 全員公開</span>
+          <h2>內勤同仁工作進度（${officeMembers.length} 位）</h2>
+          <span class="info-pill-tip" data-tip="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『 外勤支援回報』分頁">全員公開</span>
         </div>
         <div class="dr-cards-grid">
           ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
@@ -1054,7 +1049,7 @@ export function mountDailyReport(root) {
       ${supervisors.length ? `
         <section class="dr-section" id="dr-exempt-section">
           <div class="dr-section-head">
-            <h2>👔 代理副理審閱專區</h2>
+            <h2>代理副理審閱專區</h2>
           </div>
           <div class="dr-cards-grid compact">
             ${supervisors.map(u => renderSupervisorCard(u)).join('')}
@@ -1079,10 +1074,10 @@ export function mountDailyReport(root) {
               <div class="dr-user-title">${esc(u.title || '經營Team代理副理')}</div>
             </div>
           </div>
-          <span class="dr-status-badge tone-supervisor">👔 代理副理（全組內容審閱權限）</span>
+          <span class="dr-status-badge tone-supervisor">代理副理（全組內容審閱權限）</span>
         </div>
         <div class="dr-empty-body">
-          <span class="muted">🔑 擁有全組 9 位內外勤同仁每日回報內容之完整查閱、「👍 已閱」簽核與「💬 主管回饋」權限。</span>
+          <span class="muted">擁有全組 9 位內外勤同仁每日回報內容之完整查閱、「 已閱」簽核與「 主管回饋」權限。</span>
         </div>
       </article>
     `;
@@ -1101,7 +1096,7 @@ export function mountDailyReport(root) {
     const canEditThis = isMe || isDesigner;
     const isEditing = editingUid === u.uid && canEditThis;
 
-    // 內勤同仁展開編輯時，支援分頁切換「🏢 內勤工作進度（預設）」與「🚲 外勤支援（模擬體驗）」
+    // 內勤同仁展開編輯時，支援分頁切換「 內勤工作進度（預設）」與「 外勤支援（模擬體驗）」
     const activeEditorMode = isField
       ? 'field'
       : (editingModeOverride || (rep.reportType === 'field' ? 'field' : 'office'));
@@ -1123,8 +1118,8 @@ export function mountDailyReport(root) {
               <div class="dr-user-name">
                 ${esc(u.displayName)}
                 ${isMe ? '<span class="dr-me-tag">我</span>' : ''}
-                ${isField ? '<span class="dr-role-pill field">🚲 外勤品管</span>' : '<span class="dr-role-pill office">🏢 內勤</span>'}
-                ${(!isField && rep.reportType === 'field' && hasSubmitted) ? '<span class="dr-role-pill field" title="當日支援外勤模擬體驗">🚲 外勤支援</span>' : ''}
+                ${isField ? '<span class="dr-role-pill field">外勤品管</span>' : '<span class="dr-role-pill office">內勤</span>'}
+                ${(!isField && rep.reportType === 'field' && hasSubmitted) ? '<span class="dr-role-pill field" title="當日支援外勤模擬體驗">外勤支援</span>' : ''}
               </div>
               <div class="dr-user-title">${esc(u.title || '經營 Team 組員')}</div>
             </div>
@@ -1134,7 +1129,7 @@ export function mountDailyReport(root) {
 
         ${st.leaveEv ? `
           <div class="dr-leave-notice">
-            🏖️ 行事曆已登記休假：<strong>${esc(st.leaveEv.reason || '休假')}</strong>（今日免回報）
+            行事曆已登記休假：<strong>${esc(st.leaveEv.reason || '休假')}</strong>（今日免回報）
           </div>
         ` : ''}
 
@@ -1150,7 +1145,6 @@ export function mountDailyReport(root) {
               (isField || rep.reportType === 'field') ? renderFieldReportBody(rep, !isField) : renderOfficeReportBody(rep)
             ) : `
               <div class="dr-private-mask">
-                <span class="dr-lock-icon">🔒</span>
                 <div>
                   <strong>${esc(u.displayName)} 已完成今日回報</strong>
                   <div class="muted" style="font-size:12px">外勤回報內容僅代理副理（徐嘉鴻）、代理人（包于巧）與本人可見</div>
@@ -1171,12 +1165,12 @@ export function mountDailyReport(root) {
           <div class="dr-ack-box">
             ${ackList.length > 0 ? `
               <div class="dr-ack-badges">
-                ${ackList.map(a => `<span class="dr-ack-pill">👍 ${esc(a.name)} 已閱</span>`).join('')}
+                ${ackList.map(a => `<span class="dr-ack-pill">${esc(a.name)} 已閱</span>`).join('')}
               </div>
             ` : ''}
             ${(canSeeDetails && rep.managerReply) ? `
               <div class="dr-manager-reply">
-                <strong>💬 ${esc(rep.managerReplyBy || '代理副理')} 回饋：</strong>${esc(rep.managerReply)}
+                <strong>${esc(rep.managerReplyBy || '代理副理')} 回饋：</strong>${esc(rep.managerReply)}
               </div>
             ` : ''}
           </div>
@@ -1187,7 +1181,7 @@ export function mountDailyReport(root) {
             <input type="text" data-reply-input="${esc(u.uid)}" placeholder="輸入給 ${esc(u.displayName)} 的主管回饋或勉勵..." value="${esc(rep.managerReply || '')}">
             <div class="dr-reply-btns">
               <button class="btn sm" data-cancel-reply>取消</button>
-              <button class="btn sm primary" data-save-reply="${esc(u.uid)}">💬 儲存回饋並標記已閱</button>
+              <button class="btn sm primary" data-save-reply="${esc(u.uid)}">儲存回饋並標記已閱</button>
             </div>
           </div>
         ` : ''}
@@ -1198,16 +1192,16 @@ export function mountDailyReport(root) {
             <div class="dr-foot-left">
               ${canEditThis ? `
                 <button class="btn sm ${!hasSubmitted && isMe ? 'primary' : ''}" data-start-edit="${esc(u.uid)}">
-                  ✍️ ${hasSubmitted ? '編輯回報' : '填寫回報'}
+                  ${hasSubmitted ? '編輯回報' : '填寫回報'}
                 </button>
               ` : ''}
               ${(hasSubmitted && canSeeDetails) ? `
                 <button class="btn sm" data-copy-personal="${esc(u.uid)}" title="複製個人 LINE 回報格式">
-                  📋 複製 LINE 格式
+                  複製 LINE 格式
                 </button>
                 ${isMe ? `
                   <a class="btn sm dr-line-link" href="https://line.me/R/" target="_blank" rel="noopener" title="開啟 LINE App 貼上">
-                    💬 開啟 LINE
+                    開啟 LINE
                   </a>
                 ` : ''}
               ` : ''}
@@ -1216,10 +1210,10 @@ export function mountDailyReport(root) {
             <div class="dr-foot-right">
               ${(canManage && hasSubmitted) ? `
                 <button class="btn sm ${myAck ? 'dr-ack-active' : ''}" data-toggle-ack="${esc(u.uid)}" data-ack-val="${myAck ? '0' : '1'}">
-                  👍 ${myAck ? '已閱' : '點選已閱'}
+                  ${myAck ? '已閱' : '點選已閱'}
                 </button>
                 <button class="btn sm" data-open-reply="${esc(u.uid)}" title="留下主管回饋">
-                  💬 回饋
+                  回饋
                 </button>
               ` : ''}
             </div>
@@ -1235,11 +1229,11 @@ export function mountDailyReport(root) {
       <div class="dr-office-mode-tabs" style="display:flex; gap:6px; margin-bottom:12px; padding:4px; background:#f1f5f9; border-radius:10px; border:1px solid #e2e8f0;">
         <button type="button" class="dr-mode-tab-btn ${activeMode === 'office' ? 'active' : ''}" data-switch-edit-mode="office" data-target-uid="${esc(uid)}"
           style="flex:1; padding:7px 12px; border-radius:7px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; ${activeMode === 'office' ? 'background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
-          🏢 內勤工作進度（日常預設）
+          內勤工作進度（日常預設）
         </button>
         <button type="button" class="dr-mode-tab-btn ${activeMode === 'field' ? 'active' : ''}" data-switch-edit-mode="field" data-target-uid="${esc(uid)}"
           style="flex:1; padding:7px 12px; border-radius:7px; border:none; font-size:13px; font-weight:600; cursor:pointer; transition:all .15s; ${activeMode === 'field' ? 'background:#fff; color:#0369a1; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
-          🚲 外勤支援回報（每月模擬體驗）
+          外勤支援回報（每月模擬體驗）
         </button>
       </div>
     `;
@@ -1258,17 +1252,17 @@ export function mountDailyReport(root) {
       <div class="dr-inline-editor field-mode" data-editor-for="${esc(u.uid)}" data-editor-mode="field">
         ${showModeSwitcher ? renderOfficeModeTabs(u.uid, 'field') : ''}
         <div class="dr-editor-top-tools">
-          <span class="dr-field-mode-tag">${showModeSwitcher ? '🚲 內勤支援外勤（模擬體驗）回報（3 項必填）' : '🚲 外勤品管制式回報（3 項必填）'}</span>
+          <span class="dr-field-mode-tag">${showModeSwitcher ? '內勤支援外勤（模擬體驗）回報（3 項必填）' : '外勤品管制式回報（3 項必填）'}</span>
           ${prevEntry ? `
             <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
-              📥 帶入前次地區與數據（${esc(fmtMD(prevEntry.date))}）
+              帶入前次地區與數據（${esc(fmtMD(prevEntry.date))}）
             </button>
           ` : ''}
         </div>
 
         <!-- 縣市 ➔ 行政區 二階連動下拉選單 -->
         <div class="dr-cascade-box">
-          <div class="dr-cascade-title">📍 縣市與行政區連動選擇器 <small class="muted">（選擇縣市後自動切換對應行政區，點選即可自動加入下方地區欄，支援同日多區）</small></div>
+          <div class="dr-cascade-title">縣市與行政區連動選擇器 <small class="muted">（選擇縣市後自動切換對應行政區，點選即可自動加入下方地區欄，支援同日多區）</small></div>
           <div class="dr-cascade-row">
             <label class="dr-cascade-col">
               <span>① 選擇縣市</span>
@@ -1280,7 +1274,7 @@ export function mountDailyReport(root) {
               <span>② 選擇行政區（自動帶入）</span>
               <select data-cascade-dist="${esc(u.uid)}">
                 <option value="">-- 請選擇 ${esc(defaultCity)} 行政區 --</option>
-                <option value="全區">📌 ${esc(defaultCity)}（不限行政區 / 全區）</option>
+                <option value="全區">${esc(defaultCity)}（不限行政區 / 全區）</option>
                 ${defaultDistricts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
               </select>
             </label>
@@ -1292,42 +1286,42 @@ export function mountDailyReport(root) {
         </div>
 
         <label class="dr-field">
-          <span>1️⃣ 地區 <small class="muted">（必填，由上方連動選單自動帶入，亦可直接手動補充微調）</small></span>
+          <span>1 地區 <small class="muted">（必填，由上方連動選單自動帶入，亦可直接手動補充微調）</small></span>
           <input type="text" data-f-region="${esc(u.uid)}" placeholder="例如：新北市（板橋區、中和區）..." value="${esc(rep.fieldRegion || '')}">
         </label>
 
         <div class="dr-field-row3">
           <label class="dr-field">
-            <span>2️⃣ 稽查場站數 <small class="muted">（站）</small></span>
+            <span>2 稽查場站數 <small class="muted">（站）</small></span>
             <input type="number" min="0" step="1" inputmode="numeric" data-f-stations="${esc(u.uid)}" placeholder="0" value="${esc(rep.fieldStations ?? '')}">
           </label>
           <label class="dr-field">
-            <span>3️⃣ YouBike 2.0 數量 <small class="muted">（台）</small></span>
+            <span>3 YouBike 2.0 數量 <small class="muted">（台）</small></span>
             <input type="number" min="0" step="1" inputmode="numeric" data-f-v20="${esc(u.uid)}" placeholder="0" value="${esc(v20)}">
           </label>
           <label class="dr-field">
-            <span>⚡ YouBike 2.0E 數量 <small class="muted">（台）</small></span>
+            <span>YouBike 2.0E 數量 <small class="muted">（台）</small></span>
             <input type="number" min="0" step="1" inputmode="numeric" data-f-v20e="${esc(u.uid)}" placeholder="0" value="${esc(v20e)}">
           </label>
         </div>
 
         <div class="dr-bike-sum-bar" data-bike-sum="${esc(u.uid)}">
-          <div>🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${total} 台</strong>（🗡️ 2.0 斬擊：${Number(v20) || 0} 台 ＋ ⚡ 2.0E 雷擊：${Number(v20e) || 0} 台）</div>
+          <div>2.0 與 2.0E 合計稽查車輛數：<strong>${total} 台</strong>（ 2.0 斬擊：${Number(v20) || 0} 台 ＋ 2.0E 雷擊：${Number(v20e) || 0} 台）</div>
           <div class="dr-bike-damage-preview" style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">
-            ⚔️ 預計對魔王造成 <b>-${total} HP</b> 傷害（自動依「1️⃣ 地區」精準扣除大腦/身體核心或四肢部位血量！）
+            預計對魔王造成 <b>-${total} HP</b> 傷害（自動依「1 地區」精準扣除大腦/身體核心或四肢部位血量！）
           </div>
         </div>
 
         <label class="dr-field">
-          <span>💡 補充備註事項 <small class="muted">（選填）</small></span>
+          <span>補充備註事項 <small class="muted">（選填）</small></span>
           <input type="text" data-f-notes="${esc(u.uid)}" placeholder="例如：特殊異常回報、跨區支援說明..." value="${esc(rep.notes || '')}">
         </label>
 
         <div class="dr-editor-actions">
           <button type="button" class="btn sm" data-cancel-edit>取消</button>
-          <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
+          <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">儲存</button>
           <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
-            📋 儲存並複製 LINE
+            儲存並複製 LINE
           </button>
         </div>
       </div>
@@ -1342,37 +1336,37 @@ export function mountDailyReport(root) {
         <div class="dr-editor-top-tools">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-import-prev-btn" data-import-prev="${esc(u.uid)}">
-              📥 一鍵帶入前次項目（${esc(fmtMD(prevEntry.date))}）
+              一鍵帶入前次項目（${esc(fmtMD(prevEntry.date))}）
             </button>
-          ` : `<span class="muted" style="font-size:12px">💡 可點選下方常用詞彙快速帶入</span>`}
-          <button type="button" class="btn sm" data-auto-number="${esc(u.uid)}">🔢 自動整理編號</button>
+          ` : `<span class="muted" style="font-size:12px">可點選下方常用詞彙快速帶入</span>`}
+          <button type="button" class="btn sm" data-auto-number="${esc(u.uid)}">自動整理編號</button>
         </div>
 
         <div class="dr-chip-bar">
-          <span class="dr-chip-label">⚡ ${esc(u.displayName)} 職務專屬快選詞彙：</span>
+          <span class="dr-chip-label">${esc(u.displayName)} 職務專屬快選詞彙：</span>
           ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-insert-chip="${esc(c)}" data-target-uid="${esc(u.uid)}">＋ ${esc(c)}</button>`).join('')}
         </div>
 
         <label class="dr-field">
-          <span>✅ 今日完成事項 / 工作進度 <small class="muted">（必填，每行一項）</small></span>
+          <span>今日完成事項 / 工作進度 <small class="muted">（必填，每行一項）</small></span>
           <textarea rows="4" data-f-today="${esc(u.uid)}" placeholder="1. 完成...&#10;2. 追蹤...">${esc(rep.todayTasks || '')}</textarea>
         </label>
 
         <label class="dr-field">
-          <span>📅 明日預計工作 / 後續待辦 <small class="muted">（選填）</small></span>
+          <span>明日預計工作 / 後續待辦 <small class="muted">（選填）</small></span>
           <textarea rows="2" data-f-tomorrow="${esc(u.uid)}" placeholder="1. 預計處理...">${esc(rep.tomorrowTasks || '')}</textarea>
         </label>
 
         <label class="dr-field">
-          <span>💡 需主管協助 / 備註事項 <small class="muted">（選填）</small></span>
+          <span>需主管協助 / 備註事項 <small class="muted">（選填）</small></span>
           <input type="text" data-f-notes="${esc(u.uid)}" placeholder="例如：合約待核章、需跨部門協調事項..." value="${esc(rep.notes || '')}">
         </label>
 
         <div class="dr-editor-actions">
           <button type="button" class="btn sm" data-cancel-edit>取消</button>
-          <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">💾 儲存</button>
+          <button type="button" class="btn sm" data-save-only="${esc(u.uid)}">儲存</button>
           <button type="button" class="btn sm primary" data-save-and-copy="${esc(u.uid)}">
-            📋 儲存並複製 LINE
+            儲存並複製 LINE
           </button>
         </div>
       </div>
@@ -1387,24 +1381,24 @@ export function mountDailyReport(root) {
     const total = v20 + v20e;
     return `
       <div class="dr-report-body field-summary">
-        ${isOfficeSupport ? `<div style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:6px;">🚲 當日支援外勤（模擬體驗）稽查回報</div>` : ''}
+        ${isOfficeSupport ? `<div style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:6px;">當日支援外勤（模擬體驗）稽查回報</div>` : ''}
         <div class="dr-field-metrics">
           <div class="dr-f-metric">
-            <span class="dr-fm-label">📍 攻擊部位 / 地區</span>
+            <span class="dr-fm-label">攻擊部位 / 地區</span>
             <strong class="dr-fm-val">${esc(rep.fieldRegion || '—')}</strong>
           </div>
           <div class="dr-f-metric">
-            <span class="dr-fm-label">🚏 推進據點（場站數）</span>
-            <strong class="dr-fm-val">${esc(String(stations))} 站 ${stations >= 4 ? '<span class="dr-combo-tag">🌪️ 疾風連擊!</span>' : ''}</strong>
+            <span class="dr-fm-label">推進據點（場站數）</span>
+            <strong class="dr-fm-val">${esc(String(stations))} 站 ${stations >= 4 ? '<span class="dr-combo-tag">疾風連擊!</span>' : ''}</strong>
           </div>
           <div class="dr-f-metric wide">
-            <span class="dr-fm-label">⚔️ 今日傷害輸出（2.0 斬擊 ＋ 2.0E 雷擊）</span>
-            <strong class="dr-fm-val">🗡️ 2.0：${v20} 台 ／ ⚡ 2.0E：${v20e} 台 <span class="dr-fm-total">（💥 魔王扣血 -${total} HP）</span></strong>
+            <span class="dr-fm-label">今日傷害輸出（2.0 斬擊 ＋ 2.0E 雷擊）</span>
+            <strong class="dr-fm-val">2.0：${v20} 台 ／ 2.0E：${v20e} 台 <span class="dr-fm-total">（ 魔王扣血 -${total} HP）</span></strong>
           </div>
         </div>
         ${rep.notes ? `
           <div class="dr-block note" style="margin-top:6px">
-            <div class="dr-block-title">💡 備註事項</div>
+            <div class="dr-block-title">備註事項</div>
             <div class="dr-block-text">${esc(rep.notes)}</div>
           </div>
         ` : ''}
@@ -1422,7 +1416,7 @@ export function mountDailyReport(root) {
       return `
         <div class="dr-report-body">
           <div class="dr-block">
-            <div class="dr-block-title">✅ 今日完成</div>
+            <div class="dr-block-title">今日完成</div>
             <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
           </div>
         </div>
@@ -1434,7 +1428,7 @@ export function mountDailyReport(root) {
         <summary class="dr-collapsible-summary">
           <div class="dr-block" style="margin:0;flex:1">
             <div class="dr-block-title" style="display:flex;justify-content:space-between;align-items:center">
-              <span>✅ 今日完成（共 ${lines.length} 項）</span>
+              <span>今日完成（共 ${lines.length} 項）</span>
               <span class="dr-expand-hint">▸ 點擊展開完整內容</span>
             </div>
             <div class="dr-block-text">${esc(previewLines).replace(/\n/g, '<br>')}${lines.length > 3 ? '<span class="muted"> …</span>' : ''}</div>
@@ -1443,19 +1437,19 @@ export function mountDailyReport(root) {
         <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)">
           ${lines.length > 3 ? `
             <div class="dr-block">
-              <div class="dr-block-title">✅ 完整今日完成事項</div>
+              <div class="dr-block-title">完整今日完成事項</div>
               <div class="dr-block-text">${esc(rep.todayTasks).replace(/\n/g, '<br>')}</div>
             </div>
           ` : ''}
           ${rep.tomorrowTasks ? `
             <div class="dr-block">
-              <div class="dr-block-title">📅 明日預計 / 待辦</div>
+              <div class="dr-block-title">明日預計 / 待辦</div>
               <div class="dr-block-text">${esc(rep.tomorrowTasks).replace(/\n/g, '<br>')}</div>
             </div>
           ` : ''}
           ${rep.notes ? `
             <div class="dr-block note">
-              <div class="dr-block-title">💡 備註 / 需協助事項</div>
+              <div class="dr-block-title">備註 / 需協助事項</div>
               <div class="dr-block-text">${esc(rep.notes)}</div>
             </div>
           ` : ''}
@@ -1487,14 +1481,14 @@ export function mountDailyReport(root) {
       <section class="card pad dr-history-section">
         <div class="dr-history-filters">
           <label class="dr-filter-item">
-            <span>👤 篩選組員：</span>
+            <span>篩選組員：</span>
             <select data-history-uid>
               <option value="all" ${historyFilterUid === 'all' ? 'selected' : ''}>全部可查閱組員（${viewableUsers.length} 人）</option>
               ${viewableUsers.map(u => `<option value="${esc(u.uid)}" ${historyFilterUid === u.uid ? 'selected' : ''}>${esc(u.displayName)}（${esc(u.title || '')}）</option>`).join('')}
             </select>
           </label>
           <label class="dr-filter-item grow">
-            <span>🔍 關鍵字搜尋：</span>
+            <span>關鍵字搜尋：</span>
             <input type="search" data-history-kw placeholder="搜尋地區、工作內容、採購、倉管、勞安..." value="${esc(historyKeyword)}">
           </label>
         </div>
@@ -1508,7 +1502,7 @@ export function mountDailyReport(root) {
               <div class="dr-history-row">
                 <div class="dr-history-meta">
                   <button class="dr-history-date-btn" data-jump-date="${esc(item.date)}">
-                    📅 ${esc(item.date)}（週${esc(weekdayZh(item.date))}）
+                    ${esc(item.date)}（週${esc(weekdayZh(item.date))}）
                   </button>
                   <div class="dr-history-user">
                     ${avatar(item.user, 28)}
@@ -1518,17 +1512,17 @@ export function mountDailyReport(root) {
                 </div>
                 <div class="dr-history-content">
                   ${isField ? `
-                    <div><strong>📍 地區：</strong>${esc(item.report.fieldRegion || '—')}</div>
-                    <div><strong>🚏 稽查場站數：</strong>${esc(String(item.report.fieldStations ?? 0))} 站</div>
-                    <div><strong>🚲 2.0與2.0E的數量：</strong>2.0 共 ${v20} 台 / 2.0E 共 ${v20e} 台（合計 ${v20 + v20e} 台）</div>
+                    <div><strong>地區：</strong>${esc(item.report.fieldRegion || '—')}</div>
+                    <div><strong>稽查場站數：</strong>${esc(String(item.report.fieldStations ?? 0))} 站</div>
+                    <div><strong>2.0與2.0E的數量：</strong>2.0 共 ${v20} 台 / 2.0E 共 ${v20e} 台（合計 ${v20 + v20e} 台）</div>
                   ` : `
-                    <div><strong>✅ 今日完成：</strong><br>${esc(item.report.todayTasks).replace(/\n/g, '<br>')}</div>
-                    ${item.report.tomorrowTasks ? `<div style="margin-top:6px"><strong>📅 明日預計：</strong><br>${esc(item.report.tomorrowTasks).replace(/\n/g, '<br>')}</div>` : ''}
+                    <div><strong>今日完成：</strong><br>${esc(item.report.todayTasks).replace(/\n/g, '<br>')}</div>
+                    ${item.report.tomorrowTasks ? `<div style="margin-top:6px"><strong>明日預計：</strong><br>${esc(item.report.tomorrowTasks).replace(/\n/g, '<br>')}</div>` : ''}
                   `}
-                  ${item.report.notes ? `<div style="margin-top:6px"><strong>💡 備註：</strong>${esc(item.report.notes)}</div>` : ''}
+                  ${item.report.notes ? `<div style="margin-top:6px"><strong>備註：</strong>${esc(item.report.notes)}</div>` : ''}
                 </div>
                 <div class="dr-history-actions">
-                  <button class="btn sm" data-copy-history="${esc(item.date)}" data-copy-uid="${esc(item.uid)}">📋 複製 LINE 格式</button>
+                  <button class="btn sm" data-copy-history="${esc(item.date)}" data-copy-uid="${esc(item.uid)}">複製 LINE 格式</button>
                 </div>
               </div>
             `;
@@ -1582,8 +1576,8 @@ export function mountDailyReport(root) {
     if (typhoonBtn) {
       typhoonBtn.onclick = async () => {
         const nextVal = !doc.isTyphoonDay;
-        await toggleTyphoonDay(selectedDate, nextVal, '🌀 颱風停班停課（全體同仁免回報）');
-        toast(nextVal ? `🌀 已將 ${fmtMD(selectedDate)} 設為颱風天免回報` : `已恢復 ${fmtMD(selectedDate)} 為一般工作日回報`);
+        await toggleTyphoonDay(selectedDate, nextVal, '颱風停班停課（全體同仁免回報）');
+        toast(nextVal ? ` 已將 ${fmtMD(selectedDate)} 設為颱風天免回報` : `已恢復 ${fmtMD(selectedDate)} 為一般工作日回報`);
         render();
       };
     }
@@ -1629,7 +1623,7 @@ export function mountDailyReport(root) {
       };
     });
 
-    // 🎯 點擊魔王身上的「部位鎖定準星 / 部位血條卡」：直接鎖定該部位對應縣市並展開回報編輯器！
+    // 點擊魔王身上的「部位鎖定準星 / 部位血條卡」：直接鎖定該部位對應縣市並展開回報編輯器！
     const QUOTA_TO_CASCADE_CITY = {
       '雙北': '新北市',
       '桃園': '桃園市',
@@ -1651,7 +1645,7 @@ export function mountDailyReport(root) {
         const targetCity = subMatch === '台北' ? '台北市' : (subMatch === '新北' ? '新北市' : (QUOTA_TO_CASCADE_CITY[regionKey] || regionKey));
 
         if (targetId !== myUid() && !isDesigner) {
-          toast(`🎯 部位【${targetCity}】｜點擊本人魔王部位可直接展開回報扣血！`);
+          toast(` 部位【${targetCity}】｜點擊本人魔王部位可直接展開回報扣血！`);
           return;
         }
         if (editingUid !== targetId) {
@@ -1671,11 +1665,11 @@ export function mountDailyReport(root) {
         }
         const stIn = root.querySelector(`[data-f-stations="${targetId}"]`);
         if (stIn) stIn.focus();
-        toast(`🎯 已鎖定魔王部位【${targetCity}】！輸入場站與台數即可發動扣血攻擊⚔️`);
+        toast(` 已鎖定魔王部位【${targetCity}】！輸入場站與台數即可發動扣血攻擊`);
       };
     });
 
-    // 內勤同仁切換「🏢 內勤工作進度 / 🚲 外勤支援回報（每月模擬體驗）」分頁
+    // 內勤同仁切換「 內勤工作進度 / 外勤支援回報（每月模擬體驗）」分頁
     root.querySelectorAll('[data-switch-edit-mode]').forEach(tabBtn => {
       tabBtn.onclick = () => {
         editingModeOverride = tabBtn.dataset.switchEditMode;
@@ -1712,14 +1706,14 @@ export function mountDailyReport(root) {
           if (v20In) v20In.value = prev.report.fieldV20 ?? '';
           if (v20eIn) v20eIn.value = prev.report.fieldV20E ?? '';
           updateFieldBikeSum(uid);
-          toast(`📥 已帶入 ${fmtMD(prev.date)} 的外勤稽查數據，請直接微調！`);
+          toast(` 已帶入 ${fmtMD(prev.date)} 的外勤稽查數據，請直接微調！`);
         } else {
           const todayTa = root.querySelector(`[data-f-today="${uid}"]`);
           const tomorrowTa = root.querySelector(`[data-f-tomorrow="${uid}"]`);
           const seedToday = (prev.report.tomorrowTasks || '').trim() || (prev.report.todayTasks || '').trim();
           if (todayTa) todayTa.value = normalizeNumberedLines(seedToday);
           if (tomorrowTa && !tomorrowTa.value.trim()) tomorrowTa.value = prev.report.tomorrowTasks || '';
-          toast(`📥 已帶入 ${fmtMD(prev.date)} 的回報項目，請直接微調！`);
+          toast(` 已帶入 ${fmtMD(prev.date)} 的回報項目，請直接微調！`);
         }
       };
     });
@@ -1734,13 +1728,13 @@ export function mountDailyReport(root) {
         const districts = FIELD_CITY_DISTRICTS[city] || [];
         distSel.innerHTML = `
           <option value="">-- 請選擇 ${esc(city)} 行政區 --</option>
-          <option value="全區">📌 ${esc(city)}（不限行政區 / 全區）</option>
+          <option value="全區">${esc(city)}（不限行政區 / 全區）</option>
           ${districts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
         `;
       };
     });
 
-    // 選擇第二層行政區時，自動合併帶入下方「1️⃣ 地區」欄位
+    // 選擇第二層行政區時，自動合併帶入下方「1 地區」欄位
     root.querySelectorAll('[data-cascade-dist]').forEach(distSel => {
       distSel.onchange = () => {
         const uid = distSel.dataset.cascadeDist;
@@ -1789,12 +1783,12 @@ export function mountDailyReport(root) {
       const u = state.users.get(uid);
       const nick = getFieldNick(u);
       const matched = matchRegionToQuotaKey(regText, nick);
-      const partHint = matched.map(r => (r === '雙北' || r === '高雄') ? `🧠🫀 ${r}核心（大腦/身體）` : `🦾 ${r}（四肢部位）`).join('、');
+      const partHint = matched.map(r => (r === '雙北' || r === '高雄') ? ` ${r}核心（大腦/身體）` : ` ${r}（四肢部位）`).join('、');
       if (sumEl) {
         sumEl.innerHTML = `
-          <div>🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${v20 + v20e} 台</strong>（🗡️ 2.0 斬擊：${v20} 台 ＋ ⚡ 2.0E 雷擊：${v20e} 台）</div>
+          <div>2.0 與 2.0E 合計稽查車輛數：<strong>${v20 + v20e} 台</strong>（ 2.0 斬擊：${v20} 台 ＋ 2.0E 雷擊：${v20e} 台）</div>
           <div class="dr-bike-damage-preview" style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">
-            ⚔️ 預計對【${esc(partHint)}】造成 <b>-${v20 + v20e} HP</b> 傷害！
+            預計對【${esc(partHint)}】造成 <b>-${v20 + v20e} HP</b> 傷害！
           </div>
         `;
       }
@@ -1853,12 +1847,12 @@ export function mountDailyReport(root) {
         const fieldV20E = Number(v20eIn?.value) || 0;
 
         if (!fieldRegion) {
-          toast('請透過上方連動選單選擇或填寫「1️⃣ 地區」', 'error');
+          toast('請透過上方連動選單選擇或填寫「1 地區」', 'error');
           regIn?.focus();
           return;
         }
         if (fieldStationsRaw === '' || Number(fieldStationsRaw) < 0) {
-          toast('請填寫「2️⃣ 稽查場站數」', 'error');
+          toast('請填寫「2 稽查場站數」', 'error');
           stIn?.focus();
           return;
         }
@@ -1901,12 +1895,12 @@ export function mountDailyReport(root) {
         const text = formatPersonalLineReport(targetUser, selectedDate, saved);
         try {
           await navigator.clipboard.writeText(text);
-          toast('✅ 已儲存並複製個人 LINE 回報格式！可直接至 LINE 群組貼上');
+          toast('已儲存並複製個人 LINE 回報格式！可直接至 LINE 群組貼上');
         } catch {
-          toast('✅ 已儲存回報（請點擊複製按鈕複製文字）');
+          toast('已儲存回報（請點擊複製按鈕複製文字）');
         }
       } else {
-        toast('✅ 已儲存每日工作進度回報');
+        toast('已儲存每日工作進度回報');
       }
       render();
 
@@ -1920,7 +1914,7 @@ export function mountDailyReport(root) {
               arenaEl.classList.add('boss-hit-shake');
               const floatEl = document.createElement('div');
               floatEl.className = 'dr-boss-floating-dmg';
-              floatEl.innerHTML = `⚔️ CRITICAL! <span>-${dmg} HP!</span>`;
+              floatEl.innerHTML = ` CRITICAL! <span>-${dmg} HP!</span>`;
               arenaEl.appendChild(floatEl);
               setTimeout(() => {
                 arenaEl.classList.remove('boss-hit-shake');
@@ -1952,20 +1946,20 @@ export function mountDailyReport(root) {
         const text = formatPersonalLineReport(targetUser, selectedDate, rep);
         try {
           await navigator.clipboard.writeText(text);
-          toast(`📋 已複製 ${targetUser?.displayName || ''} 的個人 LINE 回報格式！`);
+          toast(` 已複製 ${targetUser?.displayName || ''} 的個人 LINE 回報格式！`);
         } catch {
           toast('複製失敗，請手動選取複製', 'error');
         }
       };
     });
 
-    // 代理副理點選「👍 已閱」
+    // 代理副理點選「 已閱」
     root.querySelectorAll('[data-toggle-ack]').forEach(btn => {
       btn.onclick = async () => {
         const uid = btn.dataset.toggleAck;
         const ack = btn.dataset.ackVal === '1';
         await acknowledgeDailyReport(selectedDate, uid, { ack });
-        toast(ack ? '👍 已標記審閱' : '已取消審閱標記');
+        toast(ack ? '已標記審閱' : '已取消審閱標記');
         render();
       };
     });
@@ -1995,7 +1989,7 @@ export function mountDailyReport(root) {
         const managerReply = (inp?.value || '').trim();
         await acknowledgeDailyReport(selectedDate, uid, { ack: true, managerReply });
         replyingUid = null;
-        toast('💬 已儲存主管回饋並標記已閱');
+        toast('已儲存主管回饋並標記已閱');
         render();
       };
     });
@@ -2048,7 +2042,7 @@ export function mountDailyReport(root) {
         if (!rep) return;
         const text = formatPersonalLineReport(targetUser, d, rep);
         await navigator.clipboard.writeText(text);
-        toast(`📋 已複製 ${fmtMD(d)} ${targetUser?.displayName || ''} 的 LINE 回報格式`);
+        toast(` 已複製 ${fmtMD(d)} ${targetUser?.displayName || ''} 的 LINE 回報格式`);
       };
     });
   }
@@ -2065,7 +2059,7 @@ export function mountDailyReport(root) {
 // ============================================================
 // 行動端通勤極速快填彈窗（Modal）
 // - 外勤品管同仁：直接使用制式 3 題
-// - 內勤同仁：預設為「🏢 內勤工作進度」，並提供「🚲 外勤支援回報（模擬體驗）」分頁切換
+// - 內勤同仁：預設為「 內勤工作進度」，並提供「 外勤支援回報（模擬體驗）」分頁切換
 // ============================================================
 export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) {
   const existingModal = document.getElementById('dr-quick-sheet-backdrop');
@@ -2101,8 +2095,8 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       <div class="dr-sheet-handle"></div>
       <div class="dr-sheet-head">
         <div>
-          <div class="dr-sheet-badge">${isRegularField ? '🚲 外勤品管制式快填・僅徐嘉鴻與包于巧可見' : (isField ? '🚲 內勤支援外勤（模擬體驗）快填' : '⚡ 內勤每日進度快填・全組公開共享')}</div>
-          <h3>📝 ${esc(fmtMD(dateStr))}（週${esc(weekdayZh(dateStr))}）${esc(me.displayName)} 回報</h3>
+          <div class="dr-sheet-badge">${isRegularField ? '外勤品管制式快填・僅徐嘉鴻與包于巧可見' : (isField ? '內勤支援外勤（模擬體驗）快填' : '內勤每日進度快填・全組公開共享')}</div>
+          <h3>${esc(fmtMD(dateStr))}（週${esc(weekdayZh(dateStr))}）${esc(me.displayName)} 回報</h3>
         </div>
         <button type="button" class="icon-btn" data-close-sheet aria-label="關閉">✕</button>
       </div>
@@ -2112,11 +2106,11 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
           <div class="dr-office-mode-tabs" style="display:flex; gap:6px; margin-bottom:12px; padding:4px; background:#f1f5f9; border-radius:10px; border:1px solid #e2e8f0;">
             <button type="button" class="dr-mode-tab-btn ${activeSheetMode === 'office' ? 'active' : ''}" data-sheet-switch-mode="office"
               style="flex:1; padding:7px 10px; border-radius:7px; border:none; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; ${activeSheetMode === 'office' ? 'background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
-              🏢 內勤工作進度（日常預設）
+              內勤工作進度（日常預設）
             </button>
             <button type="button" class="dr-mode-tab-btn ${activeSheetMode === 'field' ? 'active' : ''}" data-sheet-switch-mode="field"
               style="flex:1; padding:7px 10px; border-radius:7px; border:none; font-size:12.5px; font-weight:600; cursor:pointer; transition:all .15s; ${activeSheetMode === 'field' ? 'background:#fff; color:#0369a1; box-shadow:0 1px 3px rgba(15,23,42,.08);' : 'background:transparent; color:#64748b;'}">
-              🚲 外勤支援回報（每月模擬體驗）
+              外勤支援回報（每月模擬體驗）
             </button>
           </div>
         ` : ''}
@@ -2124,15 +2118,15 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
         <div class="dr-sheet-quickbar">
           ${prevEntry ? `
             <button type="button" class="btn sm dr-sheet-prev-btn" data-sheet-import-prev>
-              📥 一鍵帶入前次資料（${esc(fmtMD(prevEntry.date))}）
+              一鍵帶入前次資料（${esc(fmtMD(prevEntry.date))}）
             </button>
           ` : ''}
-          ${!isField ? `<button type="button" class="btn sm" data-sheet-renumber>🔢 自動整理 1.2.3.</button>` : ''}
+          ${!isField ? `<button type="button" class="btn sm" data-sheet-renumber>自動整理 1.2.3.</button>` : ''}
         </div>
 
         ${isField ? `
           <div class="dr-cascade-box">
-            <div class="dr-cascade-title">📍 縣市與行政區連動選擇器（選擇即自動加入下方地區欄，支援多區）</div>
+            <div class="dr-cascade-title">縣市與行政區連動選擇器（選擇即自動加入下方地區欄，支援多區）</div>
             <div class="dr-cascade-row">
               <label class="dr-cascade-col">
                 <span>① 選擇縣市</span>
@@ -2144,7 +2138,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
                 <span>② 選擇行政區（自動帶入）</span>
                 <select data-sheet-cascade-dist>
                   <option value="">-- 請選擇 ${esc(defaultCity)} 行政區 --</option>
-                  <option value="全區">📌 ${esc(defaultCity)}（不限行政區 / 全區）</option>
+                  <option value="全區">${esc(defaultCity)}（不限行政區 / 全區）</option>
                   ${defaultDistricts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
                 </select>
               </label>
@@ -2156,58 +2150,58 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
           </div>
 
           <label class="dr-sheet-field">
-            <span>1️⃣ 地區（必填，由上方選單自動帶入，亦可直接手動補充微調）</span>
+            <span>1 地區（必填，由上方選單自動帶入，亦可直接手動補充微調）</span>
             <input type="text" data-sheet-region placeholder="例如：新北市（板橋區、中和區）..." value="${esc(rep.fieldRegion || '')}">
           </label>
 
           <div class="dr-field-row3">
             <label class="dr-sheet-field">
-              <span>2️⃣ 稽查場站數（站）</span>
+              <span>2 稽查場站數（站）</span>
               <input type="number" min="0" step="1" inputmode="numeric" data-sheet-stations placeholder="0" value="${esc(rep.fieldStations ?? '')}">
             </label>
             <label class="dr-sheet-field">
-              <span>3️⃣ 2.0 數量（台）</span>
+              <span>3 2.0 數量（台）</span>
               <input type="number" min="0" step="1" inputmode="numeric" data-sheet-v20 placeholder="0" value="${esc(initV20)}">
             </label>
             <label class="dr-sheet-field">
-              <span>⚡ 2.0E 數量（台）</span>
+              <span>2.0E 數量（台）</span>
               <input type="number" min="0" step="1" inputmode="numeric" data-sheet-v20e placeholder="0" value="${esc(initV20E)}">
             </label>
           </div>
 
           <div class="dr-bike-sum-bar" data-sheet-bike-sum>
-            🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${initTotal} 台</strong>（2.0：${Number(initV20) || 0} 台 ＋ 2.0E：${Number(initV20E) || 0} 台）
+            2.0 與 2.0E 合計稽查車輛數：<strong>${initTotal} 台</strong>（2.0：${Number(initV20) || 0} 台 ＋ 2.0E：${Number(initV20E) || 0} 台）
           </div>
         ` : `
           <div class="dr-sheet-chips">
-            <div class="dr-chip-label">👆 點擊下方常用詞彙直接加入今日進度（免打字）：</div>
+            <div class="dr-chip-label">點擊下方常用詞彙直接加入今日進度（免打字）：</div>
             <div class="dr-chip-scroll">
               ${chips.map(c => `<button type="button" class="dr-phrase-chip" data-sheet-chip="${esc(c)}">＋ ${esc(c)}</button>`).join('')}
             </div>
           </div>
 
           <label class="dr-sheet-field">
-            <span>✅ 今日完成事項 / 工作進度</span>
+            <span>今日完成事項 / 工作進度</span>
             <textarea rows="4" data-sheet-today placeholder="1. 點擊上方詞彙或輸入今日工作進度...">${esc(rep.todayTasks || '')}</textarea>
           </label>
 
           <label class="dr-sheet-field">
-            <span>📅 明日預計工作 / 後續待辦（選填）</span>
+            <span>明日預計工作 / 後續待辦（選填）</span>
             <textarea rows="2" data-sheet-tomorrow placeholder="1. 明日預計待辦...">${esc(rep.tomorrowTasks || '')}</textarea>
           </label>
         `}
 
         <label class="dr-sheet-field">
-          <span>💡 備註事項（選填）</span>
+          <span>備註事項（選填）</span>
           <input type="text" data-sheet-notes placeholder="選填備註..." value="${esc(rep.notes || '')}">
         </label>
 
         <div class="dr-sheet-success-box" data-sheet-success hidden>
-          <div class="dr-sheet-success-title">🎉 已儲存並複製您的 LINE 回報格式！</div>
+          <div class="dr-sheet-success-title">已儲存並複製您的 LINE 回報格式！</div>
           <pre class="dr-sheet-preview" data-sheet-preview></pre>
           <div class="dr-sheet-success-actions">
             <a class="btn primary big dr-open-line-btn" href="https://line.me/R/" target="_blank" rel="noopener">
-              💬 點此直接打開 LINE 群組貼上
+              點此直接打開 LINE 群組貼上
             </a>
             <button type="button" class="btn" data-close-sheet>完成關閉</button>
           </div>
@@ -2215,9 +2209,9 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       </div>
 
       <div class="dr-sheet-foot" data-sheet-foot>
-        <button type="button" class="btn" data-sheet-save-only>💾 儲存</button>
+        <button type="button" class="btn" data-sheet-save-only>儲存</button>
         <button type="button" class="btn primary big dr-sheet-submit" data-sheet-save-copy>
-          📋 儲存並複製 LINE
+          儲存並複製 LINE
         </button>
       </div>
     </div>
@@ -2236,7 +2230,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
   });
   backdrop.querySelectorAll('[data-close-sheet]').forEach(b => { b.onclick = close; });
 
-  // 內勤同仁於彈窗內切換「🏢 內勤工作進度 / 🚲 外勤支援回報」分頁
+  // 內勤同仁於彈窗內切換「 內勤工作進度 / 外勤支援回報」分頁
   backdrop.querySelectorAll('[data-sheet-switch-mode]').forEach(tabBtn => {
     tabBtn.onclick = () => {
       openQuickDailyReportSheet(dateStr, tabBtn.dataset.sheetSwitchMode);
@@ -2260,7 +2254,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
         const dists = FIELD_CITY_DISTRICTS[city] || [];
         distSel.innerHTML = `
           <option value="">-- 請選擇 ${esc(city)} 行政區 --</option>
-          <option value="全區">📌 ${esc(city)}（不限行政區 / 全區）</option>
+          <option value="全區">${esc(city)}（不限行政區 / 全區）</option>
           ${dists.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('')}
         `;
       };
@@ -2292,11 +2286,11 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       const rTxt = regIn?.value || '';
       const nick = getFieldNick(me);
       const matched = matchRegionToQuotaKey(rTxt, nick);
-      const partHint = matched.map(r => (r === '雙北' || r === '高雄') ? `🧠🫀 ${r}核心（大腦/身體）` : `🦾 ${r}（四肢部位）`).join('、');
+      const partHint = matched.map(r => (r === '雙北' || r === '高雄') ? ` ${r}核心（大腦/身體）` : ` ${r}（四肢部位）`).join('、');
       if (sumEl) {
         sumEl.innerHTML = `
-          <div>🚲 2.0 與 2.0E 合計稽查車輛數：<strong>${a + b} 台</strong>（🗡️ 2.0：${a} 台 ＋ ⚡ 2.0E：${b} 台）</div>
-          <div style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">⚔️ 預計對【${esc(partHint)}】造成 <b>-${a + b} HP</b> 傷害！</div>
+          <div>2.0 與 2.0E 合計稽查車輛數：<strong>${a + b} 台</strong>（ 2.0：${a} 台 ＋ 2.0E：${b} 台）</div>
+          <div style="margin-top:4px;font-size:12px;color:#b45309;font-weight:700;">預計對【${esc(partHint)}】造成 <b>-${a + b} HP</b> 傷害！</div>
         `;
       }
     };
@@ -2312,7 +2306,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
         v20In.value = prevEntry.report.fieldV20 ?? '';
         v20eIn.value = prevEntry.report.fieldV20E ?? '';
         updateSheetSum();
-        toast(`📥 已帶入 ${fmtMD(prevEntry.date)} 的稽查資料`);
+        toast(` 已帶入 ${fmtMD(prevEntry.date)} 的稽查資料`);
       };
     }
   } else {
@@ -2325,7 +2319,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
         const seed = (prevEntry.report.tomorrowTasks || '').trim() || (prevEntry.report.todayTasks || '').trim();
         todayTa.value = normalizeNumberedLines(seed);
         if (!tomorrowTa.value.trim()) tomorrowTa.value = prevEntry.report.tomorrowTasks || '';
-        toast(`📥 已帶入 ${fmtMD(prevEntry.date)} 的項目`);
+        toast(` 已帶入 ${fmtMD(prevEntry.date)} 的項目`);
       };
     }
 
@@ -2362,12 +2356,12 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       const fieldV20E = Number(v20eIn?.value) || 0;
 
       if (!fieldRegion) {
-        toast('請先點選或輸入「1️⃣ 地區」', 'error');
+        toast('請先點選或輸入「1 地區」', 'error');
         regIn?.focus();
         return;
       }
       if (fieldStationsRaw === '' || Number(fieldStationsRaw) < 0) {
-        toast('請輸入「2️⃣ 稽查場站數」', 'error');
+        toast('請輸入「2 稽查場站數」', 'error');
         stIn?.focus();
         return;
       }
@@ -2408,15 +2402,15 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       const lineText = formatPersonalLineReport(me, dateStr, saved);
       try {
         await navigator.clipboard.writeText(lineText);
-        toast('✅ 已複製個人 LINE 回報格式！');
+        toast('已複製個人 LINE 回報格式！');
       } catch {
-        toast('✅ 已儲存回報');
+        toast('已儲存回報');
       }
       previewPre.textContent = lineText;
       successBox.hidden = false;
       footBox.hidden = true;
     } else {
-      toast('✅ 已儲存今日回報');
+      toast('已儲存今日回報');
       close();
     }
   }
@@ -2427,7 +2421,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
 
 // ============================================================
 // 全域懸浮輔助器：
-// 1. 行動端拇指熱區「✍️ 今日回報 / 📋 複製今日回報」獨立懸浮大按鈕（全體 9 位內外勤同仁適用）
+// 1. 行動端拇指熱區「 今日回報 / 複製今日回報」獨立懸浮大按鈕（全體 9 位內外勤同仁適用）
 // 2. 每日 17:30 智慧溫和下班提醒卡片（不鎖死畫面、4 層智慧過濾）
 // ============================================================
 export function initDailyReportFloatingWidget(onUpdateTabBadge) {
@@ -2474,7 +2468,6 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
       ${showGentleReminder ? `
         <aside class="dr-gentle-toast" role="status" aria-live="polite">
           <div class="dr-toast-header">
-            <span class="dr-toast-icon">🚲</span>
             <strong>17:30 準備下班囉！</strong>
             <button type="button" class="dr-toast-close" data-dismiss-1730 title="今日不再提醒">✕</button>
           </div>
@@ -2482,8 +2475,8 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
             別忘了花 15 秒填寫今日回報，並一鍵複製貼到 LINE 群組向代理副理回報喔！
           </p>
           <div class="dr-toast-actions">
-            <button type="button" class="btn primary sm" data-toast-fill>✍️ 立即快填</button>
-            <button type="button" class="btn sm" data-dismiss-1730>🔕 今日不再提醒</button>
+            <button type="button" class="btn primary sm" data-toast-fill>立即快填</button>
+            <button type="button" class="btn sm" data-dismiss-1730>今日不再提醒</button>
           </div>
         </aside>
       ` : ''}
@@ -2492,12 +2485,10 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
         <div class="dr-commuter-fab-wrap">
           ${hasSubmittedToday ? `
             <button type="button" class="dr-commuter-fab done" data-fab-copy title="一鍵複製今日個人 LINE 回報格式">
-              <span class="dr-fab-icon">📋</span>
               <span class="dr-fab-text">複製今日 LINE 回報</span>
             </button>
           ` : `
             <button type="button" class="dr-commuter-fab ${isPendingToday ? 'pulse' : ''}" data-fab-open title="通勤/等紅綠燈極速填寫今日回報">
-              <span class="dr-fab-icon">✍️</span>
               <span class="dr-fab-text">今日回報</span>
               ${isPendingToday ? '<span class="dr-fab-dot"></span>' : ''}
             </button>
@@ -2535,7 +2526,7 @@ export function initDailyReportFloatingWidget(onUpdateTabBadge) {
         const text = formatPersonalLineReport(me, today, rep);
         try {
           await navigator.clipboard.writeText(text);
-          toast('📋 已複製您的今日 LINE 回報格式！正在為您準備貼上...');
+          toast('已複製您的今日 LINE 回報格式！正在為您準備貼上...');
         } catch {
           /* ignore */
         }

@@ -9,26 +9,26 @@ export function getLocationBadgeStyle(loc) {
   
   // 1. 辦公室 / 會議 / 月會（Excel 亮紫底白字：#9333ea / #8b5cf6）
   if (loc.includes('辦公室') || loc.includes('月會') || loc.includes('開會')) {
-    return { bg: '#8b5cf6', border: '#7c3aed', text: '#ffffff', icon: '🏢' };
+    return { bg: '#8b5cf6', border: '#7c3aed', text: '#ffffff', icon: '' };
   }
   // 2. 假 / 放假 / 特休（Excel 柔粉淡紅：#fecaca / #ffe4e6）
   if (loc.includes('假') || loc.includes('特休')) {
-    return { bg: '#fecdd3', border: '#fda4af', text: '#9f1239', icon: '🏖️' };
+    return { bg: '#fecdd3', border: '#fda4af', text: '#9f1239', icon: '' };
   }
   // 3. 上課（淡紫薰衣草）
   if (loc.includes('上課')) {
-    return { bg: '#f5d0fe', border: '#f0abfc', text: '#86198f', icon: '📖' };
+    return { bg: '#f5d0fe', border: '#f0abfc', text: '#86198f', icon: '' };
   }
   // 4. 台中（Excel 亮青綠/湖水綠：#2dd4bf / #06b6d4）
   if (loc.includes('台中')) {
-    return { bg: '#38bdf8', border: '#0284c7', text: '#0c4a6e', icon: '🚄' };
+    return { bg: '#38bdf8', border: '#0284c7', text: '#0c4a6e', icon: '' };
   }
   // 5. 桃園 / 新竹 / 台南 / 嘉義 / 屏東 / 台東（Excel 外縣市亮橘：#fb923c / #f97316）
   if (['桃園', '新竹', '台南', '嘉義', '屏東', '台東', '苗栗'].some(c => loc.includes(c))) {
-    return { bg: '#fb923c', border: '#ea580c', text: '#431407', icon: '🚄' };
+    return { bg: '#fb923c', border: '#ea580c', text: '#431407', icon: '' };
   }
   // 6. 高雄（高）或 雙北各行政區（Excel 天藍色：#93c5fd / #60a5fa）
-  return { bg: '#93c5fd', border: '#60a5fa', text: '#1e3a8a', icon: '📍' };
+  return { bg: '#93c5fd', border: '#60a5fa', text: '#1e3a8a', icon: '' };
 }
 
 export function renderDailyInspectionView(containerEl, zone = 'north', curMonth = '2026-10', onMonthChange = null) {
@@ -154,7 +154,6 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
       <details class="card insp-collapsible-card" style="background:linear-gradient(135deg, ${isNorth ? '#f0f9ff' : '#f0fdf4'} 0%, #ffffff 100%); border-left:4px solid ${isNorth ? '#0284c7' : '#16a34a'}; padding:10px 16px;">
         <summary class="insp-collapsible-summary">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-            <span style="font-size:18px;">${isNorth ? '🧭' : '🌴'}</span>
             <h3 style="margin:0; font-size:15.5px; color:#0f172a;">
               ${isNorth ? '北區每日品管區域範圍' : '南區每日品管區域範圍'}（${yearNum} 年 ${monthNum} 月）
             </h3>
@@ -163,41 +162,41 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
           </div>
           <div style="display:flex; gap:8px; align-items:center;" onclick="event.stopPropagation()">
             <button type="button" class="btn primary small" data-save-daily-insp style="background:${isNorth ? '#0284c7' : '#16a34a'};">
-              💾 儲存${isNorth ? '北區' : '南區'}每日排程
+              儲存${isNorth ? '北區' : '南區'}每日排程
             </button>
           </div>
         </summary>
 
         <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; font-size:12.5px; color:#334155;">
           <p style="margin:0 0 8px 0; color:#475569; line-height:1.5;">
-            📌 <b>出差申請單規則：</b>${esc(rules.tripForm || '雙北 3 日申請一張，其他區域連續 2 日申請一張')} ｜ 
-            🏢 <b>辦公室：</b>${esc(rules.office || '兩週一次、會議')}
+            <b>出差申請單規則：</b>${esc(rules.tripForm || '雙北 3 日申請一張，其他區域連續 2 日申請一張')} ｜ 
+            <b>辦公室：</b>${esc(rules.office || '兩週一次、會議')}
           </p>
           ${isNorth ? `
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-              <b style="color:#0284c7;">🏙️ 新北市區：</b>
+              <b style="color:#0284c7;">新北市區：</b>
               <span style="color:#475569;">${rules.urban?.['新北市']?.join('、') || '中和、永和、新店、淡水、林口、蘆洲、土城、板橋、三重、新莊、樹林'}</span>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
-              <b style="color:#0369a1;">🏛️ 台北市區：</b>
+              <b style="color:#0369a1;">台北市區：</b>
               <span style="color:#475569;">${rules.urban?.['台北市']?.join('、') || '松山、信義、大安、中山、中正、大同、萬華、文山、南港、內湖、士林、北投'}</span>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
-              <b style="color:#d97706;">🏞️ 郊區範圍：</b>
+              <b style="color:#d97706;">郊區範圍：</b>
               <span style="color:#64748b;">${rules.suburban?.join('、') || '深坑、鶯歌、三峽、汐止、八里、五股、泰山...'}</span>
               <span class="badge-tag warn tiny" style="margin-left:4px;">台大校區</span>
             </div>
           ` : `
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-              <b style="color:#16a34a;">🏙️ 高雄市區：</b>
+              <b style="color:#16a34a;">高雄市區：</b>
               <span style="color:#475569;">${rules.urban?.['高雄市區']?.join('、') || '左營、鹽埕、前金、新興、苓雅、三民、鳳山'}</span>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
-              <b style="color:#0284c7;">⚓ 台南三大線：</b>
+              <b style="color:#0284c7;">台南三大線：</b>
               <span style="color:#475569;"><b>北門線：</b>${rules.subareas?.['台南北門線']?.slice(0, 5).join('、')}等 ｜ <b>七股線：</b>${rules.subareas?.['台南七股線']?.slice(0, 5).join('、')}等 ｜ <b>安平線：</b>${rules.subareas?.['台南安平線']?.slice(0, 5).join('、')}等</span>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px;">
-              <b style="color:#ea580c;">☀️ 屏東分區：</b>
+              <b style="color:#ea580c;">屏東分區：</b>
               <span style="color:#475569;"><b>市區：</b>屏東、麟洛、竹田 ｜ <b>潮州：</b>潮州、東港、林邊 ｜ <b>恆春：</b>車城、恆春</span>
             </div>
           `}
@@ -306,7 +305,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
       toast('儲存失敗：' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = `💾 儲存${isNorth ? '北區' : '南區'}每日排程`;
+      btn.textContent = ` 儲存${isNorth ? '北區' : '南區'}每日排程`;
     }
   });
 
@@ -330,7 +329,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
         <div style="margin-bottom:12px;">
           <input type="text" id="dlg-insp-loc" value="${esc(currentVal)}" class="input" style="width:100%; font-size:15px; padding:8px 12px;" placeholder="輸入行政區或行程（例如：新店、永和、辦公室、台中）">
         </div>
-        <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px;">⚡ 常用快選：</div>
+        <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px;">常用快選：</div>
         <div style="display:flex; flex-wrap:wrap; gap:6px; max-height:160px; overflow-y:auto; padding:4px;">
           ${recommendations.map(r => `
             <button type="button" class="quick-chip-btn" data-chip="${esc(r)}">${esc(r)}</button>
@@ -347,7 +346,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
       modalOverlay.innerHTML = `
         <div class="modal" style="background:#fff; border-radius:12px; width:100%; max-width:440px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.15);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <h3 style="margin:0; font-size:16px;">📍 設定巡檢地點</h3>
+            <h3 style="margin:0; font-size:16px;">設定巡檢地點</h3>
             <button type="button" class="btn icon ghost" data-dlg-close style="font-size:18px;">✕</button>
           </div>
           <div>${promptHtml}</div>

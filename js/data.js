@@ -1060,8 +1060,8 @@ export async function saveUserDailyReport(dateStr, targetUid, reportPayload) {
   return nextReport;
 }
 
-/** 切換特定日期是否為「🌀 颱風天停班停課（全員免回報）」 */
-export async function toggleTyphoonDay(dateStr, isTyphoonDay, typhoonNote = '🌀 颱風停班停課（全員免回報）') {
+/** 切換特定日期是否為「 颱風天停班停課（全員免回報）」 */
+export async function toggleTyphoonDay(dateStr, isTyphoonDay, typhoonNote = '颱風停班停課（全員免回報）') {
   const me = myUid();
   const existingDoc = dailyReportDocOf(dateStr);
 
@@ -1087,7 +1087,7 @@ export async function toggleTyphoonDay(dateStr, isTyphoonDay, typhoonNote = '�
   }, { merge: true });
 }
 
-/** 主管（代理副理 徐嘉鴻 或 管理員）對組員當日回報點選「👍 已閱」或留下主管回饋 */
+/** 主管（代理副理 徐嘉鴻 或 管理員）對組員當日回報點選「 已閱」或留下主管回饋 */
 export async function acknowledgeDailyReport(dateStr, targetUid, { ack = true, managerReply = undefined } = {}) {
   const me = myUid();
   const meName = state.me?.displayName || '主管';
@@ -1133,7 +1133,7 @@ export async function acknowledgeDailyReport(dateStr, targetUid, { ack = true, m
 }
 
 // ============================================================
-// 📌 例案追蹤（長期專案進度管理）CRUD
+// 例案追蹤（長期專案進度管理）CRUD
 // ============================================================
 export function caseList() {
   return [...state.cases.values()].sort((a, b) => {
@@ -1213,7 +1213,7 @@ export async function deleteCaseItem(caseId) {
 }
 
 // ============================================================
-// 🌠 許願池（具名提議與 +1 附議）CRUD
+// 許願池（具名提議與 +1 附議）CRUD
 // ============================================================
 export function wishList() {
   return [...state.wishes.values()].sort((a, b) => {
@@ -1276,7 +1276,7 @@ export async function deleteWishItem(wishId) {
 }
 
 // ============================================================
-// 🗣️ 意見箱 / 抱怨箱（支援完全匿名吐苦水與打氣）CRUD
+// 意見箱 / 抱怨箱（支援完全匿名吐苦水與打氣）CRUD
 // ============================================================
 export function ventList() {
   return [...state.vents.values()].sort((a, b) =>
@@ -1284,13 +1284,13 @@ export function ventList() {
   );
 }
 
-export async function createVentItem({ content, category = 'general', isAnonymous = true, mood = '😤' }) {
+export async function createVentItem({ content, category = 'general', isAnonymous = true, mood = '' }) {
   const me = myUid();
   const meName = state.me?.displayName || '組員';
   const nowIso = new Date().toISOString();
   const id = 'vent_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
   // 匿名模式：完全不寫入真實姓名與真實 createdBy UID（僅標記 'anonymous'），連管理員與資料庫都無法反查是誰寫的，確保 100% 安心吐苦水！
-  const aliases = ['匿名單車客 🚲', '微笑小騎士 ヘルメット', '夜騎追風者 🌙', '補胎小精靈 🔧', '滿站守護者 🚏', '茶水間觀察家 ☕'];
+  const aliases = ['匿名單車客 ', '微笑小騎士 ヘルメット', '夜騎追風者 ', '補胎小精靈 ', '滿站守護者 ', '茶水間觀察家 '];
   const randomAlias = aliases[Math.floor(Math.random() * aliases.length)];
   const payload = {
     id,
@@ -1342,7 +1342,7 @@ export async function addVentReply(ventId, { text, isAnonymous = true }) {
   const replies = Array.isArray(v.replies) ? [...v.replies] : [];
   replies.push({
     id: 'vr_' + Date.now().toString(36),
-    authorName: isAnonymous ? '匿名夥伴 🤝' : meName,
+    authorName: isAnonymous ? '匿名夥伴 ' : meName,
     isAnonymous: !!isAnonymous,
     text: text.trim(),
     at: new Date().toISOString(),
@@ -1367,7 +1367,7 @@ export async function deleteVentItem(ventId) {
 }
 
 // ============================================================
-// 💬 團隊即時聊天室 CRUD
+// 團隊即時聊天室 CRUD
 // ============================================================
 export async function sendChatMessage({ channel = 'general', text = '', imageData = '', replyTo = null, mentions = [], sticker = '' }) {
   const me = myUid();
@@ -1404,7 +1404,7 @@ export async function sendChatMessage({ channel = 'general', text = '', imageDat
     b.set(doc(collection(db, 'users', targetUid, 'notifications')), {
       kind: 'chat_mention',
       actorUid: me,
-      summary: `💬 ${payload.authorName} 在聊天室標註了你：「${payload.text.slice(0, 35)}」`,
+      summary: ` ${payload.authorName} 在聊天室標註了你：「${payload.text.slice(0, 35)}」`,
       read: false,
       createdAt: serverTimestamp(),
     });
@@ -1440,7 +1440,7 @@ export async function deleteChatMessage(msgId) {
 }
 
 // ============================================================
-// ☕ 晨間補給站（延伸話題分享 / 笑話投稿與投票）& 🧰 小工具共用書籤
+// 晨間補給站（延伸話題分享 / 笑話投稿與投票）& 小工具共用書籤
 // ============================================================
 export async function saveVibeDoc(docId, data) {
   if (demo) {
