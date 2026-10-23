@@ -64,10 +64,42 @@ function getDayIndex(dateStr) {
   return h;
 }
 
+const VIBE_CACHE_KEY_PREFIX = 'team_vibe_cache_v1_';
+const VIBE_CACHE_TTL_MS = 30 * 60 * 1000; // 30 分鐘快取
+
+function readVibeSessionCache(todayStr) {
+  try {
+    const raw = sessionStorage.getItem(VIBE_CACHE_KEY_PREFIX + todayStr);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (Date.now() - (parsed.ts || 0) > VIBE_CACHE_TTL_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeVibeSessionCache(todayStr, data) {
+  try {
+    sessionStorage.setItem(VIBE_CACHE_KEY_PREFIX + todayStr, JSON.stringify({ ...data, ts: Date.now() }));
+  } catch {}
+}
+
 /** 非同步抓取 Google News RSS（自行車/YouBike/政策）與 Wikipedia 歷史上的今天 */
 async function ensureExternalFeeds(todayStr, onReady) {
   if (cachedDateStr === todayStr && cachedBikeNews && cachedWikiHistory) return;
   cachedDateStr = todayStr;
+
+  const sessionHit = readVibeSessionCache(todayStr);
+  if (sessionHit) {
+    if (Array.isArray(sessionHit.wikiHistory) && sessionHit.wikiHistory.length > 0) {
+      cachedWikiHistory = sessionHit.wikiHistory;
+    }
+    if (Array.isArray(sessionHit.bikeNews) && sessionHit.bikeNews.length > 0) {
+      cachedBikeNews = sessionHit.bikeNews;
+    }
+    if (cachedBikeNews && cachedWikiHistory) return;
+  }
 
   const [, mStr, dStr] = todayStr.split('-');
   const monthNum = parseInt(mStr, 10);
@@ -87,6 +119,7 @@ async function ensureExternalFeeds(todayStr, onReady) {
             text: String(ev.text || '').trim(),
             url: ev.pages?.[0]?.content_urls?.desktop?.page || '',
           }));
+          writeVibeSessionCache(todayStr, { wikiHistory: cachedWikiHistory, bikeNews: cachedBikeNews });
           onReady?.();
         }
       }
@@ -109,6 +142,7 @@ async function ensureExternalFeeds(todayStr, onReady) {
             link: item.link || '#',
             date: (item.pubDate || '').slice(5, 16),
           }));
+          writeVibeSessionCache(todayStr, { wikiHistory: cachedWikiHistory, bikeNews: cachedBikeNews });
           onReady?.();
         }
       }
@@ -155,7 +189,7 @@ export function renderDailyVibeBar(container, onRerender) {
         <!-- 1. 自行車新聞與趨勢 (Cycling Dispatch) -->
         <div class="vibe-pill vibe-card-editorial bike ${activeExpandedTab === 'news' ? 'active' : ''}" data-vibe-tab="news" title="點擊展開更多自行車新聞與組員話題分享">
           <div class="vibe-thumb-frame">
-            <img src="assets/vibe/vibe_bike.jpg?v=20261023v52" alt="單車快訊" class="vibe-thumb-img" loading="lazy">
+            <img src="assets/vibe/vibe_bike.jpg?v=20261023v57" alt="單車快訊" class="vibe-thumb-img" decoding="async">
             <span class="vibe-thumb-badge">VOL. 01</span>
           </div>
           <div class="vibe-card-body">
@@ -176,7 +210,7 @@ export function renderDailyVibeBar(container, onRerender) {
         <!-- 2. 每日笑話一則 (Daily Espresso Humor) -->
         <div class="vibe-pill vibe-card-editorial joke ${activeExpandedTab === 'joke' ? 'active' : ''}" data-vibe-tab="joke" title="點擊查看完整笑話、投票或投稿">
           <div class="vibe-thumb-frame">
-            <img src="assets/vibe/vibe_joke.jpg?v=20261023v52" alt="每日一笑" class="vibe-thumb-img" loading="lazy">
+            <img src="assets/vibe/vibe_joke.jpg?v=20261023v57" alt="每日一笑" class="vibe-thumb-img" decoding="async">
             <span class="vibe-thumb-badge">VOL. 02</span>
           </div>
           <div class="vibe-card-body">
@@ -198,7 +232,7 @@ export function renderDailyVibeBar(container, onRerender) {
         <!-- 3. 歷史上的今天 (On This Day Archive) -->
         <div class="vibe-pill vibe-card-editorial history ${activeExpandedTab === 'history' ? 'active' : ''}" data-vibe-tab="history" title="點擊查看歷史上的今天發生了什麼事">
           <div class="vibe-thumb-frame">
-            <img src="assets/vibe/vibe_history.jpg?v=20261023v52" alt="歷史今天" class="vibe-thumb-img" loading="lazy">
+            <img src="assets/vibe/vibe_history.jpg?v=20261023v57" alt="歷史今天" class="vibe-thumb-img" decoding="async">
             <span class="vibe-thumb-badge">${esc(mdLabel)}</span>
           </div>
           <div class="vibe-card-body">

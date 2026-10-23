@@ -85,13 +85,16 @@ def main():
         manifest["/" + rel] = h
     print(f"📦 準備上傳 {len(files)} 個檔案到 {site_url}")
 
-    # 3. 建立版本（設定：不快取 HTML/JS/CSS，確保更新立即生效；加上基本安全標頭）
+    # 3. 建立版本（設定：HTML/JS/CSS 驗證快取確保即時更新；圖片資源啟用強快取加速秒開；加上基本安全標頭）
     config = {
         "headers": [
             {"glob": "**", "headers": {
                 "Cache-Control": "no-cache",
                 "X-Content-Type-Options": "nosniff",
                 "Referrer-Policy": "strict-origin-when-cross-origin",
+            }},
+            {"glob": "assets/**", "headers": {
+                "Cache-Control": "public, max-age=31536000, immutable",
             }},
         ],
     }

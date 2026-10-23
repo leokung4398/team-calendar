@@ -2010,9 +2010,25 @@ export function mountDailyReport(root) {
     }
     const histKwIn = root.querySelector('[data-history-kw]');
     if (histKwIn) {
-      histKwIn.oninput = () => {
+      let isComposingKw = false;
+      const applyKwFilter = () => {
         historyKeyword = histKwIn.value;
+        const pos = histKwIn.selectionStart ?? historyKeyword.length;
         render();
+        const nextIn = root.querySelector('[data-history-kw]');
+        if (nextIn) {
+          nextIn.focus();
+          try { nextIn.setSelectionRange(pos, pos); } catch {}
+        }
+      };
+      histKwIn.addEventListener('compositionstart', () => { isComposingKw = true; });
+      histKwIn.addEventListener('compositionend', () => {
+        isComposingKw = false;
+        applyKwFilter();
+      });
+      histKwIn.oninput = () => {
+        if (isComposingKw) return;
+        applyKwFilter();
       };
     }
     root.querySelectorAll('[data-jump-date]').forEach(btn => {

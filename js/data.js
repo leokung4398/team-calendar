@@ -47,7 +47,10 @@ let queued = false;
 function emit() {
   if (queued) return;
   queued = true;
-  queueMicrotask(() => {
+  const schedule = (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function' && document.visibilityState === 'visible')
+    ? window.requestAnimationFrame
+    : queueMicrotask;
+  schedule(() => {
     queued = false;
     listeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
   });

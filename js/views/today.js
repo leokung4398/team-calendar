@@ -5,8 +5,8 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, fmtMD, weekdayZh, nowMinutes, avatar, minToHM } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { bike, dock, rideBar } from '../yb.js';
-import { renderDailyVibeBar } from './vibeBar.js?v=20261023v52';
-import { renderStickyHub } from './stickyHub.js?v=20261023v52';
+import { renderDailyVibeBar } from './vibeBar.js?v=20261023v57';
+import { renderStickyHub } from './stickyHub.js?v=20261023v57';
 
 export function mountToday(el) {
   let day = ymd();
@@ -106,8 +106,13 @@ export function mountToday(el) {
   });
 
   function render() {
+    // 若使用者正聚焦在備忘錄或揪團輸入框打字中，避免背景快照或每分鐘計時器強制重繪覆蓋輸入狀態
+    const activeEl = document.activeElement;
+    const isTypingInHub = activeEl && q('[data-sticky-hub]')?.contains(activeEl) && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName);
     renderDailyVibeBar(q('[data-vibe]'), () => renderDailyVibeBar(q('[data-vibe]')));
-    renderStickyHub(q('[data-sticky-hub]'), day, () => renderStickyHub(q('[data-sticky-hub]'), day));
+    if (!isTypingInHub) {
+      renderStickyHub(q('[data-sticky-hub]'), day, () => renderStickyHub(q('[data-sticky-hub]'), day));
+    }
     const isToday = day === ymd();
     const now = nowMinutes();
     const events = eventList();

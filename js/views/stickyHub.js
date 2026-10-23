@@ -187,8 +187,22 @@ let cachedWeather = null;
 let weatherLoading = false;
 let memoViewMode = 'day'; // 'day' (聚焦所選日+未完成) | 'all' (全部待辦)
 
+const WEATHER_SESSION_KEY = 'team_quick_weather_v1';
+const WEATHER_TTL_MS = 30 * 60 * 1000; // 30 分鐘快取
+
 async function ensureQuickWeather(onUpdate) {
   if (cachedWeather || weatherLoading) return;
+  try {
+    const raw = sessionStorage.getItem(WEATHER_SESSION_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.data) && Date.now() - (parsed.ts || 0) < WEATHER_TTL_MS) {
+        cachedWeather = parsed.data;
+        return;
+      }
+    }
+  } catch {}
+
   weatherLoading = true;
   try {
     const results = await Promise.all(WEATHER_REGIONS.map(async r => {
@@ -201,6 +215,9 @@ async function ensureQuickWeather(onUpdate) {
       return { ...r, temp, rain, icon };
     }));
     cachedWeather = results;
+    try {
+      sessionStorage.setItem(WEATHER_SESSION_KEY, JSON.stringify({ data: results, ts: Date.now() }));
+    } catch {}
     onUpdate?.();
   } catch {
     cachedWeather = WEATHER_REGIONS.map(r => ({ ...r, temp: 26, rain: 20, icon: '⛅' }));

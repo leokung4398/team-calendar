@@ -8414,10 +8414,28 @@ th.has-meeting { position: relative; }
   }
 }
 
+/* ============================================================
+   ⚡ 分頁切換絲滑入場動畫與長列表渲染加速 (v57 效能與體驗優化)
+   ============================================================ */
+.view-enter {
+  animation: viewSmoothEnter 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+}
 
+@keyframes viewSmoothEnter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-
-
-
+.dr-history-row,
+.case-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 110px;
+}
 
 

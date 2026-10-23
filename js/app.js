@@ -186,37 +186,55 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261023v56';
-    const [{ mountToday }, { mountSchedule }, { mountAdmin }, ef] = await Promise.all([
-      import(`./views/today.js?v=${V}`), import(`./views/schedule.js?v=${V}`), import(`./views/admin.js?v=${V}`), import(`./eventForm.js?v=${V}`),
+    const V = '20261023v57';
+    // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
+    const [
+      { mountToday },
+      ef,
+      { initDailyReportFloatingWidget, mountDailyReport },
+      { initChatDrawer, toggleChatDrawer },
+    ] = await Promise.all([
+      import(`./views/today.js?v=${V}`),
+      import(`./eventForm.js?v=${V}`),
+      import(`./views/dailyReport.js?v=${V}`),
+      import(`./chatDrawer.js?v=${V}`),
     ]);
-    const { mountMeeting } = await import(`./views/meeting.js?v=${V}`);
-    const { mountSimulation } = await import(`./views/simulation.js?v=${V}`);
-    const { mountBulletin } = await import(`./views/bulletin.js?v=${V}`);
-    const { mountDailyReport, initDailyReportFloatingWidget } = await import(`./views/dailyReport.js?v=${V}`);
-    const { mountCases } = await import(`./views/cases.js?v=${V}`);
-    const { mountTools } = await import(`./views/tools.js?v=${V}`);
-    const { mountWishes, mountVents } = await import(`./views/feedback.js?v=${V}`);
-    const { mountKaizen } = await import(`./views/kaizen.js?v=${V}`);
-    const { initChatDrawer, toggleChatDrawer, getUnreadChatCount } = await import(`./chatDrawer.js?v=${V}`);
+
+    const moduleCache = new Map();
+    const lazyMount = (modPath, exportName) => async (view, ctx) => {
+      let mod = moduleCache.get(modPath);
+      if (!mod) {
+        mod = await import(`${modPath}?v=${V}`);
+        moduleCache.set(modPath, mod);
+      }
+      return mod[exportName](view, ctx);
+    };
 
     const routes = {
       today: { label: '今日動態', icon: '🧭', mount: mountToday },
-      schedule: { label: '行事曆', icon: '🗓️', mount: mountSchedule },
-      meeting: { label: '月會', icon: '💼', mount: mountMeeting },
-      cases: { label: '例案追蹤', icon: '📌', mount: mountCases },
-      simulation: { label: '模擬體驗', icon: '🚲', mount: mountSimulation, permission: 'simulation' },
+      schedule: { label: '行事曆', icon: '🗓️', mount: lazyMount('./views/schedule.js', 'mountSchedule') },
+      meeting: { label: '月會', icon: '💼', mount: lazyMount('./views/meeting.js', 'mountMeeting') },
+      cases: { label: '例案追蹤', icon: '📌', mount: lazyMount('./views/cases.js', 'mountCases') },
+      simulation: { label: '模擬體驗', icon: '🚲', mount: lazyMount('./views/simulation.js', 'mountSimulation'), permission: 'simulation' },
       dailyReport: { label: '每日回報', icon: '📝', mount: mountDailyReport, permission: 'dailyReport' },
-      bulletin: { label: '採購佈告欄', icon: '📢', mount: mountBulletin, permission: 'bulletin' },
-      tools: { label: '實用小工具', icon: '🧰', mount: mountTools, inMoreMenu: true },
-      wishes: { label: '許願池', icon: '🌠', mount: mountWishes, inMoreMenu: true },
-      vents: { label: '意見箱(抱怨箱)', icon: '🗣️', mount: mountVents, inMoreMenu: true },
-      kaizen: { label: '改善提案', icon: '💡', mount: mountKaizen, inMoreMenu: true, admin: true },
-      admin: { label: '管理', icon: '⚙️', mount: mountAdmin, admin: true },
+      bulletin: { label: '採購佈告欄', icon: '📢', mount: lazyMount('./views/bulletin.js', 'mountBulletin'), permission: 'bulletin' },
+      tools: { label: '實用小工具', icon: '🧰', mount: lazyMount('./views/tools.js', 'mountTools'), inMoreMenu: true },
+      wishes: { label: '許願池', icon: '🌠', mount: lazyMount('./views/feedback.js', 'mountWishes'), inMoreMenu: true },
+      vents: { label: '意見箱(抱怨箱)', icon: '🗣️', mount: lazyMount('./views/feedback.js', 'mountVents'), inMoreMenu: true },
+      kaizen: { label: '改善提案', icon: '💡', mount: lazyMount('./views/kaizen.js', 'mountKaizen'), inMoreMenu: true, admin: true },
+      admin: { label: '管理', icon: '⚙️', mount: lazyMount('./views/admin.js', 'mountAdmin'), admin: true },
     };
     const ctx = { month: ymd().slice(0, 7) };
 
-    const { openGuideModal } = await import('./guideModal.js');
+    // 首屏渲染完成後，利用瀏覽器閒置時間背景預熱常用次要分頁，兼顧首屏秒開與切換零延遲
+    const scheduleIdlePrefetch = window.requestIdleCallback || (cb => setTimeout(cb, 1200));
+    scheduleIdlePrefetch(() => {
+      ['./views/schedule.js', './views/meeting.js', './views/cases.js', './views/simulation.js'].forEach(p => {
+        if (!moduleCache.has(p)) {
+          import(`${p}?v=${V}`).then(m => moduleCache.set(p, m)).catch(() => {});
+        }
+      });
+    });
 
     app.innerHTML = `
       <header class="topbar">
@@ -290,7 +308,8 @@ async function boot() {
       }
     }
 
-    function route() {
+    let routeSeq = 0;
+    async function route() {
       let key = (location.hash.match(/^#\/(\w+)/) || [])[1] || 'today';
       // 支援舊版連結轉向
       if (key === 'calendar' || key === 'grid') {
@@ -304,21 +323,31 @@ async function boot() {
         key = 'today';
       }
       if (key === currentRoute) return;
+      const mySeq = ++routeSeq;
       current?.destroy?.();
+      current = null;
       currentRoute = key;
+      renderTabs();
       main.innerHTML = '';
       const view = document.createElement('div');
-      view.className = `view view-${key}`;
+      view.className = `view view-${key} view-enter`;
       main.appendChild(view);
-      current = routes[key].mount(view, ctx) || {};
-      renderTabs();
+      const mounted = await routes[key].mount(view, ctx);
+      if (mySeq !== routeSeq) {
+        mounted?.destroy?.();
+        return;
+      }
+      current = mounted || {};
     }
 
     window.addEventListener('hashchange', route);
     route();
 
     $('[data-new]').onclick = () => ef.openEventEditor();
-    $('[data-guide]').onclick = () => openGuideModal();
+    $('[data-guide]').onclick = async () => {
+      const { openGuideModal } = await import(`./guideModal.js?v=${V}`);
+      openGuideModal();
+    };
     $('[data-open-chat-top]').onclick = () => toggleChatDrawer();
     const destroyChat = initChatDrawer();
 
