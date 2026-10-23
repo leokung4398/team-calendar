@@ -382,13 +382,15 @@ export function mountKaizen(el) {
             <div class="kaizen-info-card">
               <div class="kaizen-img-wrap" data-kz-zoom="${idx}" title="點擊放大檢視《${esc(kc.title)}》高畫質圖卡">
                 <img src="${esc(kc.img)}" alt="${esc(kc.title)}" loading="lazy">
-                <span class="kaizen-badge-pill">${esc(kc.badge)}</span>
                 <span class="kaizen-zoom-pill">🔍 點擊放大圖卡</span>
               </div>
               <div class="kaizen-card-body">
+                <div class="kaizen-meta-strip">
+                  <span class="kaizen-badge-pill">${esc(kc.badge)}</span>
+                  <span class="kaizen-hl-tag">${esc(kc.highlight)}</span>
+                </div>
                 <div class="kaizen-card-title-row">
                   <h4>${esc(kc.title)}</h4>
-                  <span class="kaizen-hl-tag">${esc(kc.highlight)}</span>
                 </div>
                 <ul class="kaizen-bullet-list">
                   ${kc.points.map(pt => `<li>${pt}</li>`).join('')}
@@ -528,15 +530,17 @@ export function mountKaizen(el) {
               <div class="kaizen-info-card vs-card">
                 <div class="kaizen-img-wrap" data-vs-zoom="${idx}" title="點擊放大檢視《${esc(vc.title)}》高解析對比圖卡">
                   <img src="${esc(vc.img)}" alt="${esc(vc.title)}" loading="lazy">
-                  <span class="kaizen-badge-pill">${esc(vc.badge)}</span>
                   <span class="kaizen-zoom-pill">🔍 點擊放大對比圖卡</span>
                 </div>
                 <div class="kaizen-card-body" style="gap:10px">
-                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px dashed #e2d9c8">
-                    <h4 style="margin:0;font-size:15.5px;font-weight:800;color:#1c2924;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">${esc(vc.title)}</h4>
+                  <div class="kaizen-meta-strip">
+                    <span class="kaizen-badge-pill">${esc(vc.badge)}</span>
                     <button type="button" class="btn sm ${hasVoted ? 'primary' : 'ghost'}" data-vote-reform="${vc.id}" style="padding:3px 10px;font-size:11.5px;font-weight:800">
                       ${hasVoted ? '🔥 已贊同此優化' : '👍 贊同此優化'} (${voters.length})
                     </button>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px dashed #e2d9c8">
+                    <h4 style="margin:0;font-size:15.5px;font-weight:800;color:#1c2924;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">${esc(vc.title)}</h4>
                   </div>
 
                   <!-- 2023 vs 2026 一行對比膠囊 -->

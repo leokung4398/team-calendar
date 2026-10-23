@@ -5477,40 +5477,47 @@ th.has-meeting { position: relative; }
 .kaizen-img-wrap:hover img {
   transform: scale(1.04);
 }
+.kaizen-meta-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .kaizen-badge-pill {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(23, 51, 43, 0.88);
-  color: #f3e5ab;
-  border: 1px solid rgba(212, 175, 55, 0.45);
+  display: inline-flex;
+  align-items: center;
+  background: #f3ede0;
+  color: #5c4718;
+  border: 1px solid rgba(184, 148, 70, 0.42);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.4px;
-  padding: 4px 11px;
+  letter-spacing: 0.45px;
+  padding: 3px 10px;
   border-radius: 999px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 2px rgba(28, 35, 33, 0.04);
 }
 .kaizen-zoom-pill {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background: rgba(28, 35, 33, 0.78);
+  bottom: 8px;
+  right: 8px;
+  background: rgba(28, 35, 33, 0.65);
   color: #faf7f2;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.3px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
   backdrop-filter: blur(4px);
-  transition: background 0.2s ease, transform 0.2s ease;
+  opacity: 0.78;
+  transition: opacity 0.2s ease, background 0.2s ease, transform 0.2s ease;
 }
 .kaizen-img-wrap:hover .kaizen-zoom-pill {
+  opacity: 1;
   background: #17332b;
   color: #f3e5ab;
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 .kaizen-card-body {
   padding: 16px 18px;
