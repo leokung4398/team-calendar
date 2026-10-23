@@ -7,7 +7,7 @@ const KAIZEN_CARDS = [
     id: 'kz_target',
     badge: '01 · 提案目標與時限',
     title: '🎯 誰要提？一年幾件？何時交件？',
-    img: 'assets/kaizen/card1_target.jpg?v=20261023v46',
+    img: 'assets/kaizen/card1_target.jpg?v=20261023v53',
     highlight: '每半年 1 件 · 全年 2 件',
     points: [
       '<b>必達對象</b>：<b>U 職等同仁</b>、<b>Y 職等領班</b>（每半年 1 件、全年 2 件；<b>8 等案件不計入</b>）。',
@@ -20,7 +20,7 @@ const KAIZEN_CARDS = [
     id: 'kz_flow',
     badge: '02 · 四階段闖關流程',
     title: '🔄 提案怎麼審？核決權限與公開表揚',
-    img: 'assets/kaizen/card2_flow.jpg?v=20261023v46',
+    img: 'assets/kaizen/card2_flow.jpg?v=20261023v53',
     highlight: '3 等(含)以上經營月會公開頒獎',
     points: [
       '<b>Step 1 填表送審</b>：個人或小團體（限 <b>2 人以下</b>）完成改善後填寫「改善提案登錄表」送單位主管（跨單位可先會簽擴散）。',
@@ -33,7 +33,7 @@ const KAIZEN_CARDS = [
     id: 'kz_rewards',
     badge: '03 · 單件獎金與點數',
     title: '💰 單件提案採分、等級、獎金與考績點數對照',
-    img: 'assets/kaizen/card3_rewards.jpg?v=20261023v46',
+    img: 'assets/kaizen/card3_rewards.jpg?v=20261023v53',
     highlight: '單件最高 $20,000 元 ＋ 30 點',
     points: [
       '<b>1 等（90 分↑）</b>：獎金 <b>$20,000 元</b> · 考績點數 <b>30 點</b>（總經理核准、月會頒獎）。',
@@ -46,7 +46,7 @@ const KAIZEN_CARDS = [
     id: 'kz_most',
     badge: '04 · 年度採納最多獎',
     title: '🏅 個人年度表彰：「年採納最多獎」前五名',
-    img: 'assets/kaizen/card4_most_cases.jpg?v=20261023v46',
+    img: 'assets/kaizen/card4_most_cases.jpg?v=20261023v53',
     highlight: '全年 6 件(含)以上即可角逐',
     points: [
       '<b>參賽門檻</b>：個人全年度 <b>7 等～1 等</b>之提案件數達 <b>6 件(含)以上</b>（且所屬部門上、下半年平均參與率達 80%↑）。',
@@ -58,7 +58,7 @@ const KAIZEN_CARDS = [
     id: 'kz_points',
     badge: '05 · 年度點數積分獎',
     title: '💎 個人年度表彰：「年度點數獎」最高 $20,000',
-    img: 'assets/kaizen/card5_points_award.jpg?v=20261023v46',
+    img: 'assets/kaizen/card5_points_award.jpg?v=20261023v53',
     highlight: '鑽石獎 $20,000 · 銅獎與優秀獎人數不限',
     points: [
       '<b>💎 第一名 鑽石獎（$20,000 元）</b>：總點數 <b>50 點↑</b>，且須有 <b>3 等(含)以上案件達 20 點↑</b>。',
@@ -71,7 +71,7 @@ const KAIZEN_CARDS = [
     id: 'kz_dept',
     badge: '06 · 部門團體獎與活動費',
     title: '🤝 單位推行績優活動費 ＆ 部門年度總錦標',
-    img: 'assets/kaizen/card6_dept_award.jpg?v=20261023v46',
+    img: 'assets/kaizen/card6_dept_award.jpg?v=20261023v53',
     highlight: '參與率 ≥ 80% 每半年領人數 × $50',
     points: [
       '<b>🎉 單位推行績優活動費</b>：上、下半年平均<b>參與率 ≥ 80%</b>，每半年發放「<b>部門總正職人數 × $50 元</b>」活動費（憑發票報銷）。',
