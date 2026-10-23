@@ -310,6 +310,10 @@ export function mountKaizen(el) {
   }
 
   function render() {
+    if (!isAdmin()) {
+      el.innerHTML = `<div class="card pad" style="text-align:center;padding:40px 20px;color:#64748b">🔒 此專區目前僅限管理員檢視。</div>`;
+      return;
+    }
     const proposals = getProposalsData();
     const reformData = getReformFeedbackData();
     const totalReformVotes = Object.values(reformData.votes).reduce((acc, arr) => acc + (Array.isArray(arr) ? arr.length : 0), 0);

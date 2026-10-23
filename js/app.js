@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261023v50';
+    const V = '20261023v51';
     const [{ mountToday }, { mountSchedule }, { mountAdmin }, ef] = await Promise.all([
       import(`./views/today.js?v=${V}`), import(`./views/schedule.js?v=${V}`), import(`./views/admin.js?v=${V}`), import(`./eventForm.js?v=${V}`),
     ]);
@@ -211,7 +211,7 @@ async function boot() {
       tools: { label: '實用小工具', icon: '🧰', mount: mountTools, inMoreMenu: true },
       wishes: { label: '許願池', icon: '🌠', mount: mountWishes, inMoreMenu: true },
       vents: { label: '意見箱(抱怨箱)', icon: '🗣️', mount: mountVents, inMoreMenu: true },
-      kaizen: { label: '改善提案', icon: '💡', mount: mountKaizen, inMoreMenu: true },
+      kaizen: { label: '改善提案', icon: '💡', mount: mountKaizen, inMoreMenu: true, admin: true },
       admin: { label: '管理', icon: '⚙️', mount: mountAdmin, admin: true },
     };
     const ctx = { month: ymd().slice(0, 7) };
@@ -276,7 +276,7 @@ async function boot() {
           <div class="nav-more-menu">
             <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">🧰 實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
             <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">⛲ 許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
-            <a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">💡 改善提案 <small>管理辦法圖卡與獎金速查</small></a>
+            ${d.isAdmin() ? `<a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">💡 改善提案 <small>管理員專屬 · 圖卡與對照</small></a>` : ''}
           </div>
         </div>
       `;
