@@ -136,6 +136,7 @@ export function renderDailyVibeBar(container, onRerender) {
   const jokeVotes = sharedJokesDoc.votes?.[currentJoke.id] || { up: [], cold: [] };
   const myUp = (jokeVotes.up || []).includes(myUid());
   const myCold = (jokeVotes.cold || []).includes(myUid());
+  const upCount = (jokeVotes.up || []).length;
 
   const newsList = cachedBikeNews || FALLBACK_BIKE_NEWS;
   const sharedTopics = Array.isArray(sharedTopicsDoc.list) ? sharedTopicsDoc.list : [];
@@ -149,27 +150,70 @@ export function renderDailyVibeBar(container, onRerender) {
   const mdLabel = `${parseInt(mStr, 10)}/${parseInt(dStr, 10)}`;
 
   container.innerHTML = `
-    <div class="vibe-bar-wrap">
+    <div class="vibe-bar-wrap vibe-editorial-wrap">
       <div class="vibe-pills-row">
-        <!-- 1. 自行車新聞與趨勢 -->
-        <div class="vibe-pill ${activeExpandedTab === 'news' ? 'active' : ''}" data-vibe-tab="news" title="點擊展開更多自行車新聞與組員話題分享">
-          <span class="vibe-pill-tag bike">🚲 單車快訊</span>
-          <span class="vibe-pill-text">${esc(topNews?.title || '查看最新自行車與政策動態')}</span>
-          <span class="vibe-pill-caret">${activeExpandedTab === 'news' ? '▴' : '▾'}</span>
+        <!-- 1. 自行車新聞與趨勢 (Cycling Dispatch) -->
+        <div class="vibe-pill vibe-card-editorial bike ${activeExpandedTab === 'news' ? 'active' : ''}" data-vibe-tab="news" title="點擊展開更多自行車新聞與組員話題分享">
+          <div class="vibe-thumb-frame">
+            <img src="assets/vibe/vibe_bike.jpg?v=20261023v52" alt="單車快訊" class="vibe-thumb-img" loading="lazy">
+            <span class="vibe-thumb-badge">VOL. 01</span>
+          </div>
+          <div class="vibe-card-body">
+            <div class="vibe-card-head">
+              <div class="vibe-title-group">
+                <span class="vibe-kicker">CYCLING DISPATCH</span>
+                <span class="vibe-pill-tag bike">🚲 單車快訊</span>
+              </div>
+              <div class="vibe-meta-group">
+                <span class="vibe-meta-chip">${esc(topNews?.source || '產業快訊')}</span>
+                <span class="vibe-pill-caret">${activeExpandedTab === 'news' ? '▴' : '▾'}</span>
+              </div>
+            </div>
+            <div class="vibe-pill-text">${esc(topNews?.title || '查看最新自行車與政策動態')}</div>
+          </div>
         </div>
 
-        <!-- 2. 每日笑話一則 -->
-        <div class="vibe-pill ${activeExpandedTab === 'joke' ? 'active' : ''}" data-vibe-tab="joke" title="點擊查看完整笑話、投票或投稿">
-          <span class="vibe-pill-tag joke">😂 每日一笑</span>
-          <span class="vibe-pill-text">${esc(currentJoke?.text || '')}</span>
-          <span class="vibe-pill-caret">${activeExpandedTab === 'joke' ? '▴' : '▾'}</span>
+        <!-- 2. 每日笑話一則 (Daily Espresso Humor) -->
+        <div class="vibe-pill vibe-card-editorial joke ${activeExpandedTab === 'joke' ? 'active' : ''}" data-vibe-tab="joke" title="點擊查看完整笑話、投票或投稿">
+          <div class="vibe-thumb-frame">
+            <img src="assets/vibe/vibe_joke.jpg?v=20261023v52" alt="每日一笑" class="vibe-thumb-img" loading="lazy">
+            <span class="vibe-thumb-badge">VOL. 02</span>
+          </div>
+          <div class="vibe-card-body">
+            <div class="vibe-card-head">
+              <div class="vibe-title-group">
+                <span class="vibe-kicker">MORNING ESPRESSO</span>
+                <span class="vibe-pill-tag joke">😂 每日一笑</span>
+              </div>
+              <div class="vibe-meta-group">
+                <button type="button" class="vibe-quick-action" data-quick-next-joke title="立即換一則笑話">🎲 換一則</button>
+                ${upCount > 0 ? `<span class="vibe-meta-chip warm">👍 ${upCount}</span>` : ''}
+                <span class="vibe-pill-caret">${activeExpandedTab === 'joke' ? '▴' : '▾'}</span>
+              </div>
+            </div>
+            <div class="vibe-pill-text">「${esc(currentJoke?.text || '')}」</div>
+          </div>
         </div>
 
-        <!-- 3. 歷史上的今天 -->
-        <div class="vibe-pill ${activeExpandedTab === 'history' ? 'active' : ''}" data-vibe-tab="history" title="點擊查看歷史上的今天發生了什麼事">
-          <span class="vibe-pill-tag history">📜 歷史今天 (${esc(mdLabel)})</span>
-          <span class="vibe-pill-text">${esc(topHistory ? `${topHistory.year}年：${topHistory.text}` : '')}</span>
-          <span class="vibe-pill-caret">${activeExpandedTab === 'history' ? '▴' : '▾'}</span>
+        <!-- 3. 歷史上的今天 (On This Day Archive) -->
+        <div class="vibe-pill vibe-card-editorial history ${activeExpandedTab === 'history' ? 'active' : ''}" data-vibe-tab="history" title="點擊查看歷史上的今天發生了什麼事">
+          <div class="vibe-thumb-frame">
+            <img src="assets/vibe/vibe_history.jpg?v=20261023v52" alt="歷史今天" class="vibe-thumb-img" loading="lazy">
+            <span class="vibe-thumb-badge">${esc(mdLabel)}</span>
+          </div>
+          <div class="vibe-card-body">
+            <div class="vibe-card-head">
+              <div class="vibe-title-group">
+                <span class="vibe-kicker">ARCHIVE OF TODAY</span>
+                <span class="vibe-pill-tag history">📜 歷史今天 (${esc(mdLabel)})</span>
+              </div>
+              <div class="vibe-meta-group">
+                ${topHistory?.year ? `<span class="vibe-meta-chip year">${esc(topHistory.year)} AD</span>` : ''}
+                <span class="vibe-pill-caret">${activeExpandedTab === 'history' ? '▴' : '▾'}</span>
+              </div>
+            </div>
+            <div class="vibe-pill-text">${esc(topHistory ? `${topHistory.year}年：${topHistory.text}` : '')}</div>
+          </div>
         </div>
       </div>
 
@@ -179,11 +223,29 @@ export function renderDailyVibeBar(container, onRerender) {
     </div>
   `;
 
+  // 卡片上「🎲 換一則」快速按鈕（不觸發抽屜收合）
+  const quickNextBtn = container.querySelector('[data-quick-next-joke]');
+  if (quickNextBtn) {
+    quickNextBtn.onclick = e => {
+      e.stopPropagation();
+      currentJokeOffset = (currentJokeOffset + 1) % allJokes.length;
+      renderDailyVibeBar(container, onRerender);
+    };
+  }
+
   // 綁定切換展開事件
   container.querySelectorAll('[data-vibe-tab]').forEach(el => {
     el.onclick = () => {
       const tab = el.dataset.vibeTab;
       activeExpandedTab = activeExpandedTab === tab ? null : tab;
+      renderDailyVibeBar(container, onRerender);
+    };
+  });
+
+  // 抽屜內快速切換分頁按鈕
+  container.querySelectorAll('[data-vibe-switch]').forEach(btn => {
+    btn.onclick = () => {
+      activeExpandedTab = btn.dataset.vibeSwitch;
       renderDailyVibeBar(container, onRerender);
     };
   });
@@ -198,13 +260,12 @@ export function renderDailyVibeBar(container, onRerender) {
   }
 
   // 笑話互動：換一則 / 投票 / 投稿
-  const nextJokeBtn = container.querySelector('[data-next-joke]');
-  if (nextJokeBtn) {
-    nextJokeBtn.onclick = () => {
+  container.querySelectorAll('[data-next-joke]').forEach(btn => {
+    btn.onclick = () => {
       currentJokeOffset = (currentJokeOffset + 1) % allJokes.length;
       renderDailyVibeBar(container, onRerender);
     };
-  }
+  });
 
   container.querySelectorAll('[data-joke-vote]').forEach(btn => {
     btn.onclick = async () => {
@@ -262,38 +323,66 @@ export function renderDailyVibeBar(container, onRerender) {
 }
 
 function renderExpandedPanel(tab, ctx) {
+  const { mdLabel } = ctx;
+  const switchBar = `
+    <div class="vibe-drawer-tabs">
+      <button type="button" class="vibe-drawer-tab ${tab === 'news' ? 'active' : ''}" data-vibe-switch="news">🚲 單車快訊</button>
+      <button type="button" class="vibe-drawer-tab ${tab === 'joke' ? 'active' : ''}" data-vibe-switch="joke">😂 每日一笑</button>
+      <button type="button" class="vibe-drawer-tab ${tab === 'history' ? 'active' : ''}" data-vibe-switch="history">📜 歷史今天 (${esc(mdLabel)})</button>
+    </div>
+  `;
+
   if (tab === 'news') {
     const { newsList, sharedTopics } = ctx;
     return `
-      <div class="vibe-drawer">
+      <div class="vibe-drawer vibe-drawer-editorial">
         <div class="vibe-drawer-head">
-          <div>
-            <strong>🚲 自行車產業、交通政策與市場趨勢</strong>
-            <span class="muted" style="font-size:12px;margin-left:8px">自動聚合 Google News 即時新聞與組員延伸話題</span>
+          <div class="vibe-drawer-brand">
+            <img src="assets/vibe/vibe_bike.jpg?v=20261023v52" alt="單車快訊" class="vibe-drawer-hero-img">
+            <div>
+              <div class="vibe-drawer-kicker">VOL. 01 · CYCLING &amp; MOBILITY GAZETTE</div>
+              <strong class="vibe-drawer-title">🚲 自行車產業、交通政策與市場趨勢</strong>
+              <div class="vibe-drawer-sub">自動聚合 Google News 即時新聞與組員延伸觀察</div>
+            </div>
           </div>
-          <div style="display:flex;gap:6px;align-items:center">
-            <button class="btn sm primary" data-add-topic>＋ 分享話題／貼新聞</button>
+          <div class="vibe-drawer-actions">
+            ${switchBar}
+            <button class="btn sm primary vibe-brass-btn" data-add-topic>＋ 分享話題／貼新聞</button>
             <button class="btn sm ghost" data-vibe-close>收起 ▴</button>
           </div>
         </div>
         <div class="vibe-news-grid">
           <div class="vibe-news-col">
-            <div class="vibe-col-title">📰 即時自行車與政策新聞（點擊閱讀）</div>
+            <div class="vibe-col-title">
+              <span class="vibe-col-dot">❖</span>
+              <span>即時自行車與政策新聞（點擊閱讀原文）</span>
+            </div>
             <ul class="vibe-news-list">
-              ${newsList.map(n => `
+              ${newsList.map((n, idx) => `
                 <li>
                   <a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer" class="vibe-news-link">
-                    <span class="vibe-news-title">${esc(n.title)}</span>
-                    <span class="vibe-news-meta">${esc(n.source)}${n.date ? ' · ' + esc(n.date) : ''} ↗</span>
+                    <div class="vibe-news-row">
+                      <span class="vibe-news-idx">${String(idx + 1).padStart(2, '0')}</span>
+                      <div style="min-width:0;flex:1">
+                        <div class="vibe-news-title">${esc(n.title)}</div>
+                        <div class="vibe-news-meta">${esc(n.source)}${n.date ? ' · ' + esc(n.date) : ''} ↗</div>
+                      </div>
+                    </div>
                   </a>
                 </li>
               `).join('')}
             </ul>
           </div>
           <div class="vibe-news-col">
-            <div class="vibe-col-title">💡 組員延伸話題與市場觀察（${sharedTopics.length}）</div>
+            <div class="vibe-col-title">
+              <span class="vibe-col-dot">❖</span>
+              <span>組員延伸話題與市場觀察（${sharedTopics.length}）</span>
+            </div>
             ${sharedTopics.length === 0 ? `
-              <div class="muted" style="font-size:12.5px;padding:12px 0">目前尚無組員張貼延伸話題，看到有趣的單車政策或新聞歡迎點擊右上角「＋ 分享話題」！</div>
+              <div class="vibe-empty-box">
+                <div style="font-size:13.5px;font-weight:700;color:#1E3F35;margin-bottom:4px">✨ 尚無組員張貼延伸話題</div>
+                <div class="muted" style="font-size:12.5px;line-height:1.6">看到有趣的單車政策、外縣市營運亮點或產業新聞，歡迎點擊右上角「＋ 分享話題」與團隊共讀！</div>
+              </div>
             ` : `
               <ul class="vibe-news-list">
                 ${sharedTopics.slice(0, 6).map(t => {
@@ -301,15 +390,15 @@ function renderExpandedPanel(tab, ctx) {
                   const liked = likes.includes(myUid());
                   const canDel = t.uid === myUid() || isAdmin();
                   return `
-                    <li style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px dashed var(--border)">
+                    <li class="vibe-topic-item">
                       <div style="min-width:0;flex:1">
-                        ${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener" style="font-weight:700;font-size:13px;color:var(--primary)">${esc(t.title)} ↗</a>` : `<strong style="font-size:13px">${esc(t.title)}</strong>`}
-                        ${t.note ? `<div style="font-size:12px;color:var(--text);margin-top:2px">${esc(t.note)}</div>` : ''}
-                        <div class="muted" style="font-size:11px;margin-top:2px">由 ${esc(t.authorName)} 分享</div>
+                        ${t.url ? `<a href="${esc(t.url)}" target="_blank" rel="noopener" class="vibe-topic-link">${esc(t.title)} ↗</a>` : `<strong class="vibe-topic-link">${esc(t.title)}</strong>`}
+                        ${t.note ? `<div class="vibe-topic-note">${esc(t.note)}</div>` : ''}
+                        <div class="vibe-topic-meta">由 ${esc(t.authorName)} 策展分享</div>
                       </div>
                       <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-                        <button class="btn sm ${liked ? 'primary' : 'ghost'}" data-topic-like="${esc(t.id)}" style="padding:2px 8px;font-size:11.5px">👍 ${likes.length}</button>
-                        ${canDel ? `<button class="btn sm ghost" data-topic-del="${esc(t.id)}" style="padding:2px 6px;font-size:11px;color:var(--danger)">✕</button>` : ''}
+                        <button class="btn sm ${liked ? 'primary' : 'ghost'}" data-topic-like="${esc(t.id)}" style="padding:3px 9px;font-size:11.5px">👍 ${likes.length}</button>
+                        ${canDel ? `<button class="btn sm ghost" data-topic-del="${esc(t.id)}" style="padding:3px 7px;font-size:11px;color:var(--danger)">✕</button>` : ''}
                       </div>
                     </li>
                   `;
@@ -327,48 +416,67 @@ function renderExpandedPanel(tab, ctx) {
     const upCount = (jokeVotes.up || []).length;
     const coldCount = (jokeVotes.cold || []).length;
     return `
-      <div class="vibe-drawer">
+      <div class="vibe-drawer vibe-drawer-editorial">
         <div class="vibe-drawer-head">
-          <div>
-            <strong>😂 每日笑話補給站</strong>
-            <span class="muted" style="font-size:12px;margin-left:8px">來源：${esc(currentJoke?.author || '系統精選')}</span>
+          <div class="vibe-drawer-brand">
+            <img src="assets/vibe/vibe_joke.jpg?v=20261023v52" alt="每日一笑" class="vibe-drawer-hero-img">
+            <div>
+              <div class="vibe-drawer-kicker">VOL. 02 · MORNING ESPRESSO &amp; HUMOR SALON</div>
+              <strong class="vibe-drawer-title">😂 晨間咖啡館 · 每日一笑補給</strong>
+              <div class="vibe-drawer-sub">收錄來源：${esc(currentJoke?.author || '系統精選')} · 每日為團隊注入輕鬆幽默能量</div>
+            </div>
           </div>
-          <div style="display:flex;gap:6px;align-items:center">
+          <div class="vibe-drawer-actions">
+            ${switchBar}
             <button class="btn sm" data-next-joke>🎲 換一則笑話</button>
-            <button class="btn sm primary" data-add-joke>✍️ 投稿笑話</button>
+            <button class="btn sm primary vibe-brass-btn" data-add-joke>✍️ 投稿笑話</button>
             <button class="btn sm ghost" data-vibe-close>收起 ▴</button>
           </div>
         </div>
-        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px 16px;margin-top:8px;font-size:15px;line-height:1.65;color:#1E293B;font-weight:600">
-          「${esc(currentJoke?.text || '')}」
+        <div class="vibe-joke-stage">
+          <span class="vibe-joke-quote-mark">❝</span>
+          <div class="vibe-joke-stage-text">
+            ${esc(currentJoke?.text || '')}
+          </div>
+          <span class="vibe-joke-quote-mark end">❞</span>
         </div>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-          <button class="btn sm ${myUp ? 'primary' : ''}" data-joke-vote="up">👍 這好笑 (${upCount})</button>
-          <button class="btn sm ${myCold ? 'primary' : ''}" data-joke-vote="cold">🥶 有點冷 (${coldCount})</button>
-          <span class="muted" style="font-size:12px;margin-left:auto">每天自動更新一則，祝大家今日工作順心！</span>
+        <div class="vibe-joke-footer">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn sm ${myUp ? 'primary' : ''}" data-joke-vote="up">👍 這好笑 (${upCount})</button>
+            <button class="btn sm ${myCold ? 'primary' : ''}" data-joke-vote="cold">🥶 有點冷 (${coldCount})</button>
+            <button class="btn sm ghost" data-next-joke>↻ 再抽一則</button>
+          </div>
+          <span class="vibe-joke-blessing">☕ 每天自動更新一則，祝大家今日外勤與內勤順心愉快！</span>
         </div>
       </div>
     `;
   }
 
   if (tab === 'history') {
-    const { historyList, mdLabel } = ctx;
+    const { historyList } = ctx;
     return `
-      <div class="vibe-drawer">
+      <div class="vibe-drawer vibe-drawer-editorial">
         <div class="vibe-drawer-head">
-          <div>
-            <strong>📜 歷史上的今天（${esc(mdLabel)}）</strong>
-            <span class="muted" style="font-size:12px;margin-left:8px">串接維基百科歷史大事紀</span>
+          <div class="vibe-drawer-brand">
+            <img src="assets/vibe/vibe_history.jpg?v=20261023v52" alt="歷史今天" class="vibe-drawer-hero-img">
+            <div>
+              <div class="vibe-drawer-kicker">VOL. 03 · CHRONICLES OF ${esc(mdLabel)}</div>
+              <strong class="vibe-drawer-title">📜 歲月書簡 · 歷史上的今天（${esc(mdLabel)}）</strong>
+              <div class="vibe-drawer-sub">串接維基百科歷史大事紀 · 回顧人類與城市文明軌跡</div>
+            </div>
           </div>
-          <button class="btn sm ghost" data-vibe-close>收起 ▴</button>
+          <div class="vibe-drawer-actions">
+            ${switchBar}
+            <button class="btn sm ghost" data-vibe-close>收起 ▴</button>
+          </div>
         </div>
         <ul class="vibe-history-list">
           ${historyList.slice(0, 6).map(h => `
-            <li>
-              <span class="vibe-history-year">${esc(h.year)} 年</span>
+            <li class="vibe-history-card">
+              <span class="vibe-history-year">${esc(h.year)} <small>AD</small></span>
               <span class="vibe-history-text">
                 ${esc(h.text)}
-                ${h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noopener" style="font-size:11.5px;margin-left:6px">維基百科 ↗</a>` : ''}
+                ${h.url ? `<a href="${esc(h.url)}" target="_blank" rel="noopener" class="vibe-wiki-link">閱讀典藏 ↗</a>` : ''}
               </span>
             </li>
           `).join('')}
