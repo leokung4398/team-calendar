@@ -5,6 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, eachDay, monthRange, shiftMonth, weekdayZh, avatar, WEEK } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { openExportDialog } from '../export.js';
+import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261023v58';
 
 export function mountSchedule(el, ctx) {
   // 偏好視圖：'calendar' (月曆) 或 'grid' (總表)
@@ -107,6 +108,11 @@ export function mountSchedule(el, ctx) {
           location.hash = '#/meeting';
           return;
         }
+        if (a.event.id.startsWith('memo_')) {
+          const dayStr = a.event.extendedProps?.memoDate || ymd(a.event.start);
+          openDayMemoModal(dayStr, () => refreshCalendar());
+          return;
+        }
         const ev = state.events.get(a.event.id);
         if (ev) openEventViewer(ev);
       },
@@ -164,6 +170,27 @@ export function mountSchedule(el, ctx) {
       });
     }
 
+    // 加入備忘錄提醒標記（點擊即可查看或勾選消除）
+    if (!typeFilter) {
+      const memosDoc = state.toolsData.get('memos') || { list: [] };
+      const allMemos = Array.isArray(memosDoc.list) ? memosDoc.list : [];
+      const visibleMemos = allMemos.filter(m => (m.scope === 'team' || m.uid === me) && (!person || m.uid === person || m.scope === 'team'));
+      visibleMemos.forEach(m => {
+        items.push({
+          id: `memo_${m.id}`,
+          title: `${m.done ? '✅' : '📌'} ${m.scope === 'team' ? '[全組] ' : ''}${m.text}`,
+          start: m.date,
+          end: addDays(m.date, 1),
+          allDay: true,
+          backgroundColor: m.done ? '#e2e8f0' : '#fef3c7',
+          borderColor: m.done ? '#cbd5e1' : '#f59e0b',
+          textColor: m.done ? '#64748b' : '#92400e',
+          order: 0,
+          extendedProps: { memoDate: m.date },
+        });
+      });
+    }
+
     cal.batchRendering(() => {
       cal.getEventSources().forEach(s => s.remove());
       cal.addEventSource(items);
@@ -184,11 +211,16 @@ export function mountSchedule(el, ctx) {
     const head = days.map(d => {
       const i = dayInfo(d);
       const mItem = meetingOn(d);
+      const dayMemos = getMemosOnDay(d);
+      const pendingMemos = dayMemos.filter(x => !x.done);
       const cls = [i.off ? 'off' : '', i.makeup ? 'makeup' : '', d === today ? 'today' : '', mItem ? 'has-meeting' : ''].join(' ');
-      const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `💼 月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : ''].filter(Boolean);
+      const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `💼 月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : '', dayMemos.length ? `📌 備忘 ${dayMemos.length} 筆` : ''].filter(Boolean);
       const tip = tipParts.join(' / ');
       const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}">💼</div>` : '';
-      return `<th class="${cls}" ${tip ? `title="${esc(tip)}"` : ''}><div class="dn">${Number(d.slice(8))}</div><div class="wd">${weekdayZh(d)}</div>${mIcon}${i.name ? '<div class="hol-dot"></div>' : ''}</th>`;
+      const memoPin = dayMemos.length
+        ? `<div class="memo-dot" data-open-memo="${d}" title="${esc(dayMemos.map(x => `${x.done ? '✅' : '📌'} ${x.text}`).join('\n'))}" style="cursor:pointer;font-size:11px;line-height:1.1;margin-top:2px;color:${pendingMemos.length ? '#d97706' : '#94a3b8'};font-weight:800">📌${pendingMemos.length || ''}</div>`
+        : '';
+      return `<th class="${cls}" data-head-day="${d}" ${tip ? `title="${esc(tip)}"` : ''} style="cursor:pointer"><div class="dn">${Number(d.slice(8))}</div><div class="wd">${weekdayZh(d)}</div>${mIcon}${memoPin}${i.name ? '<div class="hol-dot"></div>' : ''}</th>`;
     }).join('');
 
     const body = users.map(u => {
@@ -233,6 +265,12 @@ export function mountSchedule(el, ctx) {
 
   // 總表互動事件
   q('[data-grid]').addEventListener('click', e => {
+    const memoBtn = e.target.closest('[data-open-memo], th[data-head-day]');
+    if (memoBtn) {
+      const d = memoBtn.dataset.openMemo || memoBtn.dataset.headDay;
+      if (d) openDayMemoModal(d, () => renderGrid());
+      return;
+    }
     const chip = e.target.closest('[data-ev]');
     if (chip) {
       const ev = state.events.get(chip.dataset.ev);

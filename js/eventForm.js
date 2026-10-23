@@ -5,6 +5,7 @@ import {
 } from './data.js';
 import { PERIODS, periodText, dateRangeText, findOverlaps } from './schedule.js';
 import { esc, ymd, openModal, confirmDialog, toast, avatar, $, $$, timeAgo } from './utils.js';
+import { openDayMemoModal } from './views/stickyHub.js?v=20261023v58';
 
 const PHONE_KEY = 'team-cal-last-phone';
 
