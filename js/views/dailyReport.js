@@ -307,25 +307,61 @@ const FIELD_BOSS_META = {
     bossName: '北境魔甲泰坦・鏽蝕巨獸',
     bossTitle: '雙北核心與中北遠征守護魔王',
     avatarEmoji: '🤖',
+    imageUrl: 'assets/bosses/boss_leo.jpg',
     themeColor: '#3b82f6',
-    themeBg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 55%, #1e3a8a 100%)',
+    themeBg: 'linear-gradient(135deg, #0b1120 0%, #172554 55%, #1e3a8a 100%)',
     accentColor: '#60a5fa',
+    hotspots: {
+      brain: { x: 50, y: 15 },
+      body: { x: 50, y: 42 },
+      limbs: [
+        { x: 22, y: 49, align: 'left' },
+        { x: 78, y: 49, align: 'right' },
+        { x: 35, y: 80, align: 'left' },
+        { x: 65, y: 80, align: 'right' },
+        { x: 26, y: 21, align: 'left' },
+      ],
+    },
   },
   'Hao': {
     bossName: '雷霆鋼鐵機神・疾風巨像',
     bossTitle: '雙北核心與桃竹中遠征魔王',
     avatarEmoji: '👾',
+    imageUrl: 'assets/bosses/boss_hao.jpg',
     themeColor: '#8b5cf6',
-    themeBg: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 55%, #4c1d95 100%)',
+    themeBg: 'linear-gradient(135deg, #0f0a1e 0%, #1e1b4b 55%, #4c1d95 100%)',
     accentColor: '#a78bfa',
+    hotspots: {
+      brain: { x: 50, y: 15 },
+      body: { x: 50, y: 38 },
+      limbs: [
+        { x: 25, y: 54, align: 'left' },
+        { x: 75, y: 52, align: 'right' },
+        { x: 38, y: 81, align: 'left' },
+        { x: 62, y: 81, align: 'right' },
+        { x: 30, y: 22, align: 'left' },
+      ],
+    },
   },
   'Chun': {
     bossName: '南境熔岩巨龍・烈日霸主',
     bossTitle: '高雄核心與雲嘉南東遠征魔王',
     avatarEmoji: '🐲',
+    imageUrl: 'assets/bosses/boss_chun.jpg',
     themeColor: '#f97316',
-    themeBg: 'linear-gradient(135deg, #18181b 0%, #27120b 55%, #7c2d12 100%)',
+    themeBg: 'linear-gradient(135deg, #180c08 0%, #3b1106 55%, #7c2d12 100%)',
     accentColor: '#fb923c',
+    hotspots: {
+      brain: { x: 50, y: 19 },
+      body: { x: 50, y: 46 },
+      limbs: [
+        { x: 23, y: 52, align: 'left' },
+        { x: 76, y: 53, align: 'right' },
+        { x: 36, y: 81, align: 'left' },
+        { x: 64, y: 81, align: 'right' },
+        { x: 22, y: 20, align: 'left' },
+      ],
+    },
   },
 };
 
@@ -626,20 +662,74 @@ export function computeFieldBossStatus(u, dateStr) {
   };
 }
 
-/** 渲染外勤人員卡片內的「👾 專屬區域魔王・部位破壞討伐戰（大腦/身體核心 ＋ 四肢地區）」面板 */
+/** 渲染外勤人員卡片內的「👾 專屬區域魔王・立繪部位鎖定破壞討伐戰（大腦/身體核心 ＋ 四肢地區）」面板 */
 function renderFieldBossWidget(u, dateStr, canSeeDetails) {
   const bs = computeFieldBossStatus(u, dateStr);
   const [yStr, mStr] = bs.monthKey.split('-');
   const coreMaxSum = bs.coreParts.reduce((s, p) => s + p.maxHp, 0);
   const coreRemainSum = bs.coreParts.reduce((s, p) => s + p.remainHp, 0);
+  const hs = bs.meta.hotspots || { brain: { x: 50, y: 16 }, body: { x: 50, y: 44 }, limbs: [] };
 
-  // 輔助渲染單一部位卡片（大腦 / 身體 / 左臂 / 右臂 / 左腿 / 右腿）
+  // 為每個部位分配在魔王立繪上的精準解剖座標 (x%, y%)
+  const brainPart = bs.coreParts[0];
+  const bodyPart = bs.coreParts[1];
+  const hotspotItems = [];
+  if (brainPart) {
+    hotspotItems.push({ part: brainPart, x: hs.brain.x, y: hs.brain.y, posClass: 'pos-brain' });
+  }
+  if (bodyPart) {
+    hotspotItems.push({ part: bodyPart, x: hs.body.x, y: hs.body.y, posClass: 'pos-body' });
+  }
+  bs.limbParts.forEach((lp, idx) => {
+    const coord = hs.limbs[idx] || { x: idx % 2 === 0 ? 22 : 78, y: 50 + idx * 10, align: idx % 2 === 0 ? 'left' : 'right' };
+    hotspotItems.push({ part: lp, x: coord.x, y: coord.y, posClass: `pos-limb align-${coord.align || 'left'}` });
+  });
+
+  // 輔助渲染魔王立繪上的「🎯 部位鎖定 HUD 準星與微型血條」
+  const renderCanvasHotspot = (item) => {
+    const p = item.part;
+    const toneClass = p.isBroken ? 'is-broken' : (p.hpPct <= 30 ? 'is-critical' : (p.damage > 0 ? 'is-damaged' : 'is-full'));
+    const barColor = p.isBroken
+      ? '#10b981'
+      : (p.hpPct <= 30 ? '#ef4444' : (p.partType === 'core' ? '#38bdf8' : '#fbbf24'));
+    return `
+      <div class="dr-boss-hotspot ${p.partType} ${item.posClass} ${toneClass}"
+           style="left:${item.x}%; top:${item.y}%;"
+           data-boss-part-trigger="${esc(u.uid)}"
+           data-boss-part-region="${esc(p.regionKey)}"
+           data-boss-part-sub="${esc(p.subMatch || '')}"
+           title="🎯 點擊鎖定攻擊【${esc(p.slotLabel)}・${esc(p.regionLabel)}】｜剩餘 ${p.remainHp} / ${p.maxHp} HP（已削 -${p.damage} HP）">
+        <div class="dr-bh-reticle">
+          <span class="dr-bh-ring"></span>
+          <span class="dr-bh-dot"></span>
+          ${p.damage > 0 && !p.isBroken ? '<span class="dr-bh-spark">💥</span>' : ''}
+          ${p.isBroken ? '<span class="dr-bh-broken-icon">⚡</span>' : ''}
+        </div>
+        <div class="dr-bh-tag">
+          <div class="dr-bh-tag-top">
+            <span class="dr-bh-slot">${esc(p.slotLabel)}</span>
+            <span class="dr-bh-hp">${p.isBroken ? '💥擊破' : `${p.remainHp}<small>/${p.maxHp}</small>`}</span>
+          </div>
+          <div class="dr-bh-region">${esc(p.regionLabel)}</div>
+          <div class="dr-bh-bar">
+            <div class="dr-bh-bar-fill" style="width:${p.isBroken ? 100 : p.hpPct}%; background:${barColor};"></div>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+
+  // 輔助渲染下方單一部位卡片（大腦 / 身體 / 左臂 / 右臂 / 左腿 / 右腿）
   const renderPartBox = (p) => {
     const barColor = p.isBroken
       ? 'linear-gradient(90deg, #10b981, #34d399)'
       : (p.hpPct <= 30 ? 'linear-gradient(90deg, #ef4444, #f97316)' : (p.partType === 'core' ? 'linear-gradient(90deg, #3b82f6, #60a5fa)' : 'linear-gradient(90deg, #f59e0b, #fbbf24)'));
     return `
-      <div class="dr-boss-part-card ${p.partType} ${p.isBroken ? 'is-broken' : ''}" title="${esc(p.slotLabel)}｜${esc(p.regionLabel)}：總血量 ${p.maxHp} HP，已扣 ${p.damage} HP，剩餘 ${p.remainHp} HP">
+      <div class="dr-boss-part-card ${p.partType} ${p.isBroken ? 'is-broken' : ''}"
+           data-boss-part-trigger="${esc(u.uid)}"
+           data-boss-part-region="${esc(p.regionKey)}"
+           data-boss-part-sub="${esc(p.subMatch || '')}"
+           title="🎯 點擊直接對【${esc(p.slotLabel)}｜${esc(p.regionLabel)}】發動今日品管回報攻擊！">
         <div class="dr-bp-top">
           <span class="dr-bp-slot">${esc(p.slotLabel)}</span>
           <span class="dr-bp-status ${p.isBroken ? 'broken' : ''}">
@@ -663,12 +753,12 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
       <div class="dr-boss-header">
         <div class="dr-boss-identity">
           <div class="dr-boss-avatar-wrap ${bs.todayDamage > 0 ? 'hit-today' : ''}">
-            <span class="dr-boss-emoji">${bs.meta.avatarEmoji}</span>
-            ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">⚔️ 今日 -${bs.todayDamage} HP!</span>` : ''}
+            <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-avatar-img">
+            ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">⚔️ -${bs.todayDamage}</span>` : ''}
           </div>
           <div>
             <div class="dr-boss-title-row">
-              <span class="dr-boss-month-tag">🗓️ ${Number(mStr)}月討伐目標（連動排班矩陣）</span>
+              <span class="dr-boss-month-tag">🗓️ ${Number(mStr)}月討伐目標</span>
               <span class="dr-boss-phase-pill tone-${bs.bossPhase.tone}">${bs.bossPhase.label}</span>
             </div>
             <h4 class="dr-boss-name">${esc(bs.meta.bossName)}</h4>
@@ -676,12 +766,12 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
         </div>
 
         <div class="dr-boss-total-hp-box">
-          <div class="dr-boss-hp-label">🩸 魔王剩餘總血量（扣減法）</div>
+          <div class="dr-boss-hp-label">🩸 魔王剩餘總血量</div>
           <div class="dr-boss-hp-numbers">
             <strong class="dr-boss-remain-num">${bs.totalRemainHp}</strong>
             <span class="dr-boss-max-num">/ ${bs.totalMaxHp} HP</span>
           </div>
-          <div class="dr-boss-dealt-sub">累計已擊削 <b>-${bs.totalDamageDealt} HP</b>${bs.totalOverkill > 0 ? `（超額爆擊 +${bs.totalOverkill}）` : ''}</div>
+          <div class="dr-boss-dealt-sub">已擊削 <b>-${bs.totalDamageDealt} HP</b>${bs.totalOverkill > 0 ? ` (+${bs.totalOverkill})` : ''}</div>
         </div>
       </div>
 
@@ -691,39 +781,64 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
           <div class="dr-boss-main-bar-fill" style="width:${bs.bossHpPct}%;"></div>
         </div>
         <div class="dr-boss-main-bar-meta">
-          <span>💡 概念轉換：不看單日是否滿 40 台，每查 1 台車就削掉魔王 1 點血量！</span>
-          <span>剩餘 <b>${bs.bossHpPct}%</b> HP</span>
+          <span>🎯 點擊下方魔王身上的「部位準星」即可鎖定該地區回報扣血！</span>
+          <span>總殘血 <b>${bs.bossHpPct}%</b></span>
         </div>
       </div>
 
-      ${canSeeDetails ? `
-        <!-- 解剖式部位血條：大腦 & 身體核心（雙北 920 平分 / 高雄常態） ＋ 四肢部位（外縣市出差配額） -->
-        <div class="dr-boss-anatomy">
-          <div class="dr-boss-part-group core-group">
-            <div class="dr-bpg-title">
-              <span>🧠🫀 魔王中樞部位（${bs.nick === 'Chun' ? '高雄駐地 265 台核心' : '雙北 920 台兩人平分＝460 HP 核心'}）</span>
-              <small>中樞剩餘 <b>${coreRemainSum}</b> / ${coreMaxSum} HP</small>
-            </div>
-            <div class="dr-boss-parts-grid cols-2">
-              ${bs.coreParts.map(renderPartBox).join('')}
-            </div>
-          </div>
+      <!-- 🖼️ 視覺化魔王立繪戰場舞台（全身部位 HUD 準星鎖定） -->
+      <div class="dr-boss-visual-stage ${bs.bossPhase.tone}">
+        <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-stage-img" loading="lazy">
+        <div class="dr-boss-stage-vignette"></div>
+        <div class="dr-boss-scanline"></div>
 
-          <div class="dr-boss-part-group limbs-group">
-            <div class="dr-bpg-title">
-              <span>🦾🦿 魔王四肢部位（外縣市出差配額連動）</span>
-              <small>依回報「1️⃣ 地區」自動精準扣除對應部位血量</small>
+        ${canSeeDetails ? `
+          <div class="dr-boss-hotspots-layer">
+            ${hotspotItems.map(renderCanvasHotspot).join('')}
+          </div>
+        ` : `
+          <div class="dr-boss-stage-locked-badge">
+            🔒 部位鎖定準星與明細僅代理副理、代理人與本人可見
+          </div>
+        `}
+
+        ${bs.todayDamage > 0 ? `
+          <div class="dr-boss-today-slash-banner">
+            ⚔️ 今日已重創魔王 <b>-${bs.todayDamage} HP</b>！
+          </div>
+        ` : ''}
+      </div>
+
+      ${canSeeDetails ? `
+        <!-- 可收合或一覽的部位詳細血量矩陣 -->
+        <details class="dr-boss-anatomy-details">
+          <summary class="dr-boss-anatomy-summary">
+            <span>📊 展開部位血量明細（🧠🫀 中樞剩 <b>${coreRemainSum}</b>/${coreMaxSum} HP ・ 🦾 四肢共 ${bs.limbParts.length} 部位）</span>
+            <span class="dr-ba-arrow">▾</span>
+          </summary>
+          <div class="dr-boss-anatomy">
+            <div class="dr-boss-part-group core-group">
+              <div class="dr-bpg-title">
+                <span>🧠🫀 魔王中樞部位（${bs.nick === 'Chun' ? '高雄駐地 265 台核心' : '雙北 920 台平分＝460 HP 核心'}）</span>
+                <small>中樞剩餘 <b>${coreRemainSum}</b> / ${coreMaxSum} HP</small>
+              </div>
+              <div class="dr-boss-parts-grid cols-2">
+                ${bs.coreParts.map(renderPartBox).join('')}
+              </div>
             </div>
-            <div class="dr-boss-parts-grid cols-${Math.min(4, Math.max(2, bs.limbParts.length))}">
-              ${bs.limbParts.length ? bs.limbParts.map(renderPartBox).join('') : `<div class="muted" style="font-size:12px;color:#94a3b8;">本月無外縣市四肢部位配額</div>`}
+
+            <div class="dr-boss-part-group limbs-group">
+              <div class="dr-bpg-title">
+                <span>🦾🦿 魔王四肢部位（外縣市出差配額連動）</span>
+                <small>點擊部位可直接帶入地區</small>
+              </div>
+              <div class="dr-boss-parts-grid cols-2">
+                ${bs.limbParts.length ? bs.limbParts.map(renderPartBox).join('') : `<div class="muted" style="font-size:12px;color:#94a3b8;">本月無外縣市四肢部位配額</div>`}
+              </div>
             </div>
           </div>
-        </div>
-      ` : `
-        <div class="dr-boss-privacy-note">
-          🔒 各部位詳細配額與當日回報明細僅代理副理、代理人與本人可見（上方總血條與模擬體驗排班矩陣同步連動）
-        </div>
-      `}
+        </details>
+      ` : ''}
     </div>
   `;
 }
@@ -1477,6 +1592,52 @@ export function mountDailyReport(root) {
         render();
         const firstInput = root.querySelector(`[data-f-region="${editingUid}"], [data-f-today="${editingUid}"]`);
         if (firstInput) firstInput.focus();
+      };
+    });
+
+    // 🎯 點擊魔王身上的「部位鎖定準星 / 部位血條卡」：直接鎖定該部位對應縣市並展開回報編輯器！
+    const QUOTA_TO_CASCADE_CITY = {
+      '雙北': '新北市',
+      '桃園': '桃園市',
+      '新竹縣市': '新竹市',
+      '苗栗': '苗栗縣',
+      '台中': '台中市',
+      '嘉義': '嘉義市',
+      '台南': '台南市',
+      '屏東': '屏東縣',
+      '台東': '台東縣',
+      '高雄': '高雄市',
+    };
+    root.querySelectorAll('[data-boss-part-trigger]').forEach(el => {
+      el.onclick = (e) => {
+        e.stopPropagation();
+        const targetId = el.dataset.bossPartTrigger;
+        const regionKey = el.dataset.bossPartRegion || '';
+        const subMatch = el.dataset.bossPartSub || '';
+        const targetCity = subMatch === '台北' ? '台北市' : (subMatch === '新北' ? '新北市' : (QUOTA_TO_CASCADE_CITY[regionKey] || regionKey));
+
+        if (targetId !== myUid() && !isDesigner) {
+          toast(`🎯 部位【${targetCity}】｜點擊本人魔王部位可直接展開回報扣血！`);
+          return;
+        }
+        if (editingUid !== targetId) {
+          editingUid = targetId;
+          editingModeOverride = 'field';
+          render();
+        }
+        const citySel = root.querySelector(`[data-cascade-city="${targetId}"]`);
+        const regIn = root.querySelector(`[data-f-region="${targetId}"]`);
+        if (citySel && FIELD_CITY_DISTRICTS[targetCity]) {
+          citySel.value = targetCity;
+          citySel.dispatchEvent(new Event('change'));
+        }
+        if (regIn) {
+          regIn.value = appendCityDistrictToRegionText(regIn.value, targetCity, '');
+          updateFieldBikeSum(targetId);
+        }
+        const stIn = root.querySelector(`[data-f-stations="${targetId}"]`);
+        if (stIn) stIn.focus();
+        toast(`🎯 已鎖定魔王部位【${targetCity}】！輸入場站與台數即可發動扣血攻擊⚔️`);
       };
     });
 

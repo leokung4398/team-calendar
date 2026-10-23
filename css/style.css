@@ -7082,21 +7082,29 @@ th.has-meeting { position: relative; }
 
 .dr-boss-avatar-wrap {
   position: relative;
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  overflow: visible;
+}
+
+.dr-boss-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12.5px;
 }
 
 .dr-boss-avatar-wrap.hit-today {
   border-color: #fbbf24;
-  box-shadow: 0 0 16px rgba(251, 191, 36, 0.45);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.55);
 }
 
 .dr-boss-emoji {
@@ -7252,6 +7260,338 @@ th.has-meeting { position: relative; }
 
 .dr-boss-main-bar-meta b {
   color: #fde047;
+}
+
+/* 🖼️ 視覺化魔王立繪戰場舞台（全身部位 HUD 準星鎖定） */
+.dr-boss-visual-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #090d16;
+  border: 1.5px solid rgba(148, 163, 184, 0.28);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  margin-bottom: 10px;
+  user-select: none;
+}
+
+.dr-boss-stage-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 22%;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), filter 0.4s ease;
+}
+
+.dr-boss-visual-stage:hover .dr-boss-stage-img {
+  transform: scale(1.03);
+}
+
+.dr-boss-visual-stage.critical .dr-boss-stage-img {
+  filter: contrast(1.12) saturate(1.2);
+}
+
+.dr-boss-visual-stage.clear .dr-boss-stage-img {
+  filter: grayscale(0.55) brightness(0.75);
+}
+
+.dr-boss-stage-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 42%, transparent 30%, rgba(2, 6, 23, 0.58) 100%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.25) 0%, transparent 25%, transparent 72%, rgba(2, 6, 23, 0.72) 100%);
+  pointer-events: none;
+}
+
+.dr-boss-scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.02) 0px,
+    rgba(255, 255, 255, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+}
+
+.dr-boss-hotspots-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+}
+
+/* 🎯 部位鎖定準星與懸浮微型 HUD 標籤 */
+.dr-boss-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.18s ease, z-index 0s;
+}
+
+.dr-boss-hotspot:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+  z-index: 15;
+}
+
+.dr-bh-reticle {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dr-bh-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(56, 189, 248, 0.92);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7), inset 0 0 6px rgba(56, 189, 248, 0.4);
+  animation: drReticleSpin 8s linear infinite;
+}
+
+.dr-boss-hotspot.limb .dr-bh-ring {
+  border-color: rgba(251, 191, 36, 0.95);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.7), inset 0 0 6px rgba(251, 191, 36, 0.4);
+}
+
+.dr-boss-hotspot.is-critical .dr-bh-ring {
+  border-color: #ef4444;
+  box-shadow: 0 0 14px #ef4444;
+  animation-duration: 3s;
+}
+
+.dr-boss-hotspot.is-broken .dr-bh-ring {
+  border-style: solid;
+  border-color: #10b981;
+  box-shadow: 0 0 12px #10b981;
+  animation: none;
+}
+
+.dr-bh-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.dr-boss-hotspot.limb .dr-bh-dot {
+  background: #fde047;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.dr-bh-spark,
+.dr-bh-broken-icon {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 11px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
+}
+
+@keyframes drReticleSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.dr-bh-tag {
+  margin-top: 2px;
+  min-width: 92px;
+  max-width: 118px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  background: rgba(9, 13, 22, 0.84);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.65);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.dr-boss-hotspot.core .dr-bh-tag {
+  border-color: rgba(56, 189, 248, 0.65);
+  background: rgba(12, 25, 56, 0.86);
+}
+
+.dr-boss-hotspot.limb .dr-bh-tag {
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.dr-boss-hotspot.is-broken .dr-bh-tag {
+  border-color: #10b981;
+  background: rgba(6, 55, 42, 0.88);
+}
+
+.dr-boss-hotspot:hover .dr-bh-tag {
+  border-color: #fde047;
+  background: rgba(15, 23, 42, 0.96);
+}
+
+.dr-bh-tag-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.dr-bh-slot {
+  font-weight: 800;
+  color: #f8fafc;
+  white-space: nowrap;
+}
+
+.dr-bh-hp {
+  font-weight: 900;
+  color: #fde047;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+
+.dr-bh-hp small {
+  font-size: 8.5px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.dr-boss-hotspot.is-broken .dr-bh-hp {
+  color: #6ee7b7;
+}
+
+.dr-bh-region {
+  font-size: 9px;
+  color: #93c5fd;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 1px 0 2px;
+}
+
+.dr-boss-hotspot.limb .dr-bh-region {
+  color: #fcd34d;
+}
+
+.dr-bh-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.dr-bh-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.45s ease;
+}
+
+.dr-boss-stage-locked-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(9, 13, 22, 0.82);
+  backdrop-filter: blur(6px);
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  white-space: nowrap;
+  z-index: 6;
+}
+
+.dr-boss-today-slash-banner {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.92), rgba(234, 88, 12, 0.92));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid #fde047;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.5);
+  z-index: 7;
+  pointer-events: none;
+}
+
+.dr-boss-today-slash-banner b {
+  color: #fde047;
+}
+
+/* 可收合部位明細抽屜 */
+.dr-boss-anatomy-details {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.dr-boss-anatomy-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 11px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #cbd5e1;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.dr-boss-anatomy-summary::-webkit-details-marker {
+  display: none;
+}
+
+.dr-boss-anatomy-summary:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.dr-boss-anatomy-summary b {
+  color: #fde047;
+}
+
+.dr-ba-arrow {
+  transition: transform 0.2s ease;
+}
+
+.dr-boss-anatomy-details[open] .dr-ba-arrow {
+  transform: rotate(180deg);
+}
+
+.dr-boss-anatomy-details .dr-boss-anatomy {
+  padding: 8px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.14);
+}
+
+.dr-boss-part-card {
+  cursor: pointer;
+}
+
+.dr-boss-part-card:hover {
+  transform: translateY(-1px);
+  border-color: #fde047 !important;
 }
 
 /* 解剖式部位血條（大腦/身體核心 + 四肢部位） */
