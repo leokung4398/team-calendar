@@ -5,7 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, eachDay, monthRange, shiftMonth, weekdayZh, avatar, WEEK } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { openExportDialog } from '../export.js';
-import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261023v59';
+import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261023v60';
 
 export function mountSchedule(el, ctx) {
   // 偏好視圖：'calendar' (月曆) 或 'grid' (總表)
