@@ -304,62 +304,65 @@ export function evaluateMemberReportStatus(u, dateStr) {
 // ============================================================
 const FIELD_BOSS_META = {
   'Leo': {
-    bossName: '北境魔甲泰坦・鏽蝕巨獸',
-    bossTitle: '雙北核心與中北遠征守護魔王',
-    avatarEmoji: '🤖',
-    imageUrl: 'assets/bosses/boss_leo.jpg',
-    themeColor: '#3b82f6',
-    themeBg: 'linear-gradient(135deg, #0b1120 0%, #172554 55%, #1e3a8a 100%)',
-    accentColor: '#60a5fa',
+    bossName: '寒冰王座・巫妖死騎領主',
+    bossTitle: 'LV.99 MYTHIC RAID｜雙北核心與中北遠征守護魔王',
+    raidClass: 'FROSTMOURNE DEATHLORD',
+    avatarEmoji: '👑',
+    imageUrl: 'assets/bosses/boss_leo.jpg?v=20261023v54',
+    themeColor: '#38bdf8',
+    themeBg: 'linear-gradient(145deg, #040914 0%, #091931 52%, #0c2b4e 100%)',
+    accentColor: '#38bdf8',
     hotspots: {
-      brain: { x: 50, y: 15 },
-      body: { x: 50, y: 42 },
+      brain: { x: 50, y: 17 },
+      body: { x: 50, y: 39 },
       limbs: [
-        { x: 18, y: 52, align: 'left' },
-        { x: 82, y: 52, align: 'right' },
-        { x: 30, y: 82, align: 'left' },
-        { x: 70, y: 82, align: 'right' },
-        { x: 20, y: 20, align: 'left' },
+        { x: 24, y: 46, align: 'left' },
+        { x: 76, y: 54, align: 'right' },
+        { x: 35, y: 80, align: 'left' },
+        { x: 64, y: 80, align: 'right' },
+        { x: 24, y: 22, align: 'left' },
       ],
     },
   },
   'Hao': {
-    bossName: '雷霆鋼鐵機神・疾風巨像',
-    bossTitle: '雙北核心與桃竹中遠征魔王',
-    avatarEmoji: '👾',
-    imageUrl: 'assets/bosses/boss_hao.jpg',
-    themeColor: '#8b5cf6',
-    themeBg: 'linear-gradient(135deg, #0f0a1e 0%, #1e1b4b 55%, #4c1d95 100%)',
-    accentColor: '#a78bfa',
+    bossName: '次元終焉・深淵星界魔神',
+    bossTitle: 'LV.99 ABYSSAL RAID｜雙北核心與桃竹中遠征魔王',
+    raidClass: 'ASTRAL LEGION ARCHON',
+    avatarEmoji: '⚔️',
+    imageUrl: 'assets/bosses/boss_hao.jpg?v=20261023v54',
+    themeColor: '#a855f7',
+    themeBg: 'linear-gradient(145deg, #070512 0%, #160d31 52%, #2e1065 100%)',
+    accentColor: '#c084fc',
     hotspots: {
       brain: { x: 50, y: 15 },
-      body: { x: 50, y: 40 },
+      body: { x: 50, y: 36 },
       limbs: [
-        { x: 18, y: 58, align: 'left' },
-        { x: 82, y: 56, align: 'right' },
-        { x: 32, y: 83, align: 'left' },
-        { x: 68, y: 83, align: 'right' },
-        { x: 22, y: 22, align: 'left' },
+        { x: 24, y: 55, align: 'left' },
+        { x: 76, y: 55, align: 'right' },
+        { x: 36, y: 81, align: 'left' },
+        { x: 63, y: 81, align: 'right' },
+        { x: 23, y: 22, align: 'left' },
       ],
     },
   },
   'Chun': {
-    bossName: '南境熔岩巨龍・烈日霸主',
-    bossTitle: '高雄核心與雲嘉南東遠征魔王',
-    avatarEmoji: '🐲',
-    imageUrl: 'assets/bosses/boss_chun.jpg',
+    bossName: '大災變・滅世黑龍死亡之翼',
+    bossTitle: 'LV.99 CATACLYSM RAID｜高雄核心與雲嘉南東遠征魔王',
+    raidClass: 'WORLDBREAKER DRAGONLORD',
+    avatarEmoji: '🐉',
+    imageUrl: 'assets/bosses/boss_chun.jpg?v=20261023v54',
     themeColor: '#f97316',
-    themeBg: 'linear-gradient(135deg, #180c08 0%, #3b1106 55%, #7c2d12 100%)',
+    themeBg: 'linear-gradient(145deg, #110604 0%, #2a0c06 52%, #5c190b 100%)',
     accentColor: '#fb923c',
     hotspots: {
-      brain: { x: 50, y: 18 },
-      body: { x: 50, y: 46 },
+      brain: { x: 50, y: 21 },
+      body: { x: 50, y: 54 },
       limbs: [
-        { x: 17, y: 54, align: 'left' },
-        { x: 83, y: 54, align: 'right' },
-        { x: 28, y: 83, align: 'left' },
-        { x: 72, y: 83, align: 'right' },
-        { x: 19, y: 20, align: 'left' },
+        { x: 24, y: 60, align: 'left' },
+        { x: 76, y: 60, align: 'right' },
+        { x: 31, y: 83, align: 'left' },
+        { x: 69, y: 83, align: 'right' },
+        { x: 22, y: 25, align: 'left' },
       ],
     },
   },
@@ -749,16 +752,18 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
   };
 
   return `
-    <div class="dr-boss-arena" data-boss-arena="${esc(u.uid)}" style="background:${bs.meta.themeBg};">
+    <div class="dr-boss-arena raid-tier-${esc(bs.nick.toLowerCase())}" data-boss-arena="${esc(u.uid)}" style="background:${bs.meta.themeBg}; --boss-accent:${bs.meta.themeColor};">
       <div class="dr-boss-header">
         <div class="dr-boss-identity">
           <div class="dr-boss-avatar-wrap ${bs.todayDamage > 0 ? 'hit-today' : ''}">
             <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-avatar-img">
+            <span class="dr-boss-skull-badge">💀</span>
             ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">⚔️ -${bs.todayDamage}</span>` : ''}
           </div>
           <div>
             <div class="dr-boss-title-row">
-              <span class="dr-boss-month-tag">🗓️ ${Number(mStr)}月討伐目標</span>
+              <span class="dr-boss-raid-tier">⚔️ ${esc(bs.meta.raidClass || 'MYTHIC RAID')}</span>
+              <span class="dr-boss-month-tag">${Number(mStr)}月副本</span>
               <span class="dr-boss-phase-pill tone-${bs.bossPhase.tone}">${bs.bossPhase.label}</span>
             </div>
             <h4 class="dr-boss-name">${esc(bs.meta.bossName)}</h4>
@@ -766,7 +771,7 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
         </div>
 
         <div class="dr-boss-total-hp-box">
-          <div class="dr-boss-hp-label">🩸 魔王剩餘總血量</div>
+          <div class="dr-boss-hp-label">🩸 BOSS HP (X10)</div>
           <div class="dr-boss-hp-numbers">
             <strong class="dr-boss-remain-num">${bs.totalRemainHp}</strong>
             <span class="dr-boss-max-num">/ ${bs.totalMaxHp} HP</span>
@@ -775,14 +780,15 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
         </div>
       </div>
 
-      <!-- 魔王總血條（由滿血 100% 往左扣減） -->
+      <!-- 魔王總血條（MMORPG 10段式刻印裝甲血條） -->
       <div class="dr-boss-main-bar-wrap">
         <div class="dr-boss-main-bar-track">
           <div class="dr-boss-main-bar-fill" style="width:${bs.bossHpPct}%;"></div>
+          <div class="dr-boss-bar-notches"></div>
         </div>
         <div class="dr-boss-main-bar-meta">
-          <span>🎯 點擊下方魔王身上的「部位準星」即可鎖定該地區回報扣血！</span>
-          <span>總殘血 <b>${bs.bossHpPct}%</b></span>
+          <span>🎯 點擊下方魔王身上的「部位弱點準星」即可鎖定該地區回報扣血！</span>
+          <span>BOSS 殘血 <b>${bs.bossHpPct}%</b></span>
         </div>
       </div>
 
@@ -790,7 +796,10 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
       <div class="dr-boss-visual-stage ${bs.bossPhase.tone}">
         <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-stage-img" loading="lazy">
         <div class="dr-boss-stage-vignette"></div>
-        <div class="dr-boss-scanline"></div>
+        <div class="dr-boss-corner-ornament tl"></div>
+        <div class="dr-boss-corner-ornament tr"></div>
+        <div class="dr-boss-corner-ornament bl"></div>
+        <div class="dr-boss-corner-ornament br"></div>
 
         ${canSeeDetails ? `
           <div class="dr-boss-hotspots-layer">
