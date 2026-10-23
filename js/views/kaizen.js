@@ -1445,7 +1445,7 @@ function openPrintProposalModal(p) {
         </div>
       </div>
     </div>
-  `, { wide: true });
+  `, { xl: true });
 
   const printBtn = document.querySelector('[data-do-print]');
   if (printBtn) {
@@ -1467,31 +1467,32 @@ function openKaizenLightboxModal(startIdx = 0) {
   function renderLightbox() {
     const kc = KAIZEN_CARDS[idx] || KAIZEN_CARDS[0];
     openModal(`
-      <div class="modal-head">
-        <div>
-          <span class="kaizen-hl-tag" style="margin-right:6px">${esc(kc.badge)}</span>
-          <strong style="font-size:16px">${esc(kc.title)}</strong>
+      <div class="modal-head" style="padding:4px 4px 12px;border-bottom:1px solid #e6decb;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="kaizen-badge-pill">${esc(kc.badge)}</span>
+          <strong style="font-size:19px;color:#1e3f35;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">${esc(kc.title)}</strong>
+          <span class="kaizen-hl-tag">${esc(kc.highlight)}</span>
         </div>
-        <button class="icon-btn" data-close>✕</button>
+        <button class="icon-btn" data-close style="font-size:18px">✕</button>
       </div>
-      <div style="background:#0F172A;padding:12px;border-radius:12px;text-align:center;position:relative">
-        <img src="${esc(kc.img)}" alt="${esc(kc.title)}" style="max-width:100%;max-height:62vh;border-radius:8px;display:block;margin:0 auto">
+      <div style="background:#141c19;padding:16px;border-radius:14px;text-align:center;position:relative;box-shadow:inset 0 2px 12px rgba(0,0,0,0.4)">
+        <img src="${esc(kc.img)}" alt="${esc(kc.title)}" style="width:100%;max-height:74vh;object-fit:contain;border-radius:10px;display:block;margin:0 auto">
       </div>
-      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 14px;margin-top:10px">
-        <div style="font-weight:800;color:#92400E;font-size:13px;margin-bottom:4px">📌 重點速讀（${esc(kc.highlight)}）</div>
-        <ul class="kaizen-bullet-list" style="margin:0">
+      <div style="background:#f8f3e8;border:1px solid #e2d4b7;border-left:4px solid #b89446;border-radius:10px;padding:12px 16px;margin-top:12px">
+        <div style="font-weight:800;color:#7c5c1a;font-size:13.5px;margin-bottom:5px;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">📌 重點速讀（${esc(kc.highlight)}）</div>
+        <ul class="kaizen-bullet-list" style="margin:0;font-size:13.5px">
           ${kc.points.map(pt => `<li>${pt}</li>`).join('')}
         </ul>
       </div>
-      <div class="modal-foot" style="justify-content:space-between">
-        <div style="display:flex;gap:6px">
-          <button type="button" class="btn sm ghost" data-kz-prev>◀ 上一張小卡</button>
-          <span class="muted tiny" style="align-self:center">第 ${idx + 1} / ${KAIZEN_CARDS.length} 張</span>
-          <button type="button" class="btn sm ghost" data-kz-next>下一張小卡 ▶</button>
+      <div class="modal-foot" style="justify-content:space-between;padding:14px 4px 2px;margin-top:12px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <button type="button" class="btn ghost" data-kz-prev style="padding:8px 16px;font-weight:700">◀ 上一張圖卡</button>
+          <span class="muted" style="font-size:13px;font-weight:700">第 ${idx + 1} / ${KAIZEN_CARDS.length} 張</span>
+          <button type="button" class="btn ghost" data-kz-next style="padding:8px 16px;font-weight:700">下一張圖卡 ▶</button>
         </div>
-        <button type="button" class="btn primary" data-close>關閉</button>
+        <button type="button" class="btn primary" data-close style="padding:8px 22px;font-weight:800">關閉</button>
       </div>
-    `, { wide: true });
+    `, { xl: true });
 
     const prevBtn = document.querySelector('[data-kz-prev]');
     const nextBtn = document.querySelector('[data-kz-next]');
@@ -1516,39 +1517,39 @@ function openVsComparisonLightboxModal(startIdx = 0) {
   function renderVsLightbox() {
     const vc = VS_COMPARISON_CARDS[idx] || VS_COMPARISON_CARDS[0];
     openModal(`
-      <div class="modal-head">
-        <div>
-          <span class="kaizen-hl-tag" style="margin-right:6px;background:#ECFDF5;color:#047857;border-color:#6EE7B7">${esc(vc.badge)}</span>
-          <strong style="font-size:16px">${esc(vc.title)}</strong>
+      <div class="modal-head" style="padding:4px 4px 12px;border-bottom:1px solid #e6decb;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="kaizen-badge-pill">${esc(vc.badge)}</span>
+          <strong style="font-size:19px;color:#1e3f35;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">${esc(vc.title)}</strong>
         </div>
-        <button class="icon-btn" data-close>✕</button>
+        <button class="icon-btn" data-close style="font-size:18px">✕</button>
       </div>
-      <div style="background:#0F172A;padding:12px;border-radius:12px;text-align:center;position:relative">
-        <img src="${esc(vc.img)}" alt="${esc(vc.title)}" style="max-width:100%;max-height:60vh;border-radius:8px;display:block;margin:0 auto">
+      <div style="background:#141c19;padding:16px;border-radius:14px;text-align:center;position:relative;box-shadow:inset 0 2px 12px rgba(0,0,0,0.4)">
+        <img src="${esc(vc.img)}" alt="${esc(vc.title)}" style="width:100%;max-height:74vh;object-fit:contain;border-radius:10px;display:block;margin:0 auto">
       </div>
-      <div class="vs-summary-pills" style="margin-top:10px">
-        <div class="vs-sum-row old">
+      <div class="vs-summary-pills" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="vs-sum-row old" style="font-size:13.5px;padding:9px 14px">
           <span class="vs-tag old">2023 現行規定</span>
           <span>${esc(vc.oldSummary)}</span>
         </div>
-        <div class="vs-sum-row new">
+        <div class="vs-sum-row new" style="font-size:13.5px;padding:9px 14px">
           <span class="vs-tag new">2026 建議優化</span>
           <strong>${esc(vc.newSummary)}</strong>
         </div>
       </div>
-      <div class="vs-why-box" style="margin-top:8px">
-        <div class="vs-why-title">💡 為什麼這樣改？（管理效益）</div>
-        <div class="vs-why-text">${vc.whyChange}</div>
+      <div class="vs-why-box" style="margin-top:10px;padding:12px 16px">
+        <div class="vs-why-title" style="font-size:13.5px">💡 為什麼這樣改？（管理效益）</div>
+        <div class="vs-why-text" style="font-size:13.5px">${vc.whyChange}</div>
       </div>
-      <div class="modal-foot" style="justify-content:space-between">
-        <div style="display:flex;gap:6px">
-          <button type="button" class="btn sm ghost" data-vs-prev>◀ 上一張對比圖卡</button>
-          <span class="muted tiny" style="align-self:center">第 ${idx + 1} / ${VS_COMPARISON_CARDS.length} 張</span>
-          <button type="button" class="btn sm ghost" data-vs-next>下一張對比圖卡 ▶</button>
+      <div class="modal-foot" style="justify-content:space-between;padding:14px 4px 2px;margin-top:12px">
+        <div style="display:flex;gap:10px;align-items:center">
+          <button type="button" class="btn ghost" data-vs-prev style="padding:8px 16px;font-weight:700">◀ 上一張對比圖卡</button>
+          <span class="muted" style="font-size:13px;font-weight:700">第 ${idx + 1} / ${VS_COMPARISON_CARDS.length} 張</span>
+          <button type="button" class="btn ghost" data-vs-next style="padding:8px 16px;font-weight:700">下一張對比圖卡 ▶</button>
         </div>
-        <button type="button" class="btn primary" data-close>關閉</button>
+        <button type="button" class="btn primary" data-close style="padding:8px 22px;font-weight:800">關閉</button>
       </div>
-    `, { wide: true });
+    `, { xl: true });
 
     const prevBtn = document.querySelector('[data-vs-prev]');
     const nextBtn = document.querySelector('[data-vs-next]');

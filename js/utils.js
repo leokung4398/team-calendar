@@ -98,15 +98,24 @@ export function closeModal() {
   lastModalInstance?.close?.();
 }
 
-export function openModal(optsOrHtml) {
+export function openModal(optsOrHtml, stringOpts = {}) {
   if (typeof optsOrHtml === 'string') {
     const root = document.getElementById('modal-root');
+    root.innerHTML = '';
     const wrap = document.createElement('div');
     wrap.className = 'modal-backdrop';
-    wrap.innerHTML = `<div class="modal" role="dialog" aria-modal="true"><div class="modal-body">${optsOrHtml}</div></div>`;
+    const cls = ['modal', stringOpts.wide ? 'wide' : '', stringOpts.xl ? 'xl' : ''].filter(Boolean).join(' ');
+    wrap.innerHTML = `<div class="${cls}" role="dialog" aria-modal="true"><div class="modal-body">${optsOrHtml}</div></div>`;
     root.appendChild(wrap);
     const modalEl = wrap.querySelector('.modal');
-    const close = () => wrap.remove();
+    const close = () => {
+      wrap.remove();
+      document.removeEventListener('keydown', onKey);
+    };
+    const onKey = e => {
+      if (e.key === 'Escape') close();
+    };
+    document.addEventListener('keydown', onKey);
     wrap.addEventListener('mousedown', e => { if (e.target === wrap) close(); });
     wrap.addEventListener('click', e => { if (e.target.closest('[data-close]')) { e.preventDefault(); close(); } });
     lastModalInstance = { el: modalEl, close, setClean: () => {} };

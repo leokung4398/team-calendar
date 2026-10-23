@@ -266,7 +266,8 @@ table.table tr.inactive td:nth-child(4) { opacity: 1; }
   animation: fade .15s;
 }
 .modal { background: #fff; border-radius: 14px; width: min(460px, 100%); box-shadow: 0 20px 60px rgba(0, 0, 0, .25); animation: pop .15s; }
-.modal.wide { width: min(620px, 100%); }
+.modal.wide { width: min(860px, 95vw); }
+.modal.xl { width: min(1240px, 96vw); }
 .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 0; }
 .modal-head h3 { margin: 0; font-size: 18px; }
 .modal-body { padding: 16px 20px; }
