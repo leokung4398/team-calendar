@@ -186,18 +186,19 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
+    const V = '20261023v44';
     const [{ mountToday }, { mountSchedule }, { mountAdmin }, ef] = await Promise.all([
-      import('./views/today.js'), import('./views/schedule.js'), import('./views/admin.js'), import('./eventForm.js'),
+      import(`./views/today.js?v=${V}`), import(`./views/schedule.js?v=${V}`), import(`./views/admin.js?v=${V}`), import(`./eventForm.js?v=${V}`),
     ]);
-    const { mountMeeting } = await import('./views/meeting.js');
-    const { mountSimulation } = await import('./views/simulation.js');
-    const { mountBulletin } = await import('./views/bulletin.js');
-    const { mountDailyReport, initDailyReportFloatingWidget } = await import('./views/dailyReport.js');
-    const { mountCases } = await import('./views/cases.js');
-    const { mountTools } = await import('./views/tools.js');
-    const { mountWishes, mountVents } = await import('./views/feedback.js');
-    const { mountKaizen } = await import('./views/kaizen.js');
-    const { initChatDrawer, toggleChatDrawer, getUnreadChatCount } = await import('./chatDrawer.js');
+    const { mountMeeting } = await import(`./views/meeting.js?v=${V}`);
+    const { mountSimulation } = await import(`./views/simulation.js?v=${V}`);
+    const { mountBulletin } = await import(`./views/bulletin.js?v=${V}`);
+    const { mountDailyReport, initDailyReportFloatingWidget } = await import(`./views/dailyReport.js?v=${V}`);
+    const { mountCases } = await import(`./views/cases.js?v=${V}`);
+    const { mountTools } = await import(`./views/tools.js?v=${V}`);
+    const { mountWishes, mountVents } = await import(`./views/feedback.js?v=${V}`);
+    const { mountKaizen } = await import(`./views/kaizen.js?v=${V}`);
+    const { initChatDrawer, toggleChatDrawer, getUnreadChatCount } = await import(`./chatDrawer.js?v=${V}`);
 
     const routes = {
       today: { label: '今日動態', icon: '🧭', mount: mountToday },
