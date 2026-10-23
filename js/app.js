@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261023v60';
+    const V = '20261023v61';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -242,6 +242,7 @@ async function boot() {
           <a class="brand" href="#/today" title="Operations &amp; Collaboration Platform"><span class="brand-mark">${yb.bike(26)}</span><span>經營 Team 營運協同平台</span></a>
           <nav class="tabs" data-tabs></nav>
           <div class="top-actions">
+            <button class="btn ghost theme-toggle-btn" data-theme-toggle title="一鍵切換全站介面風格（經典黃 vs 文青誌）"></button>
             <button class="btn ghost chat-top-btn" data-open-chat-top title="開啟團隊即時聊天室" style="position:relative">
               <span>聊天室</span>
               <span class="badge" data-topbar-chat-badge hidden style="position:absolute;top:-5px;right:-5px"></span>
@@ -351,6 +352,44 @@ async function boot() {
     $('[data-open-chat-top]').onclick = () => toggleChatDrawer();
     const destroyChat = initChatDrawer();
 
+    // ---- 全站介面風格切換（經典 YouBike 活力黃 vs 文青生活誌微縮工藝） ----
+    const THEME_STORAGE_KEY = 'yb_ui_theme';
+    const getCurrentTheme = () => {
+      try {
+        return localStorage.getItem(THEME_STORAGE_KEY) === 'editorial' ? 'editorial' : 'classic';
+      } catch {
+        return document.documentElement.getAttribute('data-theme') === 'editorial' ? 'editorial' : 'classic';
+      }
+    };
+    const applyTheme = (theme, showNotice = false) => {
+      const next = theme === 'editorial' ? 'editorial' : 'classic';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem(THEME_STORAGE_KEY, next); } catch {}
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.setAttribute('content', next === 'editorial' ? '#1E3F35' : '#ffc400');
+      const btn = $('[data-theme-toggle]');
+      if (btn) {
+        const isEd = next === 'editorial';
+        btn.classList.toggle('is-editorial', isEd);
+        btn.innerHTML = `<span class="theme-dot"></span><span>${isEd ? '風格：文青誌' : '風格：經典黃'}</span>`;
+        btn.title = isEd
+          ? '目前為「文青生活誌風格（森林綠 × 古銅金 × 亞麻米白）」，點擊切換回「經典 YouBike 活力黃」'
+          : '目前為「經典 YouBike 活力黃」，點擊切換為改善提案同款「文青生活誌風格（森林綠 × 古銅金）」';
+      }
+      if (showNotice) {
+        toast(
+          next === 'editorial'
+            ? '已切換為「文青生活誌風格（森林綠 × 古銅金 × 溫暖亞麻）」'
+            : '已切換為「經典 YouBike 活力黃風格」',
+          'info'
+        );
+      }
+    };
+    applyTheme(getCurrentTheme(), false);
+    $('[data-theme-toggle]').onclick = () => {
+      applyTheme(getCurrentTheme() === 'editorial' ? 'classic' : 'editorial', true);
+    };
+
     // ---- 使用者選單 ----
     const umenu = $('[data-umenu]');
     $('[data-user]').onclick = e => {
@@ -358,9 +397,33 @@ async function boot() {
       panel.hidden = true;
       umenu.hidden = !umenu.hidden;
       const showAsAdmin = d.isAdmin() && !d.isHiddenAdmin?.(d.state.me);
+      const curTheme = getCurrentTheme();
       umenu.innerHTML = `
         <div class="um-head">${avatar(d.state.me, 40)}<div><b>${esc(d.state.me.displayName)}</b><div class="muted small-text">${esc(d.state.me.email)}</div><div class="small-text">${showAsAdmin ? '管理員' : '組員'}</div></div></div>
+        <div class="um-theme-box">
+          <div class="um-theme-label">介面風格切換</div>
+          <div class="um-theme-pills">
+            <button type="button" class="um-theme-pill ${curTheme === 'classic' ? 'active' : ''}" data-set-theme="classic">經典活力黃</button>
+            <button type="button" class="um-theme-pill ${curTheme === 'editorial' ? 'active' : ''}" data-set-theme="editorial">文青生活誌</button>
+          </div>
+        </div>
+        <button class="menu-item" data-open-achievements>專案開發成果與里程碑</button>
         <button class="menu-item" data-logout>登出</button>`;
+      umenu.querySelectorAll('[data-set-theme]').forEach(b => {
+        b.onclick = ev => {
+          ev.stopPropagation();
+          applyTheme(b.dataset.setTheme, true);
+          umenu.querySelectorAll('[data-set-theme]').forEach(p => p.classList.toggle('active', p.dataset.setTheme === b.dataset.setTheme));
+        };
+      });
+      const achBtn = $('[data-open-achievements]', umenu);
+      if (achBtn) {
+        achBtn.onclick = async () => {
+          umenu.hidden = true;
+          const { openAchievementsModal } = await import(`./achievementsModal.js?v=${V}`);
+          openAchievementsModal();
+        };
+      }
       $('[data-logout]', umenu).onclick = () => { shellCleanup?.(); d.logout(); };
     };
 

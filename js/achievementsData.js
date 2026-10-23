@@ -313,11 +313,23 @@ export const ACHIEVEMENTS = [
     ],
     result: '完成全專案架構級效能升級與純文字美學重構：1. 路由視圖改為 Dynamic import() 按需載入並預熱今日首頁，大幅縮短首次開屏時間；2. 資料層 emit() 導入 requestAnimationFrame 畫面幀合併批次重繪，消除 13 個雲端集合載入時的連續閃爍；3. 模擬體驗矩陣改為單一事件委派（Event Delegation）並為長列表導入 CSS content-visibility 渲染加速；4. 全站 28 個核心檔案徹底移除 Emoji 小圖示，全面升級為俐落純文字專業排版！',
   },
+  {
+    id: 27,
+    title: '全站雙介面風格切換系統（經典 YouBike 活力黃 vs 改善提案同款「文青生活誌 × 微縮工藝」）',
+    category: 'design',
+    catLabel: '品牌體驗',
+    date: '2026-10-23',
+    need: [
+      '將先前在「改善提案」與「晨間生活誌」廣受好評的 Kinfolk 文青雜誌 × 3D 微縮工藝配色與人文書卷排版，擴展為全專案皆可一鍵套用的第二套介面主題風格。',
+      '提供頂部導覽列與個人選單雙重一鍵切換入口，並自動記憶使用者的風格偏好。',
+    ],
+    result: '打造全站雙主題風格引擎（data-theme="classic" / "editorial"）：可於頂部「風格：經典黃／文青誌」膠囊鈕或個人頭像選單一秒無縫切換「經典 YouBike 活力黃」與改善提案同款「文青生活誌風格（深森林綠 #1E3F35 × 古銅金 #B89446 × 溫暖亞麻紙 #F4EFE6 × 宋體/明體人文標題）」，並支援首屏零閃爍自動記憶！',
+  },
 ];
 
 // 分類定義與顏色配置
 export const ACHIEVEMENT_CATEGORIES = {
-  all: { name: '全部成果', color: '#ffc400', count: 26 },
+  all: { name: '全部成果', color: '#ffc400', count: 27 },
   core: {
     name: '核心協同開發',
     color: '#2563eb',

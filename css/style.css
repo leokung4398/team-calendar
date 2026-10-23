@@ -8439,3 +8439,336 @@ th.has-meeting { position: relative; }
 }
 
 
+
+
+/* ============================================================
+   全站雙介面風格切換系統 (v61)
+   1. 預設經典風格 (classic): 經典 YouBike 活力黃 × 清爽現代白
+   2. 文青生活誌風格 (editorial): 改善提案同款「Kinfolk 文青雜誌 × 3D 微縮工藝」（深森林綠 #1E3F35 × 古銅金 #B89446 × 溫暖亞麻紙 #F7F3EB）
+   ============================================================ */
+
+/* 頂部與個人選單風格切換按鈕 */
+.theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #334155;
+  transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+.theme-toggle-btn .theme-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffc400;
+  box-shadow: 0 0 0 2px rgba(255, 196, 0, 0.32);
+  flex-shrink: 0;
+}
+.theme-toggle-btn.is-editorial {
+  background: #1e3f35;
+  border-color: #b89446;
+  color: #f8f1df;
+  box-shadow: 0 2px 8px rgba(30, 63, 53, 0.18);
+}
+.theme-toggle-btn.is-editorial:hover {
+  background: #163028;
+  border-color: #d4af5a;
+}
+.theme-toggle-btn.is-editorial .theme-dot {
+  background: #c89b3c;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.38);
+}
+
+.um-theme-box {
+  padding: 8px 10px 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.um-theme-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+.um-theme-pills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.um-theme-pill {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #f8fafc;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.um-theme-pill:hover {
+  border-color: #94a3b8;
+}
+.um-theme-pill.active[data-set-theme="classic"] {
+  background: #ffc400;
+  border-color: #e0a800;
+  color: #1e293b;
+}
+.um-theme-pill.active[data-set-theme="editorial"] {
+  background: #1e3f35;
+  border-color: #b89446;
+  color: #f8f1df;
+}
+
+/* ============================================================
+   [data-theme="editorial"] 改善提案同款「文青生活誌 × 微縮工藝」全域主題覆寫
+   ============================================================ */
+html[data-theme="editorial"] {
+  --brand: #b89446;
+  --brand-dark: #1e3f35;
+  --yb: #1e3f35;
+  --yb-deep: #152e27;
+  --yb-ink: #f8f1df;
+  --ink: #1c2924;
+  --muted: #6e6558;
+  --line: #dcd2c0;
+  --bg: #f4efe6;
+  --card: #faf7f2;
+  --ok: #1e563f;
+  --danger: #b9382c;
+  --off: #f9ebe8;
+  --today: #f6ecd5;
+  --shadow: 0 4px 18px rgba(28, 41, 36, 0.06), 0 1px 3px rgba(28, 41, 36, 0.04);
+}
+
+html[data-theme="editorial"] body {
+  background-color: #f4efe6;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(200, 155, 60, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(30, 63, 53, 0.05) 0%, transparent 45%);
+  color: #1c2924;
+}
+
+/* 文青誌宋體/明體人文標題系統 */
+html[data-theme="editorial"] h1,
+html[data-theme="editorial"] h2,
+html[data-theme="editorial"] h3,
+html[data-theme="editorial"] .view-title,
+html[data-theme="editorial"] .brand span:last-child,
+html[data-theme="editorial"] .modal-head h3,
+html[data-theme="editorial"] .st-head h2,
+html[data-theme="editorial"] .dr-section-head h2,
+html[data-theme="editorial"] .meeting-hero h2 {
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", Georgia, "Noto Sans TC", serif;
+  letter-spacing: 0.03em;
+  color: #1e3f35;
+}
+
+/* 頂部導覽列：溫暖亞麻毛玻璃 × 古銅金雙細線 */
+html[data-theme="editorial"] .topbar {
+  background: rgba(250, 247, 242, 0.94);
+  border-bottom: 1px solid #dfd5c5;
+}
+html[data-theme="editorial"] .topbar::after {
+  height: 2px;
+  bottom: -2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(184, 148, 70, 0.65) 18%, #1e3f35 50%, rgba(184, 148, 70, 0.65) 82%, transparent 100%);
+}
+html[data-theme="editorial"] .brand-mark {
+  background: linear-gradient(135deg, #1e3f35 0%, #2a5447 100%);
+  border: 1px solid #b89446;
+  box-shadow: 0 2px 8px rgba(30, 63, 53, 0.2);
+}
+html[data-theme="editorial"] .brand-mark .yb-bike {
+  --yb: #f5e6b3;
+}
+html[data-theme="editorial"] .tabs {
+  background: #ebe4d6;
+  border: 1px solid #dcd2c0;
+}
+html[data-theme="editorial"] .tabs > a,
+html[data-theme="editorial"] .tabs .nav-more-trigger {
+  color: #5c5449;
+}
+html[data-theme="editorial"] .tabs > a:hover,
+html[data-theme="editorial"] .tabs .nav-more-trigger:hover {
+  color: #1e3f35;
+  background: rgba(255, 253, 249, 0.68);
+}
+html[data-theme="editorial"] .tabs > a.active,
+html[data-theme="editorial"] .tabs .nav-more-trigger.active {
+  background: #fffdf9;
+  color: #1e3f35;
+  box-shadow: 0 2px 6px rgba(28, 41, 36, 0.09), inset 0 -2.5px 0 #b89446;
+}
+html[data-theme="editorial"] .nav-more-menu,
+html[data-theme="editorial"] .dropdown {
+  background: #fffdf9;
+  border-color: #d8ccb8;
+  box-shadow: 0 14px 36px rgba(28, 41, 36, 0.16);
+}
+html[data-theme="editorial"] .nav-more-menu a:hover,
+html[data-theme="editorial"] .menu-item:hover {
+  background: #f3ede2;
+  color: #1e3f35;
+}
+html[data-theme="editorial"] .nav-more-menu a.active {
+  background: #1e3f35;
+  color: #f8f1df;
+}
+html[data-theme="editorial"] .nav-more-menu a.active small {
+  color: #e6d39c;
+}
+
+/* 卡片、表單與按鈕：改善提案同款羊皮亞麻紙感與森林綠燙金按鈕 */
+html[data-theme="editorial"] .card {
+  background: linear-gradient(180deg, #fffdf9 0%, #faf6ee 100%);
+  border: 1px solid #dfd5c5;
+  box-shadow: 0 6px 22px rgba(28, 41, 36, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+html[data-theme="editorial"] .btn {
+  background: #fffdf9;
+  border-color: #d5c8b2;
+  color: #26352f;
+}
+html[data-theme="editorial"] .btn:hover {
+  background: #f3ede2;
+  border-color: #b89446;
+  color: #1e3f35;
+}
+html[data-theme="editorial"] .btn.primary {
+  background: linear-gradient(135deg, #1e3f35 0%, #295245 100%);
+  border-color: #b89446;
+  color: #f8f1df;
+  box-shadow: 0 2px 8px rgba(30, 63, 53, 0.2);
+}
+html[data-theme="editorial"] .btn.primary:hover {
+  background: linear-gradient(135deg, #163028 0%, #1e3f35 100%);
+  border-color: #d4af5a;
+  color: #ffffff;
+}
+html[data-theme="editorial"] .btn.ghost {
+  background: transparent;
+}
+html[data-theme="editorial"] .guide-btn {
+  background: #f5efe3;
+  border-color: #d5c4a1;
+  color: #7c5c1a;
+}
+html[data-theme="editorial"] select,
+html[data-theme="editorial"] input:not([type=checkbox]):not([type=radio]),
+html[data-theme="editorial"] textarea {
+  background: #fffdf9;
+  border-color: #d6cbb8;
+  color: #1c2924;
+}
+html[data-theme="editorial"] select:focus,
+html[data-theme="editorial"] input:focus,
+html[data-theme="editorial"] textarea:focus {
+  outline: 2px solid rgba(184, 148, 70, 0.35);
+  border-color: #b89446;
+}
+
+/* 分段切換器、標籤與徽章 */
+html[data-theme="editorial"] .seg {
+  background: #ebe4d6;
+  border: 1px solid #dcd2c0;
+}
+html[data-theme="editorial"] .seg input:checked + span {
+  background: #1e3f35;
+  color: #f8f1df;
+}
+html[data-theme="editorial"] .me-tag {
+  background: #1e3f35;
+  color: #f5e6b3;
+  border: 1px solid #b89446;
+}
+html[data-theme="editorial"] .avatar-fallback {
+  background: #EFE6D4;
+  color: #1e3f35;
+  border: 1px solid #d5c4a1;
+}
+
+/* 今日動態：騎行進度條、組員卡片與右側便利貼中樞 (Sticky Hub) */
+html[data-theme="editorial"] .ride-bar,
+html[data-theme="editorial"] .st-card,
+html[data-theme="editorial"] .bento-widget {
+  background: linear-gradient(180deg, #fffdf9 0%, #faf6ee 100%) !important;
+  border: 1px solid #dfd5c5 !important;
+}
+html[data-theme="editorial"] .member {
+  background: #fffdf9;
+  border: 1px solid #e4dccb;
+  border-left: 4px solid #1e563f;
+}
+html[data-theme="editorial"] .member.is-out {
+  border-left-color: #b9382c;
+}
+html[data-theme="editorial"] .now {
+  background: #f6f1e7;
+  border-color: #e4dccb;
+}
+html[data-theme="editorial"] .pill.office {
+  background: #e3efe9;
+  color: #1e3f35;
+}
+html[data-theme="editorial"] .bento-widget .bw-head {
+  border-bottom-color: #e6decb;
+}
+html[data-theme="editorial"] .bento-widget .bw-title {
+  font-family: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  color: #1e3f35;
+}
+
+/* 行事曆（月曆與總表） */
+html[data-theme="editorial"] .fc .fc-col-header-cell,
+html[data-theme="editorial"] table.sched thead th,
+html[data-theme="editorial"] table.sched .corner {
+  background: #efe9dc;
+  color: #2b3933;
+}
+html[data-theme="editorial"] table.sched .who {
+  background: #fffdf9;
+}
+html[data-theme="editorial"] table.sched thead th.today {
+  background: #1e3f35;
+  color: #f8f1df;
+}
+html[data-theme="editorial"] table.sched thead th.today .wd {
+  color: #e6d39c;
+}
+html[data-theme="editorial"] .fc .fc-daygrid-day:hover,
+html[data-theme="editorial"] table.sched td.editable:hover {
+  background: #f5efe3;
+}
+
+/* 月會、例案追蹤、模擬體驗、每日回報與彈窗 */
+html[data-theme="editorial"] .meeting-hero,
+html[data-theme="editorial"] .dr-hero-card,
+html[data-theme="editorial"] .sim-top-control-card {
+  background: linear-gradient(135deg, #faf7f2 0%, #f2eadb 100%) !important;
+  border: 1px solid #d8cbb3 !important;
+}
+html[data-theme="editorial"] .modal {
+  background: #faf7f2;
+  border: 1px solid #d8cbb3;
+}
+html[data-theme="editorial"] .modal-head,
+html[data-theme="editorial"] .modal-foot {
+  background: #f4efe6;
+  border-color: #e2d9c8;
+}
+html[data-theme="editorial"] .yb-foot {
+  border-top-color: #dfd5c5;
+  color: #6e6558;
+}

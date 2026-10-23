@@ -11,13 +11,17 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="dns-prefetch" href="https://api.open-meteo.com">
   <link rel="dns-prefetch" href="https://zh.wikipedia.org">
-  <link rel="stylesheet" href="css/style.css?v=20261023v60">
+  <link rel="stylesheet" href="css/style.css?v=20261023v61">
   <script>
     // 手機端第一時間防護：
     // 1. 若手機從 github.io 或 .web.app 進入，自動導向與 authDomain 完全同源的 https://team-calendar-93cb2.firebaseapp.com/
     //    既符合 Google Cloud 預設 Authorized Redirect URI（不會出現 400 redirect_uri_mismatch），也徹底避開 iOS Storage Partitioning 造成的 "Unable to process request due to missing initial state"
     // 2. 若從 LINE 點開且未帶 openExternalBrowser=1，立即自動附加參數喚起系統預設瀏覽器（Safari / Chrome）
     (function() {
+      try {
+        var savedTheme = localStorage.getItem('yb_ui_theme') || 'classic';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch (e) {}
       try {
         var ua = navigator.userAgent || '';
         var isLine = /Line\//i.test(ua);
@@ -63,6 +67,6 @@
   <div id="app"><div class="boot">載入中…</div></div>
   <div id="modal-root"></div>
   <div id="toast-root"></div>
-  <script type="module" src="js/app.js?v=20261023v60"></script>
+  <script type="module" src="js/app.js?v=20261023v61"></script>
 </body>
 </html>
