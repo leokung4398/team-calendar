@@ -8772,3 +8772,26 @@ html[data-theme="editorial"] .yb-foot {
   border-top-color: #dfd5c5;
   color: #6e6558;
 }
+
+/* 模擬體驗：管理員快速雙擊微調配額與當月工作天儲存格 */
+.sim-admin-dbl-cell {
+  position: relative;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.sim-admin-dbl-cell:hover {
+  box-shadow: inset 0 0 0 1.5px #3b82f6;
+}
+.sim-quota-inline-input {
+  width: 58px;
+  padding: 2px 4px;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+  border: 2px solid #2563eb;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #0f172a;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+

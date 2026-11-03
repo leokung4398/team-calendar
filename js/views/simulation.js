@@ -98,7 +98,7 @@ export function computeMonthUserMetrics(monthKey, sortedUsers, quotas, assignmen
 
     if (nick === 'Chun') {
       const kaohsiung = quotas.find(q => q.region === '高雄');
-      const kaoTotal = (Number(kaohsiung?.v20) || 0) + (Number(kaohsiung?.v20e) || 0);
+      const kaoTotal = Number(kaohsiung?.totalVehicles) || ((Number(kaohsiung?.v20) || 0) + (Number(kaohsiung?.v20e) || 0));
       vehicleSum += kaoTotal;
 
       quotas.forEach(q => {
@@ -391,7 +391,7 @@ export function mountSimulation(el, ctx = {}) {
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
             <div style="display:flex;align-items:center;gap:8px">
               <h3 style="font-size:15.5px; margin:0;">各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
-              <span class="info-pill-tip" data-tip="點選上方粉紅列『出差日期』可記錄幾號出差（例：15, 16）；點選下方格子可直接編輯排班次數">ⓘ 操作提示</span>
+              <span class="info-pill-tip" data-tip="點選上方粉紅列『出差日期』可記錄幾號出差；點選下方組員格子可編輯排班次數${isAdmin() ? '；管理員快速雙擊左側配額或當月工作天可微調基準數值' : ''}">ⓘ 操作提示</span>
             </div>
           </div>
 
@@ -399,8 +399,8 @@ export function mountSimulation(el, ctx = {}) {
             <thead id="sim-tripdate-thead">
               <!-- Excel 第 1 列：出差日期（內勤組員出差幾號） -->
               <tr style="background:#fff1f2; border-top:2px solid #fda4af; border-bottom:1px solid #fecdd3; height:34px;">
-                <th colspan="4" style="padding:4px 8px; text-align:right; color:#9f1239; font-size:12px; font-weight:700; background:#f8fafc; border-right:1px solid #cbd5e1;">
-                  當月工作天：<b>${workDays}</b> 天
+                <th colspan="4" class="${isAdmin() ? 'sim-admin-dbl-cell' : ''}" data-admin-workdays="1" title="${isAdmin() ? '管理員：快速點擊兩下可微調當月工作天數' : ''}" style="padding:4px 8px; text-align:right; color:#9f1239; font-size:12px; font-weight:700; background:#f8fafc; border-right:1px solid #cbd5e1; ${isAdmin() ? 'cursor:pointer; user-select:none;' : ''}">
+                  當月工作天：<b data-workdays-val="${workDays}">${workDays}</b> 天
                 </th>
                 <th colspan="3" style="padding:4px 8px; text-align:center; background:#ffe4e6; color:#9f1239; font-weight:800; font-size:12.5px; border-right:1px solid #fda4af;">
                   出差日期 (幾號)
@@ -489,12 +489,12 @@ export function mountSimulation(el, ctx = {}) {
                       ${isLastNorth ? '<span class="badge-tag info tiny" style="margin-left:4px; font-size:10px; padding:2px 6px; white-space:nowrap; background:#e0f2fe; color:#0369a1;">北區訖</span>' : ''}
                       ${isFirstSouth ? '<span class="badge-tag warn tiny" style="margin-left:4px; font-size:10px; padding:2px 6px; white-space:nowrap; background:#fef3c7; color:#b45309;">南區起</span>' : ''}
                     </td>
-                    <td style="white-space:nowrap;"><b>${q.totalVehicles || 0}</b></td>
-                    <td style="white-space:nowrap;">
+                    <td class="${isAdmin() ? 'sim-admin-dbl-cell' : ''}" data-quota-idx="${qIdx}" data-quota-field="totalVehicles" data-quota-val="${q.totalVehicles || 0}" title="${isAdmin() ? `管理員：快速點擊兩下可微調【${esc(q.region)}】抽檢總數` : ''}" style="white-space:nowrap; ${isAdmin() ? 'cursor:pointer; user-select:none;' : ''}"><b>${q.totalVehicles || 0}</b></td>
+                    <td class="${isAdmin() ? 'sim-admin-dbl-cell' : ''}" data-quota-idx="${qIdx}" data-quota-field="targetDays" data-quota-val="${q.targetDays || 0}" title="${isAdmin() ? `管理員：快速點擊兩下可微調【${esc(q.region)}】執行人數/天數` : ''}" style="white-space:nowrap; ${isAdmin() ? 'cursor:pointer; user-select:none;' : ''}">
                       <b style="font-size:14px; color:#1e293b;">${q.targetDays ? q.targetDays : ''}</b>
                     </td>
-                    <td style="background:#fefce8; color:#b45309; font-weight:700; white-space:nowrap;">${q.v20 || 0}</td>
-                    <td style="background:#fdf2f8; color:#be123c; font-weight:700; white-space:nowrap;">${q.v20e || 0}</td>
+                    <td class="${isAdmin() ? 'sim-admin-dbl-cell' : ''}" data-quota-idx="${qIdx}" data-quota-field="v20" data-quota-val="${q.v20 || 0}" title="${isAdmin() ? `管理員：快速點擊兩下可微調【${esc(q.region)}】2.0台/人` : ''}" style="background:#fefce8; color:#b45309; font-weight:700; white-space:nowrap; ${isAdmin() ? 'cursor:pointer; user-select:none;' : ''}">${q.v20 || 0}</td>
+                    <td class="${isAdmin() ? 'sim-admin-dbl-cell' : ''}" data-quota-idx="${qIdx}" data-quota-field="v20e" data-quota-val="${q.v20e || 0}" title="${isAdmin() ? `管理員：快速點擊兩下可微調【${esc(q.region)}】2.0E台/人` : ''}" style="background:#fdf2f8; color:#be123c; font-weight:700; white-space:nowrap; ${isAdmin() ? 'cursor:pointer; user-select:none;' : ''}">${q.v20e || 0}</td>
                     <td style="background:#fff7ed; white-space:nowrap;">
                       ${perDayTotal ? `<b style="color:#c2410c; font-size:13px;">${perDayTotal}</b>` : '<span class="muted">-</span>'}
                     </td>
@@ -910,7 +910,7 @@ export function mountSimulation(el, ctx = {}) {
     // 儲存「出差日期 (幾號)」列輸入
     let saveTimer = null;
     const persistCurrentMonthMatrix = async () => {
-      const { rawDuty, quotas: curQuotas, assignments: baseAssign, tripDates: baseTripDates } = getMergedMonthSimulationData(curMonth);
+      const { rawDuty, quotas: curQuotas, assignments: baseAssign, tripDates: baseTripDates, workDays: curWorkDays } = getMergedMonthSimulationData(curMonth);
       const nextAssign = JSON.parse(JSON.stringify(baseAssign));
       const nextTripDates = JSON.parse(JSON.stringify(baseTripDates));
 
@@ -940,6 +940,7 @@ export function mountSimulation(el, ctx = {}) {
         await saveSimulationDutyPlan(curMonth, {
           ...rawDuty,
           sheetRev: (HISTORICAL_SIMULATION_2026[curMonth] || {}).sheetRev || '',
+          workDays: curWorkDays,
           quotas: curQuotas,
           assignments: nextAssign,
           tripDates: nextTripDates,
@@ -977,13 +978,121 @@ export function mountSimulation(el, ctx = {}) {
         saveTimer = setTimeout(persistCurrentMonthMatrix, 300);
       });
     });
+
+    // 管理員快速雙擊（dblclick）左側基準配額或「當月工作天」開啟單格微調模式
+    el.querySelectorAll('.sim-admin-dbl-cell').forEach(cell => {
+      cell.addEventListener('dblclick', (e) => {
+        if (!isAdmin()) return;
+        if (cell.querySelector('.sim-quota-inline-input')) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const isWorkDaysCell = cell.dataset.adminWorkdays === '1';
+        const qIdx = Number(cell.dataset.quotaIdx);
+        const field = cell.dataset.quotaField;
+        const curVal = isWorkDaysCell
+          ? Number(cell.querySelector('[data-workdays-val]')?.dataset.workdaysVal || 20)
+          : Number(cell.dataset.quotaVal || 0);
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = '9999';
+        input.step = '1';
+        input.value = String(curVal);
+        input.className = 'sim-quota-inline-input';
+
+        if (isWorkDaysCell) {
+          cell.innerHTML = '';
+          const prefix = document.createTextNode('當月工作天：');
+          const suffix = document.createTextNode(' 天');
+          cell.appendChild(prefix);
+          cell.appendChild(input);
+          cell.appendChild(suffix);
+        } else {
+          cell.innerHTML = '';
+          cell.appendChild(input);
+        }
+
+        input.focus();
+        input.select();
+
+        let committed = false;
+        const commitEdit = async (cancel = false) => {
+          if (committed) return;
+          committed = true;
+          if (cancel) {
+            render();
+            return;
+          }
+          const nextVal = Math.max(0, Math.round(Number(input.value) || 0));
+          if (nextVal === curVal) {
+            render();
+            return;
+          }
+
+          const { rawDuty, quotas: curQuotas, assignments: curAssign, tripDates: curTripDates, workDays: curWorkDays } = getMergedMonthSimulationData(curMonth);
+          const nextQuotas = JSON.parse(JSON.stringify(curQuotas));
+          let nextWorkDays = curWorkDays;
+
+          if (isWorkDaysCell) {
+            nextWorkDays = nextVal;
+          } else if (nextQuotas[qIdx] && field) {
+            const row = nextQuotas[qIdx];
+            const oldTarget = Number(row.targetDays) || 0;
+            const oldUnitSum = (Number(row.v20) || 0) + (Number(row.v20e) || 0);
+            const wasAutoTotal = row.region !== '雙北' && row.region !== '高雄' && oldTarget > 0 && Number(row.totalVehicles) === oldTarget * oldUnitSum;
+
+            row[field] = nextVal;
+
+            // 若原本抽檢總數 = 執行人數/天數 × (2.0 + 2.0E)，且管理員改的是天數或單日配額，自動同步該列抽檢總數
+            if (wasAutoTotal && (field === 'targetDays' || field === 'v20' || field === 'v20e')) {
+              const newTarget = Number(row.targetDays) || 0;
+              const newUnitSum = (Number(row.v20) || 0) + (Number(row.v20e) || 0);
+              row.totalVehicles = newTarget * newUnitSum;
+            }
+          }
+
+          try {
+            await saveSimulationDutyPlan(curMonth, {
+              ...rawDuty,
+              sheetRev: (HISTORICAL_SIMULATION_2026[curMonth] || {}).sheetRev || '',
+              workDays: nextWorkDays,
+              quotas: nextQuotas,
+              assignments: curAssign,
+              tripDates: curTripDates,
+            });
+            toast('基準配額已微調並更新統計', 'success');
+            render();
+          } catch (err) {
+            console.error(err);
+            toast('配額儲存失敗：' + (err.code || err.message), 'error');
+            render();
+          }
+        };
+
+        input.addEventListener('keydown', (ke) => {
+          if (ke.key === 'Enter') {
+            ke.preventDefault();
+            commitEdit(false);
+          } else if (ke.key === 'Escape') {
+            ke.preventDefault();
+            commitEdit(true);
+          }
+        });
+
+        input.addEventListener('blur', () => {
+          commitEdit(false);
+        });
+      });
+    });
   }
 
   render();
   return {
     update: () => {
       const active = document.activeElement;
-      if (active && el.contains(active) && (active.classList.contains('sim-cell-input') || active.classList.contains('sim-tripdate-input'))) return;
+      if (active && el.contains(active) && (active.classList.contains('sim-cell-input') || active.classList.contains('sim-tripdate-input') || active.classList.contains('sim-quota-inline-input'))) return;
       render();
     }
   };
