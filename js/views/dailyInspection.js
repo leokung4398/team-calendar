@@ -54,11 +54,11 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
   
   // 深度合併每個組員的排程
   const allMemberKeys = new Set([...Object.keys(defaultSchedules), ...Object.keys(savedData.schedules || {})]);
+  const isLatestSheetRev = savedData.sheetRev === '20261103_gsheet_v1';
   allMemberKeys.forEach(k => {
-    schedules[k] = {
-      ...(defaultSchedules[k] || {}),
-      ...((savedData.schedules && savedData.schedules[k]) || {})
-    };
+    schedules[k] = isLatestSheetRev
+      ? { ...(defaultSchedules[k] || {}), ...((savedData.schedules && savedData.schedules[k]) || {}) }
+      : { ...((savedData.schedules && savedData.schedules[k]) || {}), ...(defaultSchedules[k] || {}) };
   });
 
   // 取得當前月份的第一天與最後一天
@@ -290,7 +290,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
 
     // 儲存至本地快取與雲端
     try {
-      const payload = { rules, schedules };
+      const payload = { rules, schedules, sheetRev: '20261103_gsheet_v1' };
       localStorage.setItem(`daily_inspection_${zone}`, JSON.stringify(payload));
       
       try {
@@ -376,7 +376,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
       modalOverlay.querySelectorAll('[data-dlg-close]').forEach(b => b.addEventListener('click', closeModal));
 
       const persistAndRerender = async () => {
-        const payload = { rules, schedules };
+        const payload = { rules, schedules, sheetRev: '20261103_gsheet_v1' };
         try {
           localStorage.setItem(`daily_inspection_${zone}`, JSON.stringify(payload));
         } catch (e) {}

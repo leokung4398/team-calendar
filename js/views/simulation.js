@@ -61,13 +61,15 @@ const PRIORITIZED_KEYS = ['Leo', 'Hao', 'Chun', 'Josh', 'Ben', 'Ciao', 'Aidpan',
 export function getMergedMonthSimulationData(monthKey) {
   const rawDuty = simulationDutyOf(monthKey) || {};
   const hist = HISTORICAL_SIMULATION_2026[monthKey] || {};
-  const quotas = rawDuty.quotas || hist.quotas || DEFAULT_REGION_QUOTAS;
-  const assignments = rawDuty.assignments || hist.assignments || {};
-  const tripDates = rawDuty.tripDates || hist.tripDates || {};
-  const workDays = rawDuty.workDays ?? hist.workDays ?? 20;
-  const travelDays = rawDuty.travelDays ?? hist.travelDays ?? 15;
-  const totalV20Vehicles = rawDuty.totalV20Vehicles || '96,810';
-  const totalV20eVehicles = rawDuty.totalV20eVehicles || '17,284';
+  // 若試算表有新版本匯入（sheetRev 更新），優先採用最新匯入的試算表基準，避免舊版雲端快取蓋掉最新數字
+  const useCloud = Boolean(rawDuty.assignments) && (!hist.sheetRev || rawDuty.sheetRev === hist.sheetRev);
+  const quotas = (useCloud && rawDuty.quotas) || hist.quotas || DEFAULT_REGION_QUOTAS;
+  const assignments = (useCloud && rawDuty.assignments) || hist.assignments || {};
+  const tripDates = (useCloud && rawDuty.tripDates) || hist.tripDates || {};
+  const workDays = (useCloud ? rawDuty.workDays : undefined) ?? hist.workDays ?? 20;
+  const travelDays = (useCloud ? rawDuty.travelDays : undefined) ?? hist.travelDays ?? 15;
+  const totalV20Vehicles = (useCloud && rawDuty.totalV20Vehicles) || hist.totalV20Vehicles || '96,810';
+  const totalV20eVehicles = (useCloud && rawDuty.totalV20eVehicles) || hist.totalV20eVehicles || '17,284';
 
   return {
     rawDuty,
@@ -86,7 +88,8 @@ export function getMergedMonthSimulationData(monthKey) {
 export function computeMonthUserMetrics(monthKey, sortedUsers, quotas, assignments, hist = {}) {
   const userTotalDays = {};
   const userTotalVehicles = {};
-  const hasCustomCloud = Boolean(simulationDutyOf(monthKey)?.assignments);
+  const rawCloud = simulationDutyOf(monthKey);
+  const hasCustomCloud = Boolean(rawCloud?.assignments) && (!hist.sheetRev || rawCloud.sheetRev === hist.sheetRev);
 
   sortedUsers.forEach(u => {
     const nick = USER_NICK_MAP[u.displayName] || u.displayName;
@@ -171,7 +174,7 @@ function getDailyInspectionCrossCheck(monthKey) {
 
     const memberKeys = zone === 'north' ? ['Leo', 'Hao'] : ['Chun'];
     memberKeys.forEach(k => {
-      const merged = { ...(defSched[k] || {}), ...(savedSched[k] || {}) };
+      const merged = { ...(savedSched[k] || {}), ...(defSched[k] || {}) };
       const outCities = [];
       const cityDays = {};
       Object.entries(merged).forEach(([dStr, loc]) => {
@@ -290,7 +293,7 @@ export function mountSimulation(el, ctx = {}) {
       <div id="sim-year-month-bar" class="sim-top-control-row">
         <div class="month-expander-bar" tabindex="0">
           <div class="month-expander-trigger">
-            <span class="month-trigger-label">${yStr}年 · <b>${Number(mStr)}月${curMonth === '2026-10' ? ' (本月)' : ''}</b></span>
+            <span class="month-trigger-label">${yStr}年 · <b>${Number(mStr)}月${curMonth === ymd().slice(0, 7) ? ' (本月)' : ''}</b></span>
             <span class="month-trigger-hint">▸ 切換月份</span>
           </div>
           <div class="month-expander-ZeroDrawer">
@@ -298,8 +301,8 @@ export function mountSimulation(el, ctx = {}) {
               const mNum = Number(mKey.slice(5, 7));
               const isCur = mKey === curMonth && activeSubTab !== 'annual';
               return `
-                <button type="button" class="month-pill-item ${isCur ? 'active' : ''} ${mKey === '2026-10' ? 'is-current' : ''}" data-quick-month="${mKey}">
-                  ${mNum}月${mKey === '2026-10' ? '(本月)' : ''}
+                <button type="button" class="month-pill-item ${isCur ? 'active' : ''} ${mKey === ymd().slice(0, 7) ? 'is-current' : ''}" data-quick-month="${mKey}">
+                  ${mNum}月${mKey === ymd().slice(0, 7) ? '(本月)' : ''}
                 </button>
               `;
             }).join('')}
@@ -936,6 +939,7 @@ export function mountSimulation(el, ctx = {}) {
       try {
         await saveSimulationDutyPlan(curMonth, {
           ...rawDuty,
+          sheetRev: (HISTORICAL_SIMULATION_2026[curMonth] || {}).sheetRev || '',
           quotas: curQuotas,
           assignments: nextAssign,
           tripDates: nextTripDates,
