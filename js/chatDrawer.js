@@ -1,7 +1,7 @@
 // 團隊即時聊天室（全站常駐滑出抽屜 + 支援最大化寬版模式）
 // 單一全組共用大廳、支援 @標註組員、引用回覆、表情符號反應、貼上圖片自動壓縮、YouBike 專屬快捷語
 import { state, myUid, isAdmin, activeUsers, userOf, sendChatMessage, toggleChatReaction, deleteChatMessage, onChange } from './data.js';
-import { esc, avatar, toast } from './utils.js';
+import { esc, avatar, toast, formatTaipeiDateTime } from './utils.js';
 
 const QUICK_PHRASES = [
   '出發巡檢！',
@@ -159,7 +159,7 @@ function renderChatSystem() {
           const uObj = userOf(m.uid) || { displayName: m.authorName || '組員', photoURL: m.photoURL || '' };
           const rx = m.reactions || {};
           const canDel = mine || isAdmin();
-          const timeStr = (m.createdAtIso || '').slice(5, 16).replace('T', ' ');
+          const timeStr = formatTaipeiDateTime(m.createdAt || m.createdAtIso, { includeYear: false, includeTime: true });
 
           return `
             <div class="chat-msg-row ${mine ? 'mine' : ''}">

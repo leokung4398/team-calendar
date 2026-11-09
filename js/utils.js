@@ -67,6 +67,43 @@ export function timeAgo(ts) {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
+/**
+ * 將任意時間值（ISO 字串、Firestore Timestamp、毫秒數或 Date）轉為台灣時間（Asia/Taipei, UTC+8）字串
+ * @param {any} input
+ * @param {{ includeYear?: boolean, includeTime?: boolean }} opts
+ */
+export function formatTaipeiDateTime(input, opts = {}) {
+  if (!input) return '';
+  const { includeYear = false, includeTime = true } = opts;
+  let ms = NaN;
+  if (typeof input?.toMillis === 'function') {
+    ms = input.toMillis();
+  } else if (typeof input?.seconds === 'number') {
+    ms = input.seconds * 1000;
+  } else if (input instanceof Date) {
+    ms = input.getTime();
+  } else if (typeof input === 'number') {
+    ms = input;
+  } else if (typeof input === 'string') {
+    const parsed = Date.parse(input);
+    if (!Number.isNaN(parsed)) {
+      ms = parsed;
+    } else {
+      return input.slice(includeYear ? 0 : 5, includeTime ? 16 : 10).replace('T', ' ');
+    }
+  }
+  if (Number.isNaN(ms)) return '';
+  // 以 UTC+8 (台灣標準時間) 換算年月日時分，不受瀏覽器或系統時區差異影響
+  const tpe = new Date(ms + 8 * 3600 * 1000);
+  const yyyy = tpe.getUTCFullYear();
+  const mm = pad(tpe.getUTCMonth() + 1);
+  const dd = pad(tpe.getUTCDate());
+  const hh = pad(tpe.getUTCHours());
+  const mi = pad(tpe.getUTCMinutes());
+  const datePart = includeYear ? `${yyyy}-${mm}-${dd}` : `${mm}-${dd}`;
+  return includeTime ? `${datePart} ${hh}:${mi}` : datePart;
+}
+
 export function initials(name) {
   return esc((name || '?').trim().slice(0, 1).toUpperCase());
 }

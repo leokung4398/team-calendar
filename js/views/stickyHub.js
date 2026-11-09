@@ -1,6 +1,6 @@
 // 團隊黏著度與日常互動中樞（今日備忘錄 Memo / 下午茶午餐揪團 / 團隊感謝貼紙 Kudos / 每日微投票 / 五區即時天氣）
 import { state, myUid, isAdmin, activeUsers, userOf, saveVibeDoc, saveToolsDoc } from '../data.js';
-import { esc, ymd, fmtMD, weekdayZh, eachDay, avatar, toast, openModal, closeModal } from '../utils.js';
+import { esc, ymd, fmtMD, weekdayZh, eachDay, avatar, toast, openModal, closeModal, formatTaipeiDateTime } from '../utils.js';
 
 /** 取得目前登入組員可見的所有備忘錄（個人私密 + 全組共享） */
 export function getVisibleMemos() {
@@ -457,7 +457,7 @@ export function renderStickyHub(container, selectedDay, onRerender) {
                 </div>
                 <div class="kudos-note-msg">${esc(k.message)}</div>
                 <div class="kudos-note-foot">
-                  <span class="muted tiny">${esc((k.at || '').slice(5, 10))}</span>
+                  <span class="muted tiny">${esc(formatTaipeiDateTime(k.at, { includeYear: false, includeTime: false }))}</span>
                   <div style="display:flex;gap:4px;align-items:center">
                     <button type="button" class="kudos-heart-btn ${liked ? 'active' : ''}" data-heart-kudos="${esc(k.id)}">讚 ${hearts.length}</button>
                     ${(k.fromUid === uid || isAdmin()) ? `<button type="button" class="memo-del-btn" data-del-kudos="${esc(k.id)}">✕</button>` : ''}

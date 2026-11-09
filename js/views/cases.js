@@ -1,7 +1,7 @@
 // 例案追蹤（長期專案進度管理模組）
 // 支援「極簡列表（預設收合，點開看時間軸）」與「看板模式（Kanban）」切換，以及時間軸更新紀錄（Timeline Log）
 import { state, myUid, isAdmin, activeUsers, userOf, caseList, saveCaseItem, appendCaseTimeline, deleteCaseItem } from '../data.js';
-import { esc, avatar, ymd, toast, openModal, closeModal, confirmDialog } from '../utils.js';
+import { esc, avatar, ymd, toast, openModal, closeModal, confirmDialog, formatTaipeiDateTime } from '../utils.js';
 
 export const CASE_STATUSES = [
   { id: 'planning', label: '規劃中', color: '#64748B', bg: '#F1F5F9' },
@@ -166,7 +166,7 @@ function renderCompactList(cases, expandedIds) {
                 <span class="case-status-badge" style="background:${st.bg};color:${st.color}">${st.label}</span>
                 <span class="case-prio-dot" style="color:${pr.color}" title="${pr.label}">${pr.label}</span>
                 <strong class="case-row-title">${esc(c.title)}</strong>
-                ${latestLog ? `<span class="case-latest-snippet">最新：${esc(latestLog.note)} (${esc((latestLog.at || '').slice(5, 10))})</span>` : `<span class="case-latest-snippet muted">${esc(c.summary || '點擊展開詳情與時間軸')}</span>`}
+                ${latestLog ? `<span class="case-latest-snippet">最新：${esc(latestLog.note)} (${esc(formatTaipeiDateTime(latestLog.at, { includeYear: false, includeTime: false }))})</span>` : `<span class="case-latest-snippet muted">${esc(c.summary || '點擊展開詳情與時間軸')}</span>`}
                 <div class="case-row-right">
                   <div class="case-owners-avatars">
                     ${owners.map(u => avatar(u, 24)).join('')}
@@ -204,7 +204,7 @@ function renderCompactList(cases, expandedIds) {
                       <ul class="case-tl-list">
                         ${(c.timeline || []).map(tl => `
                           <li>
-                            <span class="case-tl-date">${esc((tl.at || '').slice(0, 16).replace('T', ' '))}</span>
+                            <span class="case-tl-date">${esc(formatTaipeiDateTime(tl.at, { includeYear: true, includeTime: true }))}</span>
                             <span class="case-tl-author">${esc(tl.authorName || '')}</span>
                             <span class="case-tl-pct">${tl.progress ?? pct}%</span>
                             <span class="case-tl-note">${esc(tl.note)}</span>

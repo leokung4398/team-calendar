@@ -5,7 +5,7 @@ import {
   state, myUid, isAdmin, wishList, saveWishItem, toggleWishVote, deleteWishItem,
   ventList, createVentItem, toggleVentReaction, addVentReply, deleteVentItem,
 } from '../data.js';
-import { esc, toast, openModal, closeModal, confirmDialog } from '../utils.js';
+import { esc, toast, openModal, closeModal, confirmDialog, formatTaipeiDateTime } from '../utils.js';
 
 const WISH_STATUSES = [
   { id: 'open',      label: '許願集氣中', color: '#D97706', bg: '#FFFBEB' },
@@ -375,7 +375,7 @@ export function mountWishes(el) {
                   <div style="min-width:0;flex:1">
                     <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px">
                       <span class="case-status-badge" style="background:${st.bg};color:${st.color}">${st.label}</span>
-                      <span class="muted" style="font-size:12px">許願人：<b>${esc(w.authorName || '組員')}</b> · ${esc((w.createdAtIso || '').slice(0, 10))}</span>
+                      <span class="muted" style="font-size:12px">許願人：<b>${esc(w.authorName || '組員')}</b> · ${esc(formatTaipeiDateTime(w.createdAt || w.createdAtIso, { includeYear: true, includeTime: false }))}</span>
                     </div>
                     <h3 style="margin:0 0 6px;font-size:15.5px">${esc(w.title)}</h3>
                     <p style="margin:0;font-size:13.5px;color:var(--text);line-height:1.55;white-space:pre-wrap">${esc(w.description || '')}</p>
@@ -1039,7 +1039,7 @@ export function mountVents(el) {
                     <strong style="font-size:13.5px;color:${v.isAnonymous ? '#475569' : 'var(--text)'}">${esc(v.authorName || '匿名單車客')}</strong>
                     ${v.isAnonymous ? `<span class="badge" style="background:#F1F5F9;color:#475569;font-size:11px">完全匿名</span>` : ''}
                     <span class="badge" style="background:#FEF3C7;color:#92400E;font-size:11px">${esc(cat.label)}</span>
-                    <span class="muted" style="font-size:11.5px">${esc((v.createdAtIso || '').slice(0, 16).replace('T', ' '))}</span>
+                    <span class="muted" style="font-size:11.5px">${esc(formatTaipeiDateTime(v.createdAt || v.createdAtIso, { includeYear: true, includeTime: true }))}</span>
                   </div>
                   ${canDel ? `<button class="btn sm ghost" data-del-vent="${esc(v.id)}" style="color:var(--danger);padding:2px 6px">✕</button>` : ''}
                 </div>
@@ -1062,7 +1062,7 @@ export function mountVents(el) {
                         ${replies.map(r => `
                           <div style="font-size:12.5px;background:#fff;border:1px solid var(--border);padding:6px 10px;border-radius:8px">
                             <strong>${esc(r.authorName)}：</strong>${esc(r.text)}
-                            <span class="muted" style="font-size:11px;margin-left:6px">${esc((r.at || '').slice(5, 16).replace('T', ' '))}</span>
+                            <span class="muted" style="font-size:11px;margin-left:6px">${esc(formatTaipeiDateTime(r.at, { includeYear: false, includeTime: true }))}</span>
                           </div>
                         `).join('')}
                       </div>
