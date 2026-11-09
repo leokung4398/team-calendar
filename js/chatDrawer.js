@@ -12,7 +12,13 @@ const QUICK_PHRASES = [
   '有人要訂飲料嗎？',
 ];
 
-const REACTION_EMOJIS = ['讚', '愛心', '好笑', '推', '感謝'];
+const REACTION_ITEMS = [
+  { key: '讚', icon: '👍', title: '讚' },
+  { key: '愛心', icon: '❤️', title: '愛心' },
+  { key: '好笑', icon: '😂', title: '好笑' },
+  { key: '推', icon: '🔥', title: '推' },
+  { key: '感謝', icon: '🙏', title: '感謝' },
+];
 
 let drawerOpen = false;
 let isMaximized = false;
@@ -182,10 +188,16 @@ function renderChatSystem() {
 
                 <!-- 表情符號與操作列 -->
                 <div class="chat-msg-actions">
-                  ${REACTION_EMOJIS.map(em => {
-                    const arr = Array.isArray(rx[em]) ? rx[em] : [];
-                    const hasMe = arr.includes(uid);
-                    return `<button class="chat-rx-btn ${hasMe ? 'active' : ''}" data-rx-msg="${esc(m.id)}" data-rx-em="${em}">${em}${arr.length ? ` <span>${arr.length}</span>` : ''}</button>`;
+                  ${REACTION_ITEMS.map(item => {
+                    const arr = [
+                      ...(Array.isArray(rx[item.key]) ? rx[item.key] : []),
+                      ...(Array.isArray(rx[item.icon]) ? rx[item.icon] : []),
+                    ];
+                    const uniqueUids = [...new Set(arr)];
+                    const hasMe = uniqueUids.includes(uid);
+                    const whoNames = uniqueUids.map(u => userOf(u)?.displayName || '組員').join('、');
+                    const tip = uniqueUids.length ? `${item.title}：${whoNames}` : item.title;
+                    return `<button class="chat-rx-btn ${hasMe ? 'active' : ''}" data-rx-msg="${esc(m.id)}" data-rx-em="${item.key}" title="${esc(tip)}">${item.icon}${uniqueUids.length ? ` <span>${uniqueUids.length}</span>` : ''}</button>`;
                   }).join('')}
                   <button class="chat-rx-btn" data-reply-msg="${esc(m.id)}" title="回覆此訊息">↩ 回覆</button>
                   ${canDel ? `<button class="chat-rx-btn" data-del-msg="${esc(m.id)}" title="收回/刪除" style="color:var(--danger)">✕</button>` : ''}
