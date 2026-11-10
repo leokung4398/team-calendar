@@ -8795,3 +8795,756 @@ html[data-theme="editorial"] .yb-foot {
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
 }
 
+
+/* ============================================================
+   全站手機版與小螢幕精密響應式排版校正系統 (v66)
+   徹底解決手機端橫向破版、頂部導覽擠壓、外勤魔王卡溢出、
+   模擬體驗月份抽屜飛出畫面、許願池/樹洞標題遮擋等問題
+   ============================================================ */
+
+/* 1. 全域防橫向溢位保護 */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+#app,
+.main,
+.view {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 860px) {
+  /* ---- A. 頂部導覽列 (Topbar) 與頁籤列 (Tabs) ---- */
+  .topbar-in {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .brand {
+    font-size: 14.5px;
+    gap: 6px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .brand > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .top-actions {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .top-actions .btn {
+    padding: 5px 8px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .top-actions .theme-toggle-btn {
+    padding: 5px 7px;
+    font-size: 11.5px;
+  }
+
+  /* 頁籤列：自動換行緊湊排列（不截斷「百寶箱 ▾」彈出選單，也不擠成一團） */
+  .tabs {
+    order: 3;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 5px;
+    border-radius: 12px;
+    overflow: visible;
+  }
+
+  .tabs > a,
+  .tabs .nav-more-dropdown {
+    flex: 0 1 auto;
+  }
+
+  .tabs > a,
+  .tabs .nav-more-trigger {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 8px;
+    white-space: nowrap;
+  }
+
+  /* 手機端「百寶箱 ▾」下拉選單：防止超出螢幕右側邊界 */
+  .nav-more-dropdown .nav-more-menu {
+    right: 0;
+    left: auto;
+    width: min(260px, 88vw);
+    z-index: 300;
+  }
+
+  /* 通知面板與個人選單：固定於手機可視範圍內，不超出左右邊界 */
+  .notif-panel {
+    position: fixed;
+    top: 56px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    max-height: 75vh;
+    z-index: 400;
+  }
+
+  .user-menu {
+    position: fixed;
+    top: 56px;
+    right: 10px;
+    left: auto;
+    width: min(280px, calc(100vw - 20px));
+    z-index: 400;
+  }
+
+  /* ---- B. 主容器與共用工具列 (Toolbar) ---- */
+  .main {
+    padding: 12px 10px 88px;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .toolbar .view-title {
+    order: -1;
+    width: 100%;
+    text-align: left;
+    font-size: 17px;
+    margin: 0 0 2px 0;
+  }
+
+  .toolbar .nav-group {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .toolbar .toolbar-end,
+  .toolbar .filters {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
+  }
+
+  .toolbar .filters select {
+    flex: 1 1 130px;
+    min-width: 0;
+  }
+
+  /* ---- C. 今日動態 (#/today)、晨間補給站 (Vibe Bar) 與便利貼中樞 (Sticky Hub) ---- */
+  .vibe-pills-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  .vibe-pill.vibe-card-editorial {
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .vibe-thumb-frame {
+    width: 78px;
+    height: 78px;
+  }
+
+  .vibe-drawer.vibe-drawer-editorial {
+    padding: 14px 12px;
+  }
+
+  .vibe-drawer-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .vibe-drawer-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .vibe-drawer-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .vibe-news-grid,
+  .vibe-history-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  .vibe-joke-stage {
+    padding: 16px 14px;
+  }
+
+  .vibe-joke-quote {
+    font-size: 15.5px;
+    padding: 0 8px;
+  }
+
+  /* 即時動態與詳細資料面板標頭 */
+  .st-head {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .st-tools {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* 外出速查列 (.sb-row) 手機端彈性排版，不再斷行懸空 */
+  .sb-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 4px 8px !important;
+    padding: 8px 10px !important;
+    align-items: center !important;
+  }
+
+  .sb-row .sb-who {
+    grid-column: 1 / 2;
+    min-width: 0;
+  }
+
+  .sb-row .sb-back {
+    grid-column: 2 / 3;
+    justify-self: end;
+    font-size: 12px;
+  }
+
+  .sb-row .sb-what {
+    grid-column: 1 / -1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* 隨手備忘錄快速輸入列：手機端改為清爽雙列 */
+  .memo-quick-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .memo-quick-form .memo-date-input,
+  .memo-quick-form .memo-scope-select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .memo-quick-form .memo-text-input {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .memo-quick-form button[type="submit"] {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hub-weather-strip {
+    gap: 4px;
+  }
+
+  .hw-chip {
+    padding: 6px 2px;
+  }
+
+  .hw-city {
+    font-size: 11px;
+  }
+
+  .hw-temp {
+    font-size: 12.5px;
+  }
+
+  /* ---- D. 每日回報 (#/dailyReport) 與外勤品管魔王副本 (Raid Boss) ---- */
+  /* 修正 #dr-field-section .dr-cards-grid 權重過高導致手機端 380px 橫向破版 */
+  #dr-field-section .dr-cards-grid,
+  .dr-cards-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .dr-section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .dr-raid-world-banner {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .dr-rwb-left {
+    flex: 1 1 100%;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .dr-rwb-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+
+  .dr-rwb-right {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+  }
+
+  /* 個人卡片內魔王競技場 (Boss Arena) 手機端自適應 */
+  .dr-boss-arena {
+    padding: 12px 10px;
+  }
+
+  .dr-boss-header {
+    flex-wrap: wrap !important;
+    gap: 8px;
+  }
+
+  .dr-boss-identity {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dr-boss-title-row {
+    flex-wrap: wrap !important;
+    white-space: normal !important;
+    gap: 6px;
+  }
+
+  .dr-boss-name {
+    white-space: normal !important;
+    font-size: 14.5px;
+  }
+
+  .dr-boss-total-hp-box {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(148, 163, 184, 0.25);
+  }
+
+  /* 3D 魔王視覺舞台熱點標籤微縮，避免在窄螢幕重疊 */
+  .dr-boss-visual-stage {
+    max-width: 100%;
+  }
+
+  .dr-bh-tag {
+    min-width: 82px !important;
+    padding: 3px 6px !important;
+    border-radius: 7px !important;
+  }
+
+  .dr-bh-part {
+    font-size: 9px !important;
+  }
+
+  .dr-bh-city {
+    font-size: 10.5px !important;
+  }
+
+  .dr-bh-hp {
+    font-size: 9.5px !important;
+  }
+
+  .dr-boss-parts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px;
+  }
+
+  /* ---- E. 模擬體驗排班規劃 (#/simulation) ＆ 每日品管巡檢 ---- */
+  .sim-top-control-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  /* 修正月份抽屜在手機端向右絕對定位飛出螢幕的問題：改為卡片內橫向滑動條 */
+  .month-expander-bar {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px 10px;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+
+  .month-expander-trigger {
+    width: 100%;
+    justify-content: space-between;
+    padding: 2px 4px;
+  }
+
+  .month-expander-ZeroDrawer {
+    position: static !important;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    gap: 5px !important;
+    padding: 6px 2px 2px !important;
+    margin-top: 6px;
+    border: none !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .month-pill-item {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  /* 模擬體驗 4 大子分頁按鈕：改為 2x2 網格，整齊好按不溢出 */
+  .sim-nav-pills {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    box-sizing: border-box;
+  }
+
+  .sim-pill-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 7px 8px;
+    font-size: 12.5px;
+    text-align: center;
+  }
+
+  .sim-compact-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  .sim-crosscheck-compact {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .crosscheck-popover {
+    left: 0;
+    right: auto;
+    width: min(260px, 85vw);
+  }
+
+  /* 北區/南區每日巡檢月曆：在手機端隱藏 7 欄星期標頭（因下方網格已轉為雙欄日期卡片） */
+  .daily-compare-card > div[style*="repeat(7, 1fr)"] {
+    display: none !important;
+  }
+
+  .daily-user-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  /* ---- F. 許願池 (#/wishes) 與 秘境解憂樹洞 (#/vents) ---- */
+  /* 將原本絕對定位覆蓋在噴泉/樹洞上方的標題列改為相對定位獨立置頂，絕不遮擋燈籠與水池 */
+  .wf-hero-topbar {
+    position: relative !important;
+    background: #0b1323 !important;
+    padding: 12px 14px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .wf-hero-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .wf-hero-actions .wf-Quick-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .wf-scene,
+  .th-scene {
+    height: 300px !important;
+  }
+
+  .wf-empty-floating-cta {
+    width: calc(100% - 28px);
+    max-width: 340px;
+    padding: 10px 14px;
+    bottom: 14px;
+  }
+
+  .wf-empty-title {
+    font-size: 13px;
+    white-space: normal;
+  }
+
+  .wf-empty-sub {
+    font-size: 11px;
+    white-space: normal;
+  }
+
+  .wf-coin-pop,
+  .th-lantern-pop {
+    display: none !important;
+  }
+
+  .th-campfire-zone {
+    left: 24%;
+    top: 82%;
+    width: 110px;
+    height: 95px;
+  }
+
+  .th-hollow-portal {
+    width: 130px;
+    height: 140px;
+  }
+
+  .wish-grid,
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ---- G. 例案追蹤 (#/cases)、月會 (#/meeting)、行事曆 (#/schedule)、百寶箱 (#/tools) ---- */
+  .case-row-summary {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .case-latest-snippet {
+    width: 100%;
+    order: 5;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .case-row-right {
+    width: 100%;
+    order: 6;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  /* 月會卡片與議程 */
+  .mh-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .mh-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mh-actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .ai-head {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* 行事曆月曆在手機端緊湊顯示，不撐破格子 */
+  .cal-wrap {
+    padding: 8px 6px;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 68px;
+    padding: 2px;
+  }
+
+  .fc .fc-daygrid-day-top {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .fc .dnum {
+    font-size: 12px;
+  }
+
+  .fc .hol-name {
+    font-size: 9.5px;
+    padding: 0 3px;
+  }
+
+  .fc .fc-event {
+    font-size: 10.5px;
+    padding: 1px 3px;
+  }
+
+  /* 實用小工具導覽列：橫向滑動不擠壓 */
+  .tools-sys-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+
+  .tools-sys-tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .yb-search-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .yb-area-select,
+  .yb-search-input,
+  .yb-ebike-toggle {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 採購佈告欄內嵌高度適配手機視窗 */
+  .bulletin-frame-card {
+    height: calc(100vh - 190px) !important;
+    min-height: 480px !important;
+  }
+
+  /* ---- H. 右下角雙懸浮按鈕（聊天室 + 每日回報）與彈窗防遮擋 ---- */
+  .dr-commuter-fab-wrap {
+    right: 12px;
+    bottom: 14px;
+  }
+
+  .dr-commuter-fab {
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+
+  .chat-fab-btn {
+    right: 14px;
+    bottom: 72px;
+    padding: 8px 12px;
+  }
+
+  .modal-backdrop {
+    padding: 10px;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 14px;
+  }
+
+  .modal-head,
+  .modal-foot {
+    padding: 12px 14px;
+  }
+
+  .modal-body {
+    padding: 14px;
+  }
+}
+
+/* 極窄手機螢幕 (< 480px，如 iPhone SE / 一般手機直向 360px~430px) 精細微調 */
+@media (max-width: 480px) {
+  .brand > span:last-child {
+    font-size: 13.5px;
+    max-width: 135px;
+  }
+
+  /* 在極窄螢幕隱藏頂部重複風格按鈕，改由右上角頭像選單內切換，確保頂部第一列絕不換行溢位 */
+  .top-actions .theme-toggle-btn {
+    display: none;
+  }
+
+  .tabs > a,
+  .tabs .nav-more-trigger {
+    padding: 5px 8px;
+    font-size: 12.5px;
+  }
+
+  .poll-options-row,
+  .transport-links-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .daily-insp-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+  }
+
+  .chat-fab-btn .chat-fab-label {
+    display: none;
+  }
+
+  .chat-fab-btn {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+  }
+}

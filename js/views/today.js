@@ -5,8 +5,8 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, fmtMD, weekdayZh, nowMinutes, avatar, minToHM } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { bike, dock, rideBar } from '../yb.js';
-import { renderDailyVibeBar } from './vibeBar.js?v=20261109v65';
-import { renderStickyHub } from './stickyHub.js?v=20261109v65';
+import { renderDailyVibeBar } from './vibeBar.js?v=20261110v66';
+import { renderStickyHub } from './stickyHub.js?v=20261110v66';
 
 export function mountToday(el) {
   let day = ymd();
