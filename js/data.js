@@ -477,7 +477,10 @@ export function startSync(fatalHandler) {
     emit();
   }, fail('dailyReports')));
 
-  unsubs.push(onSnapshot(groupCol('cases'), s => {
+  // 次要模組集合採微延遲背景訂閱，優先釋放首屏連線資源給今日動態/行事曆/每日回報/聊天室
+  const deferTimer = setTimeout(() => {
+    if (!myUid()) return;
+    unsubs.push(onSnapshot(groupCol('cases'), s => {
     state.cases = new Map(s.docs.map(d => [d.id, { id: d.id, ...d.data({ serverTimestamps: 'estimate' }) }]));
     state.loaded.cases = true;
     emit();
@@ -494,6 +497,8 @@ export function startSync(fatalHandler) {
     state.loaded.vents = true;
     emit();
   }, fail('vents')));
+  }, 260);
+  unsubs.push(() => clearTimeout(deferTimer));
 
   unsubs.push(onSnapshot(query(groupCol('chatMessages'), orderBy('createdAt', 'desc'), limit(150)), s => {
     state.chatMessages = s.docs.map(d => ({ id: d.id, ...d.data({ serverTimestamps: 'estimate' }) })).reverse();

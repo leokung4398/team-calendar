@@ -455,7 +455,7 @@ export function mountSimulation(el, ctx = {}) {
               <!-- Excel 第 3 列：欄位主標頭 -->
               <tr style="background:#f1f5f9; border-bottom:2px solid #cbd5e1; height:38px;">
                 <th style="padding:6px; text-align:center; width:45px; white-space:nowrap;">項次</th>
-                <th style="padding:6px; text-align:left; min-width:115px; white-space:nowrap;">縣市</th>
+                <th class="sim-sticky-col" style="padding:6px; text-align:left; min-width:115px; white-space:nowrap;">縣市</th>
                 <th style="padding:6px; min-width:75px; white-space:nowrap;">抽檢總數</th>
                 <th style="padding:6px; min-width:90px; line-height:1.2; white-space:nowrap;">執行人數<br>/天數</th>
                 <th style="padding:6px; min-width:70px; background:#fef9c3; white-space:nowrap;">2.0台/人</th>
@@ -482,7 +482,7 @@ export function mountSimulation(el, ctx = {}) {
                 return `
                   <tr style="border-bottom:${isLastNorth ? '3px solid #475569' : '1px solid #e2e8f0'}; height:42px;" data-region-row="${esc(q.region)}">
                     <td class="muted" style="white-space:nowrap;">${qIdx + 1}</td>
-                    <td style="text-align:left; font-weight:700; white-space:nowrap;">
+                    <td class="sim-sticky-col" style="text-align:left; font-weight:700; white-space:nowrap;">
                       <span style="display:inline-block; padding:3px 8px; border-radius:5px; background:${theme.bg}; color:${theme.text}; border:1px solid ${theme.border}; font-size:13px; font-weight:700;">
                         ${esc(q.region)}
                       </span>

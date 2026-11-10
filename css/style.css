@@ -9548,3 +9548,57 @@ body {
     justify-content: center;
   }
 }
+
+/* ============================================================================
+   v67 全站體驗進階優化：
+   1. 內勤視角「外勤品管稽查回報」隱私收合列 (.dr-field-privacy-collapse)
+   2. 模擬體驗矩陣手機橫向滑動凍結「縣市」欄 (.sim-sticky-col)
+   ============================================================================ */
+.dr-field-privacy-collapse {
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px dashed var(--border-strong, #cbd5e1);
+  background: var(--bg-card, #ffffff);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.dr-field-privacy-collapse[open] {
+  border-style: solid;
+}
+.dr-field-privacy-summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13.5px;
+  background: linear-gradient(90deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.5));
+}
+.dr-field-privacy-summary::-webkit-details-marker {
+  display: none;
+}
+.dr-field-privacy-summary:hover {
+  background: rgba(241, 245, 249, 0.95);
+}
+
+.sim-matrix-table th.sim-sticky-col,
+.sim-matrix-table td.sim-sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #ffffff;
+  box-shadow: 2px 0 6px -2px rgba(15, 23, 42, 0.08);
+}
+.sim-matrix-table thead th.sim-sticky-col {
+  background: #f1f5f9;
+  z-index: 4;
+}
+html[data-theme="editorial"] .sim-matrix-table th.sim-sticky-col,
+html[data-theme="editorial"] .sim-matrix-table td.sim-sticky-col {
+  background: #faf6ee;
+}
+html[data-theme="editorial"] .sim-matrix-table thead th.sim-sticky-col {
+  background: #efe9dc;
+}

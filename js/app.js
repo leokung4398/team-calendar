@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261110v66';
+    const V = '20261110v67';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -457,10 +457,11 @@ async function boot() {
         d.markNotificationsRead(d.unreadNotifications().map(n => n.id));
         return;
       }
-      const item = e.target.closest('[data-event], [data-meeting]');
+      const item = e.target.closest('[data-event], [data-meeting], [data-chat-mention]');
       if (item) {
         if (item.dataset.nid) d.markNotificationsRead([item.dataset.nid]);
         panel.hidden = true;
+        if (item.dataset.chatMention) { toggleChatDrawer(true); return; }
         if (item.dataset.meeting) {
           location.hash = '#/meeting';
           return;
@@ -481,7 +482,7 @@ async function boot() {
       let list;
       if (tab === 'mine') {
         list = s.notifications.length ? s.notifications.map(n => `
-          <div class="notif ${n.read ? '' : 'unread'}" ${n.meetingId ? `data-meeting="${esc(n.meetingId)}"` : `data-event="${esc(n.eventId || '')}"`} data-nid="${esc(n.id)}">
+          <div class="notif ${n.read ? '' : 'unread'}" ${n.kind === 'chat_mention' ? 'data-chat-mention="1"' : (n.meetingId ? `data-meeting="${esc(n.meetingId)}"` : `data-event="${esc(n.eventId || '')}"`)} data-nid="${esc(n.id)}">
             ${avatar(d.userOf(n.actorUid), 32)}
             <div><div><b>${esc(d.userName(n.actorUid))}</b> ${KIND[n.kind] || ''}</div><div class="muted small-text">${esc(n.summary)}</div><div class="muted tiny">${timeAgo(n.createdAt)}</div></div>
           </div>`).join('') : '<div class="empty small">沒有通知</div>';

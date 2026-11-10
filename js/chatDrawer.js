@@ -1,7 +1,7 @@
 // 團隊即時聊天室（全站常駐滑出抽屜 + 支援最大化寬版模式）
 // 單一全組共用大廳、支援 @標註組員、引用回覆、表情符號反應、貼上圖片自動壓縮、YouBike 專屬快捷語
 import { state, myUid, isAdmin, activeUsers, userOf, sendChatMessage, toggleChatReaction, deleteChatMessage, onChange } from './data.js';
-import { esc, avatar, toast, formatTaipeiDateTime } from './utils.js';
+import { esc, avatar, toast, confirmDialog, formatTaipeiDateTime } from './utils.js';
 
 const QUICK_PHRASES = [
   '出發巡檢！',
@@ -134,6 +134,21 @@ function renderChatSystem() {
     return;
   }
 
+  // 防重繪打字中斷保護：記錄當前輸入框文字、游標選取範圍、焦點狀態與訊息區捲動位置
+  const prevInput = rootEl.querySelector('#chat-text-input');
+  const savedInputVal = prevInput ? prevInput.value : '';
+  const wasFocused = prevInput ? document.activeElement === prevInput : false;
+  const savedSelStart = prevInput ? prevInput.selectionStart : null;
+  const savedSelEnd = prevInput ? prevInput.selectionEnd : null;
+
+  const prevScroll = rootEl.querySelector('#chat-scroll-box');
+  let wasNearBottom = true;
+  let savedScrollTop = 0;
+  if (prevScroll) {
+    savedScrollTop = prevScroll.scrollTop;
+    wasNearBottom = (prevScroll.scrollHeight - prevScroll.scrollTop - prevScroll.clientHeight) < 80;
+  }
+
   const msgs = state.chatMessages;
   const users = activeUsers();
   const uid = myUid();
@@ -246,9 +261,25 @@ function renderChatSystem() {
     </aside>
   `;
 
-  // 自動捲動到底部
+  // 還原捲動位置（若原本在底部則自動跟隨最新訊息，若正在往回翻閱歷史訊息則保持原捲動高度）
   const scrollBox = rootEl.querySelector('#chat-scroll-box');
-  if (scrollBox) scrollBox.scrollTop = scrollBox.scrollHeight;
+  if (scrollBox) {
+    scrollBox.scrollTop = wasNearBottom ? scrollBox.scrollHeight : savedScrollTop;
+  }
+
+  // 還原輸入框未送出的草稿與游標焦點
+  const textInput = rootEl.querySelector('#chat-text-input');
+  if (textInput && savedInputVal) {
+    textInput.value = savedInputVal;
+  }
+  if (textInput && wasFocused) {
+    textInput.focus();
+    try {
+      if (savedSelStart !== null && savedSelEnd !== null) {
+        textInput.setSelectionRange(savedSelStart, savedSelEnd);
+      }
+    } catch {}
+  }
 
   // 綁定關閉與最大化
   rootEl.querySelector('[data-close-chat]').onclick = () => toggleChatDrawer(false);
@@ -259,7 +290,7 @@ function renderChatSystem() {
     renderChatSystem();
   };
 
-  // 表情反應、回覆、刪除
+  // 表情反應、回覆、刪除（含防誤觸確認）
   rootEl.querySelectorAll('[data-rx-msg]').forEach(btn => {
     btn.onclick = () => toggleChatReaction(btn.dataset.rxMsg, btn.dataset.rxEm);
   });
@@ -274,7 +305,11 @@ function renderChatSystem() {
     };
   });
   rootEl.querySelectorAll('[data-del-msg]').forEach(btn => {
-    btn.onclick = () => deleteChatMessage(btn.dataset.delMsg);
+    btn.onclick = async () => {
+      const msgId = btn.dataset.delMsg;
+      const ok = await confirmDialog('確定要收回並刪除這則聊天訊息嗎？', { danger: true, okText: '確定收回' });
+      if (ok) await deleteChatMessage(msgId);
+    };
   });
 
   const cancelReply = rootEl.querySelector('[data-cancel-reply]');
@@ -284,7 +319,6 @@ function renderChatSystem() {
 
   // @標註組員選單
   const mentionPicker = rootEl.querySelector('[data-mention-picker]');
-  const textInput = rootEl.querySelector('#chat-text-input');
   if (mentionPicker && textInput) {
     mentionPicker.onchange = () => {
       const opt = mentionPicker.selectedOptions[0];
@@ -328,7 +362,7 @@ function renderChatSystem() {
           const f = item.getAsFile();
           if (f) {
             e.preventDefault();
-            pendingImageData = await compressImageFile(f);
+            pendingImageData = await compressImageDataSafe(f);
             renderChatSystem();
           }
         }
@@ -363,5 +397,14 @@ function renderChatSystem() {
         mentions,
       });
     };
+  }
+}
+
+async function compressImageDataSafe(file) {
+  try {
+    return await compressImageFile(file);
+  } catch {
+    toast('圖片處理失敗', 'error');
+    return '';
   }
 }

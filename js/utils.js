@@ -9,8 +9,12 @@ export function esc(s) {
 
 export const pad = n => String(n).padStart(2, '0');
 
-/** Date -> 'YYYY-MM-DD'（本地時間） */
-export function ymd(d = new Date()) {
+/** Date -> 'YYYY-MM-DD'（預設以台灣標準時間 UTC+8 取得今日日期；傳入 Date 物件時依該物件本地年/月/日格式化） */
+export function ymd(d) {
+  if (d === undefined) {
+    const tpe = new Date(Date.now() + 8 * 3600 * 1000);
+    return `${tpe.getUTCFullYear()}-${pad(tpe.getUTCMonth() + 1)}-${pad(tpe.getUTCDate())}`;
+  }
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 /** 'YYYY-MM-DD' -> Date（本地午夜） */
@@ -46,8 +50,8 @@ export function fmtMD(s) {
   return `${m}/${d}`;
 }
 export function nowMinutes() {
-  const d = new Date();
-  return d.getHours() * 60 + d.getMinutes();
+  const tpe = new Date(Date.now() + 8 * 3600 * 1000);
+  return tpe.getUTCHours() * 60 + tpe.getUTCMinutes();
 }
 export const toMin = hm => {
   const [h, m] = String(hm).split(':').map(Number);

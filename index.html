@@ -2,16 +2,21 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffc400">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="經營Team">
   <title>經營 Team 營運協同平台</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23ffc400'/><text x='50' y='70' font-size='62' text-anchor='middle'></text></svg>">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23ffc400'/><circle cx='30' cy='64' r='14' fill='none' stroke='%230f172a' stroke-width='6'/><circle cx='70' cy='64' r='14' fill='none' stroke='%230f172a' stroke-width='6'/><path d='M30 64 L46 42 L68 42 L52 64 Z M46 42 L40 30 M34 30 L46 30 M68 42 L70 64 M63 32 L73 32' fill='none' stroke='%230f172a' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23ffc400'/><circle cx='30' cy='64' r='14' fill='none' stroke='%230f172a' stroke-width='6'/><circle cx='70' cy='64' r='14' fill='none' stroke='%230f172a' stroke-width='6'/><path d='M30 64 L46 42 L68 42 L52 64 Z M46 42 L40 30 M34 30 L46 30 M68 42 L70 64 M63 32 L73 32' fill='none' stroke='%230f172a' stroke-width='5.5' stroke-linecap='round' stroke-linejoin='round'/></svg>">
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="dns-prefetch" href="https://api.open-meteo.com">
   <link rel="dns-prefetch" href="https://zh.wikipedia.org">
-  <link rel="stylesheet" href="css/style.css?v=20261110v66">
+  <link rel="stylesheet" href="css/style.css?v=20261110v67">
   <script>
     // 手機端第一時間防護：
     // 1. 若手機從 github.io 或 .web.app 進入，自動導向與 authDomain 完全同源的 https://team-calendar-93cb2.firebaseapp.com/
@@ -67,6 +72,6 @@
   <div id="app"><div class="boot">載入中…</div></div>
   <div id="modal-root"></div>
   <div id="toast-root"></div>
-  <script type="module" src="js/app.js?v=20261110v66"></script>
+  <script type="module" src="js/app.js?v=20261110v67"></script>
 </body>
 </html>

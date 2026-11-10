@@ -1019,10 +1019,60 @@ export function mountDailyReport(root) {
 
   function renderDailyBoard({
     selectedDate, doc, officeMembers, fieldMembers, supervisors,
-    myId, isSup, isDesigner, canManage,
+    myId, isSup, isDesigner, canManage, me,
   }) {
     return `
       <!-- 外勤品管 3 位同仁制式回報區（連動模擬體驗排班矩陣・魔王部位扣血減壓系統） -->
+      ${(() => {
+        const canSeeFieldDetails = isSup || isDesigner || isFieldDeputy(me) || isFieldStaff(me);
+        const fieldDoneCount = fieldMembers.filter(u => {
+          const st = evaluateMemberReportStatus(u, selectedDate);
+          return st.status === 'submitted' || st.status === 'exempt';
+        }).length;
+        const fieldBlock = canSeeFieldDetails ? `
+          <section class="dr-section" id="dr-field-section">
+            <div class="dr-section-head">
+              <h2>外勤品管稽查回報（${fieldMembers.length} 位）</h2>
+              <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見；魔王血量與模擬體驗各縣市配額矩陣即時連動">權限保護 ＆ 魔王扣血減壓</span>
+            </div>
+            ${renderFieldRaidBanner(fieldMembers, selectedDate)}
+            <div class="dr-cards-grid">
+              ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
+            </div>
+          </section>
+        ` : `
+          <section class="dr-section" id="dr-field-section">
+            <details class="card dr-field-privacy-collapse">
+              <summary class="dr-field-privacy-summary">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <strong>外勤品管稽查回報（${fieldMembers.length} 位 · 今日已就緒 ${fieldDoneCount}/${fieldMembers.length}）</strong>
+                  <span class="badge-tag info tiny" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1">內容受隱私保護（僅代理副理、外勤代理人與本人可見）</span>
+                </div>
+                <span class="muted" style="font-size:12px;font-weight:700;white-space:nowrap">展開狀態與魔王進度 ▾</span>
+              </summary>
+              <div style="padding:12px 14px;border-top:1px solid var(--border)">
+                ${renderFieldRaidBanner(fieldMembers, selectedDate)}
+                <div class="dr-cards-grid">
+                  ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
+                </div>
+              </div>
+            </details>
+          </section>
+        `;
+        const officeBlock = `
+          <section class="dr-section" id="dr-office-section">
+            <div class="dr-section-head">
+              <h2>內勤同仁工作進度（${officeMembers.length} 位）</h2>
+              <span class="info-pill-tip" data-tip="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『 外勤支援回報』分頁">全員公開</span>
+            </div>
+            <div class="dr-cards-grid">
+              ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
+            </div>
+          </section>
+        `;
+        return canSeeFieldDetails ? `${fieldBlock}${officeBlock}` : `${officeBlock}${fieldBlock}`;
+      })()}
+      ${false ? `
       <section class="dr-section" id="dr-field-section">
         <div class="dr-section-head">
           <h2>外勤品管稽查回報（${fieldMembers.length} 位）</h2>
@@ -1045,6 +1095,7 @@ export function mountDailyReport(root) {
         </div>
       </section>
 
+      ` : ''}
       <!-- 代理副理審閱狀態區 -->
       ${supervisors.length ? `
         <section class="dr-section" id="dr-exempt-section">
