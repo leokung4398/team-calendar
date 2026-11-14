@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261114v70';
+    const V = '20261114v71';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -295,7 +295,7 @@ async function boot() {
           <div class="nav-more-menu">
             <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
             <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
-            ${d.isAdmin() ? `<a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">改善提案 <small>管理員專屬 · 圖卡與對照</small></a>` : ''}
+            ${(d.isAdmin() || d.isFieldDeputy?.(d.state.me)) ? `<a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">改善提案 <small>未來城市建造島 · 圖卡與對照</small></a>` : ''}
           </div>
         </div>
       `;
@@ -320,7 +320,7 @@ async function boot() {
       }
       const targetRoute = routes[key];
       // 權限檢查：若無權限轉向 today
-      if (!targetRoute || (targetRoute.admin && !d.isAdmin()) || (targetRoute.permission && !d.hasModulePermission(d.state.me, targetRoute.permission))) {
+      if (!targetRoute || (targetRoute.admin && !d.isAdmin() && !(key === 'kaizen' && d.isFieldDeputy?.(d.state.me))) || (targetRoute.permission && !d.hasModulePermission(d.state.me, targetRoute.permission))) {
         key = 'today';
       }
       if (key === currentRoute) return;

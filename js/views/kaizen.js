@@ -1,5 +1,6 @@
 // 改善提案作業管理辦法（2023.05 修訂 · 五版）圖文懶人包小卡、線上提案登錄表 ＆ 2026 修訂建議對照
-import { state, myUid, isAdmin, userName, saveToolsDoc } from '../data.js';
+import { state, myUid, isAdmin, isFieldDeputy, userName, saveToolsDoc } from '../data.js';
+import { renderKaizenIslandWidget, bindKaizenIslandEvents } from '../kaizenIslandWidget.js';
 import { esc, ymd, toast, openModal, closeModal } from '../utils.js';
 
 const KAIZEN_CARDS = [
@@ -310,7 +311,7 @@ export function mountKaizen(el) {
   }
 
   function render() {
-    if (!isAdmin()) {
+    if (!isAdmin() && !isFieldDeputy(state.me)) {
       el.innerHTML = `<div class="card pad" style="text-align:center;padding:40px 20px;color:#64748b">此專區目前僅限管理員檢視。</div>`;
       return;
     }
@@ -340,6 +341,7 @@ export function mountKaizen(el) {
         </div>
       </div>
 
+      <div style="margin-bottom:16px">${renderKaizenIslandWidget({ contextId: 'kaizen_main', compact: false })}</div>
       <!-- 頂部四大模式切換導覽列 -->
       <div class="tools-sys-nav" style="margin-bottom:14px">
         <button type="button" class="tools-sys-tab ${activeTab === 'guide' ? 'active' : ''}" data-kz-tab="guide">
@@ -363,6 +365,7 @@ export function mountKaizen(el) {
     `;
 
     bindEvents(proposals, reformData);
+    bindKaizenIslandEvents(el, render);
   }
 
   function renderGuideSection({ curKzTier, kzRatePct, kzDeptEligible, kzDeptBonus, displayPrizeText, perPersonFee }) {

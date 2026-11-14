@@ -10225,3 +10225,725 @@ html[data-theme="maple"] .dr-boss-arena {
   70% { transform: translateY(-6px) scale(1.04); opacity: 1; }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 }
+
+
+/* ============================================================
+   8. 包于巧專屬：改善提案半年量化養成系統【微笑單車・未來城市建造島】
+   ============================================================ */
+.kz-island-widget {
+  background: linear-gradient(145deg, #0c2d3a 0%, #103c4a 52%, #0e332e 100%);
+  border: 2px solid rgba(56, 189, 248, 0.42);
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: #f0fdfa;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kz-island-widget.lv4 {
+  border-color: #fbbf24;
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.28), inset 0 1px 0 rgba(254, 243, 199, 0.35);
+}
+
+html[data-theme="maple"] .kz-island-widget {
+  background: linear-gradient(145deg, #1e1b4b 0%, #312e81 50%, #3b0764 100%);
+  border: 2.5px solid #ffcc00 !important;
+  box-shadow: 0 4px 0 #78350f, 0 12px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+.kz-island-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.kz-ih-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 240px;
+}
+
+.kz-ih-avatar-wrap {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid #38bdf8;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.kz-ih-avatar-wrap:hover {
+  transform: scale(1.05);
+  border-color: #fbbf24;
+}
+
+.kz-ih-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.kz-ih-lv-pill {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(3, 105, 161, 0.92));
+  color: #fde047;
+  font-size: 10.5px;
+  font-weight: 900;
+  text-align: center;
+  padding: 2px 4px;
+  letter-spacing: 0.04em;
+}
+
+.kz-ih-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.kz-ih-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.kz-season-select {
+  background: rgba(15, 23, 42, 0.65);
+  color: #7dd3fc;
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  outline: none;
+}
+
+.kz-ih-prosperity-badge {
+  background: rgba(16, 185, 129, 0.22);
+  color: #6ee7b7;
+  border: 1px solid rgba(52, 211, 153, 0.42);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.kz-edit-modal-btn {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+  color: #0f172a;
+  border: 1px solid #fef08a;
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 11.5px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.kz-edit-modal-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.07);
+}
+
+.kz-ih-title {
+  font-size: 15.5px;
+  line-height: 1.35;
+  color: #ffffff;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.kz-ih-lv-name {
+  color: #fde047;
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.kz-ih-subtitle {
+  font-size: 12px;
+  color: #bae6fd;
+  margin-top: 2px;
+}
+
+.kz-ih-right {
+  text-align: right;
+  background: rgba(15, 23, 42, 0.48);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 12px;
+  padding: 8px 14px;
+  flex-shrink: 0;
+}
+
+.kz-ih-score-label {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.kz-ih-score-nums {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  margin: 1px 0;
+}
+
+.kz-ih-cur {
+  font-size: 26px;
+  font-weight: 900;
+  color: #fde047;
+  line-height: 1.05;
+  text-shadow: 0 2px 8px rgba(250, 204, 21, 0.35);
+}
+
+.kz-ih-max {
+  font-size: 14px;
+  font-weight: 800;
+  color: #cbd5e1;
+}
+
+.kz-ih-remain-sub {
+  font-size: 11.5px;
+  color: #6ee7b7;
+}
+
+.kz-ih-remain-sub b {
+  color: #fef08a;
+}
+
+/* 10段式島嶼建設能量條 */
+.kz-island-main-bar-wrap {
+  margin-top: 10px;
+}
+
+.kz-island-bar-track {
+  position: relative;
+  height: 14px;
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 999px;
+  border: 1.5px solid rgba(125, 211, 252, 0.35);
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.kz-island-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981 0%, #38bdf8 52%, #fbbf24 100%);
+  border-radius: 999px;
+  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.65);
+}
+
+.kz-island-bar-notches {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent calc(10% - 1.5px),
+    rgba(15, 23, 42, 0.55) calc(10% - 1.5px),
+    rgba(15, 23, 42, 0.55) 10%
+  );
+  pointer-events: none;
+}
+
+.kz-island-bar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 7px;
+  font-size: 12px;
+  color: #cbd5e1;
+  flex-wrap: wrap;
+}
+
+.kz-island-stage-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0f2fe;
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s ease;
+}
+
+.kz-island-stage-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.kz-quick-plus-hero-btn {
+  background: rgba(250, 204, 21, 0.18);
+  color: #fde047;
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  border-radius: 8px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.kz-quick-plus-hero-btn:hover {
+  background: rgba(250, 204, 21, 0.3);
+}
+
+/* 3D 微縮城市建造舞台 */
+.kz-island-collapsible {
+  margin-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.22);
+  padding-top: 12px;
+}
+
+.kz-island-visual-stage {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(125, 211, 252, 0.4);
+  background: #082f49;
+  aspect-ratio: 16 / 9;
+  max-height: 430px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.kz-island-stage-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.kz-island-stage-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 45%, rgba(8, 28, 42, 0.55) 100%);
+  pointer-events: none;
+}
+
+.kz-stage-top-hud {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.kz-hud-pill {
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(6px);
+  color: #e0f2fe;
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.kz-hud-pill.gold {
+  color: #fde047;
+  border-color: rgba(250, 204, 21, 0.55);
+}
+
+.kz-island-hotspots-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+.kz-island-hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+}
+
+.kz-island-hotspot:hover {
+  z-index: 10;
+}
+
+.kz-spot-beacon {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.88);
+  border: 2px solid #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
+.kz-island-hotspot.is-completed .kz-spot-beacon {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, #78350f, #b45309);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.85);
+}
+
+.kz-spot-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.65);
+  animation: kzSpotPulse 2s infinite;
+}
+
+.kz-island-hotspot.is-completed .kz-spot-pulse {
+  border-color: rgba(251, 191, 36, 0.85);
+}
+
+@keyframes kzSpotPulse {
+  0% { transform: scale(0.92); opacity: 0.9; }
+  70% { transform: scale(1.32); opacity: 0; }
+  100% { transform: scale(1.32); opacity: 0; }
+}
+
+.kz-spot-card {
+  margin-top: 4px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(125, 211, 252, 0.55);
+  border-radius: 10px;
+  padding: 5px 8px;
+  min-width: 132px;
+  color: #f8fafc;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.kz-island-hotspot.is-completed .kz-spot-card {
+  border-color: #fbbf24;
+}
+
+.kz-spot-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.kz-spot-name {
+  color: #bae6fd;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.kz-spot-num {
+  color: #fde047;
+  font-size: 12.5px;
+  font-weight: 900;
+}
+
+.kz-spot-num small {
+  color: #94a3b8;
+  font-size: 10.5px;
+}
+
+.kz-spot-bldg {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 2px 0 4px;
+  white-space: nowrap;
+}
+
+.kz-spot-bar {
+  height: 5px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.kz-spot-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #34d399, #fbbf24);
+}
+
+.kz-spot-quick-btns {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.kz-spot-step-btn {
+  background: rgba(255, 255, 255, 0.14);
+  color: #e2e8f0;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 6px;
+  padding: 1px 7px;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.kz-spot-step-btn.plus {
+  background: linear-gradient(180deg, #fbbf24, #d97706);
+  color: #0f172a;
+  border-color: #fef08a;
+}
+
+.kz-spot-step-btn:hover {
+  filter: brightness(1.12);
+}
+
+.kz-stage-bottom-hud {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  right: 12px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #e2e8f0;
+  z-index: 4;
+  flex-wrap: wrap;
+}
+
+.kz-hud-edit-btn {
+  background: #38bdf8;
+  color: #0f172a;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* 下方 4 大地標子項目控制網格 */
+.kz-landmarks-panel {
+  margin-top: 12px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.kz-lp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.kz-landmarks-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kz-lm-box {
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(125, 211, 252, 0.28);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.kz-lm-box.max {
+  border-color: rgba(251, 191, 36, 0.75);
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(120, 53, 15, 0.38));
+}
+
+.kz-lm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.kz-lm-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kz-lm-emoji {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.kz-lm-name {
+  font-size: 13px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.kz-lm-sub {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.kz-lm-stage-tag {
+  color: #7dd3fc;
+  font-weight: 700;
+}
+
+.kz-lm-Right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.kz-lm-ratio strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: #fde047;
+}
+
+.kz-lm-ratio span {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  margin-left: 2px;
+}
+
+.kz-lm-pct {
+  font-size: 10.5px;
+  color: #6ee7b7;
+}
+
+.kz-lm-bar-track {
+  height: 7px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 7px 0;
+}
+
+.kz-lm-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #38bdf8, #fbbf24);
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.kz-lm-ctrl-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.22);
+  flex-wrap: wrap;
+}
+
+.kz-lm-ctrl-hint {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.kz-lm-ctrl-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kz-mini-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.kz-mini-btn.plus {
+  background: linear-gradient(180deg, #fbbf24, #d97706);
+  color: #0f172a;
+  border-color: #fef08a;
+}
+
+.kz-inline-num-input {
+  width: 52px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  background: rgba(15, 23, 42, 0.85);
+  color: #fde047;
+  font-size: 12.5px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.kz-inline-num-input.target {
+  color: #bae6fd;
+}
+
+.kz-slash {
+  color: #64748b;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .kz-ih-right {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .kz-landmarks-grid {
+    grid-template-columns: 1fr;
+  }
+  .kz-island-visual-stage {
+    aspect-ratio: 4 / 3;
+  }
+  .kz-spot-card {
+    min-width: 108px;
+    padding: 3px 6px;
+  }
+  .kz-spot-bldg {
+    display: none;
+  }
+  .kz-modal-lm-row {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}

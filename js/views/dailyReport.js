@@ -15,6 +15,7 @@ import { esc, avatar, toast, ymd, addDays, fmtMD, weekdayZh, nowMinutes } from '
 import { startInteractiveDailyReportSpotlightTour } from '../guideModal.js';
 import { getMergedMonthSimulationData } from './simulation.js';
 import { triggerMapleLevelUpEffect } from '../yb.js';
+import { isKaizenManagerUser, renderKaizenIslandWidget, bindKaizenIslandEvents } from '../kaizenIslandWidget.js';
 
 // 內勤各職務專屬的「常用工作快選膠囊」
 const ROLE_QUICK_CHIPS = {
@@ -1208,6 +1209,7 @@ export function mountDailyReport(root) {
         ` : ''}
 
         ${isField ? renderFieldBossWidget(u, dateStr, canSeeDetails) : ''}
+        ${isKaizenManagerUser(u) ? renderKaizenIslandWidget({ contextId: `daily_card_${u.uid}`, compact: true }) : ''}
 
         ${isEditing ? (
           activeEditorMode === 'field'
@@ -1606,7 +1608,7 @@ export function mountDailyReport(root) {
     `;
   }
 
-  function bindEvents(users, doc, isDesigner) {
+  function bindEvents(users, doc, isDesigner) { bindKaizenIslandEvents(root, render);
     // 切換單日看板 / 歷史檢索
     root.querySelectorAll('[data-view-mode]').forEach(btn => {
       btn.onclick = () => {
