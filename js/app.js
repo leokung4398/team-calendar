@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261114v71';
+    const V = '20261114v72';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -385,7 +385,7 @@ async function boot() {
           : '目前為「經典 YouBike 活力黃」，點擊切換為改善提案同款「文青生活誌風格（森林綠 × 古銅金）」'; }
       }
       if (showNotice) {
-          current?.update?.();
+          current?.update?.({ force: true }); current?.onData?.({ force: true }); if (document.getElementById('kz-island-editor-form')) { import(`./kaizenIslandWidget.js?v=${V}`).then(m => m.openKaizenIslandEditorModal?.(() => { current?.update?.({ force: true }); current?.onData?.({ force: true }); })).catch(() => {}); }
         toast(
           next === 'editorial'
             ? '已切換為「文青生活誌風格（森林綠 × 古銅金 × 溫暖亞麻）」'
@@ -575,7 +575,7 @@ async function boot() {
         // 開會前 10 分鐘至開始後 5 分鐘內提醒
         if (nowMin >= mStartMin - 10 && nowMin <= mStartMin + 5) {
           remindedMeetings.add(m.id);
-            current?.update?.();
+            current?.update?.({ force: true }); current?.onData?.({ force: true }); if (document.getElementById('kz-island-editor-form')) { import(`./kaizenIslandWidget.js?v=${V}`).then(m => m.openKaizenIslandEditorModal?.(() => { current?.update?.({ force: true }); current?.onData?.({ force: true }); })).catch(() => {}); }
         toast(` 月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
         }
       }

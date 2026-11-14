@@ -363,7 +363,7 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
             <span>${isStageOpen ? '▴' : '▾'}</span>
             <span>${isStageOpen
               ? '收合 3D 建造島地圖與 4 大子項目明細'
-              : `展開 3D 未來城市建造島（4 大地標進度：${ks.landmarks.map(l => `${l.current}/${l.target}`).join(' · ')}）`}</span>
+              : `展開 3D ${isMaple ? '楓之谷天空之城建造島' : '未來城市建造島'}（4 大地標進度：${ks.landmarks.map(l => `${l.current}/${l.target}`).join(' · ')}）`}</span>
           </button>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             ${canEdit ? `

@@ -2126,8 +2126,8 @@ export function mountDailyReport(root) {
 
   render();
   return {
-    update() {
-      if (!editingUid && !replyingUid) render();
+    update(opts) {
+      if (opts?.force || (!editingUid && !replyingUid)) render();
     },
     destroy() {},
   };

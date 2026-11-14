@@ -914,7 +914,7 @@ export function mountKaizen(el) {
   }
 
   render();
-  return { onData: render };
+  return { onData: render, update: render };
 }
 
 function readImageFileAsDataUrl(file, maxWidth = 1100) {
