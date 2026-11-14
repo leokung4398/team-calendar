@@ -14,6 +14,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, avatar, toast, ymd, addDays, fmtMD, weekdayZh, nowMinutes } from '../utils.js';
 import { startInteractiveDailyReportSpotlightTour } from '../guideModal.js';
 import { getMergedMonthSimulationData } from './simulation.js';
+import { triggerMapleLevelUpEffect } from '../yb.js';
 
 // 內勤各職務專屬的「常用工作快選膠囊」
 const ROLE_QUICK_CHIPS = {
@@ -307,6 +308,10 @@ const FIELD_BOSS_META = {
     bossName: '寒冰王座・巫妖死騎領主',
     bossTitle: 'LV.99 MYTHIC RAID｜雙北核心與中北遠征守護魔王',
     raidClass: 'DEATHLORD',
+    mapleBossName: '殘暴炎魔・八手本體 (Zakum)',
+    mapleRaidClass: 'ZAKUM ALTAR LV.140',
+    mapleCoreLabels: ['炎魔本體核心', '祭壇火眼主體'],
+    mapleLimbLabels: ['炎魔左上1臂', '炎魔右上1臂', '炎魔左下2臂', '炎魔右下2臂', '炎魔中段雙臂'],
     avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_leo.jpg?v=20261023v55',
     themeColor: '#38bdf8',
@@ -328,6 +333,10 @@ const FIELD_BOSS_META = {
     bossName: '次元終焉・深淵星界魔神',
     bossTitle: 'LV.99 ABYSSAL RAID｜雙北核心與桃竹中遠征魔王',
     raidClass: 'ASTRAL ARCHON',
+    mapleBossName: '闇黑龍王・三首魔龍 (Horntail)',
+    mapleRaidClass: 'HORNTAIL CAVE LV.160',
+    mapleCoreLabels: ['龍王中央主頭', '龍王暗黑胸甲'],
+    mapleLimbLabels: ['龍王左側冰頭', '龍王右側雷頭', '龍王雙翼部位', '龍王雙爪部位', '龍王劇毒巨尾'],
     avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_hao.jpg?v=20261023v55',
     themeColor: '#a855f7',
@@ -349,6 +358,10 @@ const FIELD_BOSS_META = {
     bossName: '大災變・滅世黑龍死亡之翼',
     bossTitle: 'LV.99 CATACLYSM RAID｜高雄核心與雲嘉南東遠征魔王',
     raidClass: 'DRAGONLORD',
+    mapleBossName: '時間神殿・渾沌皮卡啾 (Pink Bean)',
+    mapleRaidClass: 'TEMPLE OF TIME LV.190',
+    mapleCoreLabels: ['皮卡啾真身本體', '女神雕像結界'],
+    mapleLimbLabels: ['賢者索羅門雕像', '賢者雷克斯雕像', '飛天胡克雕像', '冥界穆닌雕像', '黃金阿利爾雕像'],
     avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_chun.jpg?v=20261023v55',
     themeColor: '#f97316',
@@ -412,7 +425,8 @@ export function computeFieldBossStatus(u, dateStr) {
 
   // 1. 建立「 大腦 + 身體核心」與「 四肢部位」目標血量（Max HP）
   const parts = [];
-  const LIMB_SLOTS = [
+  const isMaple = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple';
+  const LIMB_SLOTS = isMaple && Array.isArray(meta.mapleLimbLabels) ? meta.mapleLimbLabels.map((lbl, i) => ({ slotKey: `limb_${i}`, slotLabel: lbl, icon: '' })) : [
     { slotKey: 'left_arm', slotLabel: '左臂裝甲', icon: '' },
     { slotKey: 'right_arm', slotLabel: '右臂巨刃', icon: '' },
     { slotKey: 'left_leg', slotLabel: '左腿推進器', icon: '' },
@@ -432,7 +446,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '雙北',
       subMatch: '台北',
       partType: 'core',
-      slotLabel: '魔王大腦',
+      slotLabel: isMaple && meta.mapleCoreLabels?.[0] ? meta.mapleCoreLabels[0] : '魔王大腦',
       regionLabel: '雙北平分・大腦中樞',
       maxHp: brainHp,
       damage: 0,
@@ -445,7 +459,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '雙北',
       subMatch: '新北',
       partType: 'core',
-      slotLabel: '魔王身體',
+      slotLabel: isMaple && meta.mapleCoreLabels?.[1] ? meta.mapleCoreLabels[1] : '魔王身體',
       regionLabel: '雙北平分・身體核心',
       maxHp: bodyHp,
       damage: 0,
@@ -463,7 +477,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '高雄',
       subMatch: '高雄_大腦',
       partType: 'core',
-      slotLabel: '魔王大腦',
+      slotLabel: isMaple && meta.mapleCoreLabels?.[0] ? meta.mapleCoreLabels[0] : '魔王大腦',
       regionLabel: '高雄駐地・大腦中樞',
       maxHp: brainHp,
       damage: 0,
@@ -476,7 +490,7 @@ export function computeFieldBossStatus(u, dateStr) {
       regionKey: '高雄',
       subMatch: '高雄_身體',
       partType: 'core',
-      slotLabel: '魔王身體',
+      slotLabel: isMaple && meta.mapleCoreLabels?.[1] ? meta.mapleCoreLabels[1] : '魔王身體',
       regionLabel: '高雄駐地・身體核心',
       maxHp: bodyHp,
       damage: 0,
@@ -764,11 +778,11 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
           </div>
           <div>
             <div class="dr-boss-title-row">
-              <span class="dr-boss-raid-tier">${esc(bs.meta.raidClass || 'MYTHIC RAID')}</span>
+              <span class="dr-boss-raid-tier">${esc((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleRaidClass) ? bs.meta.mapleRaidClass : (bs.meta.raidClass || 'MYTHIC RAID'))}</span>
               <span class="dr-boss-month-tag">${Number(mStr)}月副本</span>
               <span class="dr-boss-phase-pill tone-${bs.bossPhase.tone}">${bs.bossPhase.label}</span>
             </div>
-            <h4 class="dr-boss-name">${esc(bs.meta.bossName)}</h4>
+            <h4 class="dr-boss-name">${esc((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleBossName) ? bs.meta.mapleBossName : bs.meta.bossName)}</h4>
           </div>
         </div>
 
@@ -875,7 +889,7 @@ function renderFieldRaidBanner(fieldMembers, selectedDate) {
       <div class="dr-rwb-left">
         <div>
           <div class="dr-rwb-title">
-            <strong>${yStr} 年 ${Number(mStr)} 月《外勤品管魔王討伐戰》・扣血減壓模式</strong>
+            <strong>${yStr} 年 ${Number(mStr)} 月${(typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple') ? '《楓之谷遠征隊・炎魔/龍王/皮卡啾討伐戰》' : '《外勤品管魔王討伐戰》'}・扣血減壓模式</strong>
             <a href="#/simulation" class="dr-rwb-link" title="前往模擬體驗排班矩陣查看各縣市配額">已連動模擬體驗排班矩陣 ↗</a>
           </div>
           <div class="dr-rwb-desc">
@@ -1939,6 +1953,7 @@ export function mountDailyReport(root) {
       }
 
       const saved = await saveUserDailyReport(selectedDate, uid, payload);
+      triggerMapleLevelUpEffect(isFieldMode ? `遠征隊回報成功！對魔王造成 -${(Number(payload.fieldV20) || 0) + (Number(payload.fieldV20E) || 0)} HP 爆擊！` : '今日任務完成！EXP +100% ＆ 楓幣 +50,000');
       editingUid = null;
       editingModeOverride = null;
 
@@ -2448,6 +2463,7 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
     }
 
     const saved = await saveUserDailyReport(dateStr, uid, payload);
+    triggerMapleLevelUpEffect(isField ? `遠征隊回報成功！對魔王造成 -${(Number(payload.fieldV20) || 0) + (Number(payload.fieldV20E) || 0)} HP 爆擊！` : '今日任務完成！EXP +100% ＆ 楓幣 +50,000');
 
     if (copyLine) {
       const lineText = formatPersonalLineReport(me, dateStr, saved);

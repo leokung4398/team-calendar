@@ -186,7 +186,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261110v67';
+    const V = '20261114v68';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -239,7 +239,7 @@ async function boot() {
     app.innerHTML = `
       <header class="topbar">
         <div class="topbar-in">
-          <a class="brand" href="#/today" title="Operations &amp; Collaboration Platform"><span class="brand-mark">${yb.bike(26)}</span><span>經營 Team 營運協同平台</span></a>
+          <a class="brand" href="#/today" title="Operations &amp; Collaboration Platform"><span class="brand-mark">${yb.bike(26)}<span class="brand-maple-badge">${yb.mapleMushroomSvg(22)}</span></span><span>經營 Team 營運協同平台</span><span class="brand-maple-leaf">${yb.mapleLeafSvg(18)}</span></a>
           <nav class="tabs" data-tabs></nav>
           <div class="top-actions">
             <button class="btn ghost theme-toggle-btn" data-theme-toggle title="一鍵切換全站介面風格（經典黃 vs 文青誌）"></button>
@@ -263,7 +263,7 @@ async function boot() {
       ${d.DEMO ? '<div class="demo-ribbon">示範模式：9 位虛擬組員與自動產生的行程，資料只存在此頁面（不會寫入資料庫），重新整理即重置。<a href="./">離開示範模式</a></div>' : ''}
       <main class="main" data-main></main>
       <footer class="yb-foot">
-        <div class="lane"><span class="rider">${yb.bike(40, { spin: true })}</span></div>
+        <div class="lane"><span class="rider">${yb.bike(40, { spin: true })}</span><span class="maple-foot-companions" aria-hidden="true">${yb.mapleMushroomSvg(24)}${yb.mapleSlimeSvg(22)}${yb.mapleMesoSvg(18)}</span></div>
         <p>Have a nice ride・${esc(APP.groupName)}</p>
       </footer>`;
 
@@ -356,38 +356,53 @@ async function boot() {
     const THEME_STORAGE_KEY = 'yb_ui_theme';
     const getCurrentTheme = () => {
       try {
-        return localStorage.getItem(THEME_STORAGE_KEY) === 'editorial' ? 'editorial' : 'classic';
+        const raw = localStorage.getItem(THEME_STORAGE_KEY);
+        return (raw === 'editorial' || raw === 'maple') ? raw : 'classic';
       } catch {
-        return document.documentElement.getAttribute('data-theme') === 'editorial' ? 'editorial' : 'classic';
+        const raw = document.documentElement.getAttribute('data-theme');
+        return (raw === 'editorial' || raw === 'maple') ? raw : 'classic';
       }
     };
     const applyTheme = (theme, showNotice = false) => {
-      const next = theme === 'editorial' ? 'editorial' : 'classic';
+      const next = (theme === 'editorial' || theme === 'maple') ? theme : 'classic';
       document.documentElement.setAttribute('data-theme', next);
       try { localStorage.setItem(THEME_STORAGE_KEY, next); } catch {}
       const metaTheme = document.querySelector('meta[name="theme-color"]');
-      if (metaTheme) metaTheme.setAttribute('content', next === 'editorial' ? '#1E3F35' : '#ffc400');
+      if (metaTheme) metaTheme.setAttribute('content', next === 'editorial' ? '#1E3F35' : (next === 'maple' ? '#004A99' : '#ffc400'));
       const btn = $('[data-theme-toggle]');
       if (btn) {
         const isEd = next === 'editorial';
         btn.classList.toggle('is-editorial', isEd);
-        btn.innerHTML = `<span class="theme-dot"></span><span>${isEd ? '風格：文青誌' : '風格：經典黃'}</span>`;
+        const isEd = next === 'editorial';
+        const isMaple = next === 'maple';
+        btn.classList.toggle('is-editorial', isEd);
+        btn.classList.toggle('is-maple', isMaple);
+        const labelText = isMaple ? '風格：楓之谷' : (isEd ? '風格：文青誌' : '風格：經典黃');
+        btn.innerHTML = `${isMaple ? yb.mapleLeafSvg(15) : '<span class="theme-dot"></span>'}<span>${labelText}</span>`;
+        btn.title = isMaple ? '目前為「楓之谷經典混血風格（深海藍視窗 × 菇菇寶貝 × EXP經驗條）」，點擊切換回「經典 YouBike 活力黃」' : '點擊切換全站介面風格（經典黃 ／ 文青誌 ／ 楓之谷）';
+        if (false) { btn.innerHTML = `<span class="theme-dot"></span><span>${isEd ? '風格：文青誌' : '風格：經典黃'}</span>`;
         btn.title = isEd
           ? '目前為「文青生活誌風格（森林綠 × 古銅金 × 亞麻米白）」，點擊切換回「經典 YouBike 活力黃」'
-          : '目前為「經典 YouBike 活力黃」，點擊切換為改善提案同款「文青生活誌風格（森林綠 × 古銅金）」';
+          : '目前為「經典 YouBike 活力黃」，點擊切換為改善提案同款「文青生活誌風格（森林綠 × 古銅金）」'; }
       }
       if (showNotice) {
+          current?.update?.();
         toast(
           next === 'editorial'
             ? '已切換為「文青生活誌風格（森林綠 × 古銅金 × 溫暖亞麻）」'
-            : '已切換為「經典 YouBike 活力黃風格」',
+            : (next === 'maple' ? '已切換為「楓之谷 MapleStory 經典混血風格（深海藍視窗 × 菇菇寶貝 × EXP 經驗條）」' : '已切換為「經典 YouBike 活力黃風格」'),
+          // handled above
           'info'
         );
       }
     };
     applyTheme(getCurrentTheme(), false);
     $('[data-theme-toggle]').onclick = () => {
-      applyTheme(getCurrentTheme() === 'editorial' ? 'classic' : 'editorial', true);
+      const cur = getCurrentTheme();
+      const order = ['classic', 'editorial', 'maple'];
+      const nextTheme = order[(order.indexOf(cur) + 1) % order.length];
+      applyTheme(nextTheme, true);
+      if (nextTheme === 'maple') yb.triggerMapleLevelUpEffect('歡迎來到弓箭手村！已啟動《楓之谷 MapleStory》經典混血主題！');
     };
 
     // ---- 使用者選單 ----
@@ -405,6 +420,7 @@ async function boot() {
           <div class="um-theme-pills">
             <button type="button" class="um-theme-pill ${curTheme === 'classic' ? 'active' : ''}" data-set-theme="classic">經典活力黃</button>
             <button type="button" class="um-theme-pill ${curTheme === 'editorial' ? 'active' : ''}" data-set-theme="editorial">文青生活誌</button>
+            <button type="button" class="um-theme-pill ${curTheme === 'maple' ? 'active' : ''}" data-set-theme="maple">楓之谷</button>
           </div>
         </div>
         <button class="menu-item" data-open-achievements>專案開發成果與里程碑</button>
@@ -413,6 +429,7 @@ async function boot() {
         b.onclick = ev => {
           ev.stopPropagation();
           applyTheme(b.dataset.setTheme, true);
+          if (b.dataset.setTheme === 'maple') yb.triggerMapleLevelUpEffect('歡迎來到弓箭手村！已啟動《楓之谷 MapleStory》經典混血主題！');
           umenu.querySelectorAll('[data-set-theme]').forEach(p => p.classList.toggle('active', p.dataset.setTheme === b.dataset.setTheme));
         };
       });
@@ -559,7 +576,8 @@ async function boot() {
         // 開會前 10 分鐘至開始後 5 分鐘內提醒
         if (nowMin >= mStartMin - 10 && nowMin <= mStartMin + 5) {
           remindedMeetings.add(m.id);
-          toast(` 月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
+            current?.update?.();
+        toast(` 月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
         }
       }
     };

@@ -9602,3 +9602,626 @@ html[data-theme="editorial"] .sim-matrix-table td.sim-sticky-col {
 html[data-theme="editorial"] .sim-matrix-table thead th.sim-sticky-col {
   background: #efe9dc;
 }
+
+/* ============================================================================
+   v68 [data-theme="maple"] 《楓之谷 MapleStory》經典藍框 × 菇菇寶貝/楓葉 × 現代高解析混血主題
+   包含：
+   1. 頂部三主題切換器 (.is-maple / .um-theme-pills 3欄) & 預設隱藏楓之谷專屬 SVG 彩蛋
+   2. 經典深海藍金屬漸層視窗標題列 (#0055AA -> #003366) + 羊皮捲軸米白高解析圓角卡片
+   3. 黃色 EXP 經驗值條 (10段分格) & HP/MP 紅藍膠囊 & 「LEVEL UP!」金光升等動畫
+   4. 超級喇叭 (Super Megaphone) 粉紅/亮藍頻道廣播跑馬燈框
+   5. NPC 任務燈泡 [!] / 進行中任務書 [?] / 完成書 [✓] 與楓幣 (Meso) 標籤
+   6. 組隊/公會聊天室視窗與遠征隊 Boss (炎魔/闇黑龍王/皮卡啾) 專屬配色
+   ============================================================================ */
+
+/* 非楓之谷主題時，隱藏楓之谷專屬附加吉祥物與 HUD 彩蛋，維持經典黃與文青誌純淨 */
+.brand-maple-badge,
+.brand-maple-leaf,
+.maple-foot-companions,
+.maple-exp-hud,
+.maple-exp-segments,
+.maple-rider-pet {
+  display: none;
+}
+
+.um-theme-pills {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.theme-toggle-btn.is-maple {
+  background: linear-gradient(180deg, #0066cc 0%, #004085 100%);
+  border: 1.5px solid #ffcc00;
+  color: #fff9db;
+  box-shadow: 0 2px 8px rgba(0, 64, 133, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  font-weight: 800;
+}
+.theme-toggle-btn.is-maple:hover {
+  background: linear-gradient(180deg, #0077ee 0%, #004c99 100%);
+  border-color: #ffe066;
+}
+.um-theme-pill.active[data-set-theme="maple"] {
+  background: linear-gradient(180deg, #ff7710 0%, #e04f00 100%);
+  border-color: #ffcc00;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(224, 79, 0, 0.3);
+}
+
+/* 楓之谷主題啟動時，顯示專屬 SVG 吉祥物、EXP 狀態列與單車騎士菇菇寶貝 */
+html[data-theme="maple"] .brand-maple-badge {
+  display: inline-flex;
+  position: absolute;
+  right: -7px;
+  top: -7px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.28));
+  animation: mapleBounce 2.2s ease-in-out infinite;
+}
+html[data-theme="maple"] .brand-mark {
+  position: relative;
+  overflow: visible;
+  background: linear-gradient(180deg, #0066cc 0%, #003b7a 100%);
+  border: 2px solid #ffcc00;
+  box-shadow: 0 3px 0 #00224d, 0 4px 10px rgba(0, 51, 102, 0.25);
+}
+html[data-theme="maple"] .brand-maple-leaf {
+  display: inline-flex;
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: mapleFloatLeaf 3s ease-in-out infinite;
+}
+html[data-theme="maple"] .yb-bike .maple-rider-sprite {
+  display: inline;
+}
+html[data-theme="maple"] .maple-foot-companions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+html[data-theme="maple"] .maple-exp-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+html[data-theme="maple"] .maple-exp-segments {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(10% - 1.5px),
+    rgba(15, 23, 42, 0.32) calc(10% - 1.5px),
+    rgba(15, 23, 42, 0.32) 10%
+  );
+  border-radius: inherit;
+  z-index: 2;
+}
+html[data-theme="maple"] .maple-rider-pet {
+  display: inline-flex;
+  position: absolute;
+  top: -15px;
+  right: -12px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
+  animation: mapleBounce 1.6s ease-in-out infinite;
+}
+
+@keyframes mapleBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3.5px); }
+}
+@keyframes mapleFloatLeaf {
+  0%, 100% { transform: rotate(-6deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-2.5px); }
+}
+
+/* ============================================================
+   1. 全域變數與弓箭手村陽光羊皮捲軸背景 (MapleStory Hybrid Palette)
+   ============================================================ */
+html[data-theme="maple"] {
+  --brand: #ff6600;
+  --brand-dark: #004085;
+  --yb: #ff6600;
+  --yb-deep: #cc4400;
+  --yb-ink: #ffffff;
+  --ink: #1e2430;
+  --muted: #5a6578;
+  --line: #c7d4e6;
+  --bg: #f3f6fb;
+  --card: #fffdf7;
+  --ok: #2ea81c;
+  --danger: #e52521;
+  --off: #ffeef0;
+  --today: #fff3c4;
+  --shadow: 0 6px 18px rgba(0, 45, 98, 0.09), 0 2px 0 rgba(0, 51, 102, 0.14);
+}
+
+html[data-theme="maple"] body {
+  background-color: #eef4fc;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(255, 204, 0, 0.13) 0%, transparent 40%),
+    radial-gradient(circle at 88% 14%, rgba(0, 102, 204, 0.10) 0%, transparent 42%),
+    radial-gradient(circle at 50% 92%, rgba(85, 221, 34, 0.08) 0%, transparent 45%),
+    linear-gradient(180deg, #e8f1fc 0%, #f6f3ea 48%, #eef5e8 100%);
+  color: #1e2430;
+}
+
+/* 標題與數字微像素/遊戲立體字感（日常內文保持清晰黑體易讀性） */
+html[data-theme="maple"] .view-title,
+html[data-theme="maple"] .brand span:nth-child(2) {
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: #003b7a;
+  text-shadow: 0 1px 0 #ffffff, 0 2px 6px rgba(0, 59, 122, 0.12);
+}
+
+/* ============================================================
+   2. 頂部導覽列：經典楓之谷深海藍視窗邊框 ＋ 菇菇寶貝亮橘膠囊
+   ============================================================ */
+html[data-theme="maple"] .topbar {
+  background: linear-gradient(180deg, #004e9e 0%, #00336b 100%);
+  border-bottom: 3px solid #ffcc00;
+  box-shadow: 0 4px 16px rgba(0, 32, 74, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+html[data-theme="maple"] .topbar::after {
+  height: 2px;
+  bottom: -5px;
+  background: linear-gradient(90deg, #ff6600 0%, #ffcc00 35%, #55dd22 70%, #ff6600 100%);
+}
+html[data-theme="maple"] .topbar .brand {
+  color: #ffffff;
+}
+html[data-theme="maple"] .topbar .brand span:nth-child(2) {
+  color: #fff9db;
+  text-shadow: 0 2px 0 #001f42, 0 0 10px rgba(255, 204, 0, 0.35);
+}
+
+html[data-theme="maple"] .tabs {
+  background: rgba(0, 26, 58, 0.55);
+  border: 1.5px solid rgba(147, 197, 253, 0.45);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  border-radius: 12px;
+}
+html[data-theme="maple"] .tabs > a,
+html[data-theme="maple"] .tabs .nav-more-trigger {
+  color: #dbeafe;
+  font-weight: 700;
+  border-radius: 9px;
+}
+html[data-theme="maple"] .tabs > a:hover,
+html[data-theme="maple"] .tabs .nav-more-trigger:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.14);
+}
+html[data-theme="maple"] .tabs > a.active,
+html[data-theme="maple"] .tabs .nav-more-trigger.active {
+  background: linear-gradient(180deg, #ff8811 0%, #e65100 100%);
+  color: #ffffff;
+  border: 1px solid #ffe066;
+  box-shadow: 0 2px 0 #8c2d00, 0 3px 10px rgba(255, 102, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="maple"] .topbar .top-actions > .btn:not(.primary):not(.is-maple) {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(191, 219, 254, 0.5);
+  color: #f8fafc;
+}
+html[data-theme="maple"] .topbar .top-actions > .btn:not(.primary):hover {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: #ffcc00;
+  color: #ffffff;
+}
+html[data-theme="maple"] .topbar .guide-btn {
+  background: linear-gradient(180deg, #ffe066 0%, #f59e0b 100%) !important;
+  border: 1.5px solid #ffffff !important;
+  color: #451a03 !important;
+  font-weight: 800;
+  box-shadow: 0 2px 0 #92400e;
+}
+
+/* ============================================================
+   3. 經典藍框 × 現代高解析圓角卡片與 3D 立體斜角按鈕 (Window Chrome)
+   ============================================================ */
+html[data-theme="maple"] .card {
+  background: linear-gradient(180deg, #ffffff 0%, #fffbf0 100%);
+  border: 2px solid #3b76b8;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 0 rgba(19, 58, 107, 0.16),
+    0 10px 24px rgba(0, 43, 92, 0.08),
+    inset 0 1px 0 #ffffff;
+}
+
+/* 經典楓之谷深藍視窗標題列：套用至站點卡頭、Bento 小工具頭、彈窗頭 */
+html[data-theme="maple"] .st-head,
+html[data-theme="maple"] .bento-widget .bw-head,
+html[data-theme="maple"] .modal-head {
+  background: linear-gradient(180deg, #005bb5 0%, #003875 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #ffcc00 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+html[data-theme="maple"] .st-head .st-title,
+html[data-theme="maple"] .st-head .st-time,
+html[data-theme="maple"] .st-head .st-sum,
+html[data-theme="maple"] .st-head .st-chev,
+html[data-theme="maple"] .bento-widget .bw-title,
+html[data-theme="maple"] .modal-head h3 {
+  color: #fff9db !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  font-weight: 800;
+}
+html[data-theme="maple"] .bento-widget .bw-sub {
+  color: #bfdbfe !important;
+}
+html[data-theme="maple"] .bento-widget .bw-head {
+  margin: -14px -16px 12px -16px;
+  padding: 10px 16px;
+  border-radius: 11px 11px 0 0;
+}
+
+/* 任務頭頂黃色燈泡 [!] 圖示點綴於隨手備忘錄與每日回報標題 */
+html[data-theme="maple"] .memo-widget .bw-title::before {
+  content: "💡 [任務] ";
+  color: #ffe066;
+}
+html[data-theme="maple"] .dr-title::before {
+  content: "🍁 ";
+}
+
+/* 按鈕：3D 遊戲像素風按壓回彈質感 */
+html[data-theme="maple"] .btn {
+  background: linear-gradient(180deg, #ffffff 0%, #eef4fb 100%);
+  border: 1.5px solid #4a7ebb;
+  color: #0f294a;
+  font-weight: 700;
+  box-shadow: 0 2px 0 #295285, inset 0 1px 0 #ffffff;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+html[data-theme="maple"] .btn:hover {
+  background: linear-gradient(180deg, #fffdf5 0%, #ffefc2 100%);
+  border-color: #ff8800;
+  color: #7c2d12;
+  box-shadow: 0 2px 0 #b45309;
+}
+html[data-theme="maple"] .btn:active {
+  transform: translateY(1.5px);
+  box-shadow: 0 0.5px 0 #295285;
+}
+html[data-theme="maple"] .btn.primary {
+  background: linear-gradient(180deg, #ff8811 0%, #e04f00 100%);
+  border: 1.5px solid #ffe066;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 3px 0 #8a2c00, 0 4px 10px rgba(224, 79, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+html[data-theme="maple"] .btn.primary:hover {
+  background: linear-gradient(180deg, #ff9922 0%, #f05a00 100%);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+html[data-theme="maple"] .modal-head .icon-btn {
+  background: linear-gradient(180deg, #ff5544 0%, #cc1100 100%);
+  color: #ffffff;
+  border: 1.5px solid #ffe066;
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-weight: 900;
+  box-shadow: 0 2px 0 #660000;
+}
+
+/* ============================================================
+   4. 黃色 EXP 經驗值條 ＋ HP/MP 紅藍條狀態列 (MapleStory Status Bar)
+   ============================================================ */
+html[data-theme="maple"] .ridebar {
+  background: linear-gradient(180deg, #1b2838 0%, #0f1722 100%);
+  border: 2px solid #4a6b8c;
+  border-radius: 12px;
+  padding: 12px 16px 18px;
+  margin-top: 8px;
+  color: #f8fafc;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 4px 12px rgba(0, 26, 58, 0.18);
+}
+html[data-theme="maple"] .ridebar .rb-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+html[data-theme="maple"] .ridebar .rb-msg {
+  color: #e2e8f0;
+  margin-bottom: 0;
+}
+html[data-theme="maple"] .ridebar .rb-msg b {
+  color: #ffcc00;
+}
+html[data-theme="maple"] .maple-lv-pill,
+html[data-theme="maple"] .maple-hp-pill,
+html[data-theme="maple"] .maple-mp-pill,
+html[data-theme="maple"] .maple-exp-pill {
+  font-family: "Consolas", "Monaco", "Courier New", monospace;
+  font-size: 11.5px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 5px;
+  letter-spacing: 0.03em;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+html[data-theme="maple"] .maple-lv-pill {
+  background: linear-gradient(180deg, #ffcc00 0%, #d97706 100%);
+  color: #1e1b04;
+  border-color: #fef08a;
+}
+html[data-theme="maple"] .maple-hp-pill {
+  background: linear-gradient(180deg, #ff3b30 0%, #990000 100%);
+  color: #ffffff;
+}
+html[data-theme="maple"] .maple-mp-pill {
+  background: linear-gradient(180deg, #3385ff 0%, #003399 100%);
+  color: #ffffff;
+}
+html[data-theme="maple"] .maple-exp-pill {
+  background: linear-gradient(180deg, #4ade80 0%, #15803d 100%);
+  color: #052e16;
+  border-color: #bbf7d0;
+}
+html[data-theme="maple"] .ridebar .rb-track {
+  height: 16px;
+  background: #090d14;
+  border: 2px solid #64748b;
+  border-radius: 8px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.85);
+  position: relative;
+}
+html[data-theme="maple"] .ridebar .rb-done {
+  background: linear-gradient(180deg, #fff59d 0%, #ffcc00 48%, #d97706 100%);
+  box-shadow: 0 0 12px rgba(255, 204, 0, 0.65);
+  border-radius: 6px;
+}
+html[data-theme="maple"] .ridebar .rb-stop em {
+  color: #cbd5e1;
+  font-weight: 700;
+}
+html[data-theme="maple"] .ridebar .rb-stop.passed em {
+  color: #ffe066;
+}
+
+/* ============================================================
+   5. 自由市場「超級喇叭 (Super Megaphone)」廣播風格（晨間生活誌與橫幅）
+   ============================================================ */
+html[data-theme="maple"] .vibe-card-editorial {
+  border: 2px solid #3b76b8 !important;
+  background: linear-gradient(180deg, #fffdf9 0%, #fff5e4 100%) !important;
+  box-shadow: 0 3px 0 rgba(0, 59, 122, 0.14), 0 6px 14px rgba(0, 43, 92, 0.08) !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.bike {
+  border-color: #f43f5e !important;
+  background: linear-gradient(90deg, #fff0f3 0%, #fffdf9 100%) !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.bike .vibe-pill-tag {
+  background: linear-gradient(180deg, #ff2e63 0%, #be123c 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #fecdd3 !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.bike .vibe-pill-tag::before {
+  content: "📢 [超廣] ";
+}
+html[data-theme="maple"] .vibe-card-editorial.joke {
+  border-color: #f59e0b !important;
+  background: linear-gradient(90deg, #fffbeb 0%, #fffdf9 100%) !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.joke .vibe-pill-tag {
+  background: linear-gradient(180deg, #ff8811 0%, #c2410c 100%) !important;
+  color: #ffffff !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.joke .vibe-pill-tag::before {
+  content: "🍄 ";
+}
+html[data-theme="maple"] .vibe-card-editorial.history {
+  border-color: #0284c7 !important;
+  background: linear-gradient(90deg, #f0f9ff 0%, #fffdf9 100%) !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.history .vibe-pill-tag {
+  background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+}
+html[data-theme="maple"] .vibe-card-editorial.history .vibe-pill-tag::before {
+  content: "📜 ";
+}
+
+/* ============================================================
+   6. NPC 任務書狀態（[!] / [?] / [✓]）、組隊聊天室、楓幣與表格
+   ============================================================ */
+html[data-theme="maple"] .member {
+  background: linear-gradient(180deg, #ffffff 0%, #fdfaf0 100%);
+  border: 2px solid #6b9bd2;
+  border-left: 5px solid #2ea81c;
+}
+html[data-theme="maple"] .member.is-out {
+  border-left-color: #ff6600;
+}
+html[data-theme="maple"] .me-tag {
+  background: linear-gradient(180deg, #ffcc00 0%, #f59e0b 100%);
+  color: #451a03;
+  border: 1px solid #92400e;
+  font-weight: 900;
+}
+html[data-theme="maple"] .memo-item-row:not(.is-done) .memo-check-box {
+  color: #d97706 !important;
+  background: #fef3c7;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #f59e0b;
+}
+html[data-theme="maple"] .memo-item-row.is-done .memo-check-box {
+  color: #15803d !important;
+  background: #dcfce7;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid #4ade80;
+}
+
+/* 揪團總金額與許願池加上楓幣 Meso 感 */
+html[data-theme="maple"] .gb-total-pill,
+html[data-theme="maple"] .kpi-chip {
+  border-width: 1.5px;
+  font-weight: 800;
+}
+
+/* 團隊即時聊天室：楓之谷組隊/公會對話框風格 */
+html[data-theme="maple"] .chat-fab-btn {
+  background: linear-gradient(180deg, #ff7710 0%, #d94600 100%);
+  border: 2px solid #ffe066;
+  color: #ffffff;
+  box-shadow: 0 4px 0 #7c2d12, 0 6px 18px rgba(217, 70, 0, 0.4);
+}
+html[data-theme="maple"] .chat-fab-btn .chat-fab-label::before {
+  content: "🍁 ";
+}
+html[data-theme="maple"] .chat-drawer {
+  border-left: 3px solid #004e9e;
+  background: #f6f3ea;
+}
+html[data-theme="maple"] .chat-head {
+  background: linear-gradient(180deg, #005bb5 0%, #00336b 100%);
+  color: #ffffff;
+  border-bottom: 3px solid #ffcc00;
+}
+html[data-theme="maple"] .chat-head strong {
+  color: #ffe066;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+html[data-theme="maple"] .chat-head .muted {
+  color: #dbeafe !important;
+}
+html[data-theme="maple"] .chat-msg-row.mine .chat-msg-bubble {
+  background: linear-gradient(180deg, #fff3c4 0%, #fde68a 100%);
+  border: 1.5px solid #f59e0b;
+  color: #451a03;
+}
+
+/* 行事曆與模擬體驗矩陣表頭 */
+html[data-theme="maple"] .fc .fc-col-header-cell,
+html[data-theme="maple"] table.sched thead th,
+html[data-theme="maple"] table.sched .corner {
+  background: linear-gradient(180deg, #e0edff 0%, #c7ddfa 100%);
+  color: #00336b;
+  border-color: #93c5fd;
+}
+html[data-theme="maple"] table.sched thead th.today {
+  background: linear-gradient(180deg, #ff8811 0%, #e04f00 100%);
+  color: #ffffff;
+}
+html[data-theme="maple"] table.sched thead th.today .wd {
+  color: #fef08a;
+}
+html[data-theme="maple"] .sim-matrix-table th.sim-sticky-col,
+html[data-theme="maple"] .sim-matrix-table td.sim-sticky-col {
+  background: #fffcf2;
+}
+html[data-theme="maple"] .sim-matrix-table thead th.sim-sticky-col {
+  background: #dbeafe;
+}
+
+/* 每日回報：遠征隊 Boss 討伐橫幅強化楓之谷黃金祭壇感 */
+html[data-theme="maple"] .dr-raid-world-banner {
+  border: 2px solid #ffcc00 !important;
+  box-shadow: 0 4px 0 #92400e, 0 10px 24px rgba(0, 0, 0, 0.25) !important;
+}
+html[data-theme="maple"] .dr-boss-arena {
+  border: 2.5px solid #ffcc00 !important;
+  box-shadow: 0 4px 0 #78350f, 0 12px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ============================================================
+   7. 「LEVEL UP!」楓之谷經典金黃色光柱升等全螢幕慶祝動畫
+   ============================================================ */
+.maple-levelup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.42s ease;
+}
+.maple-levelup-overlay.fade-out {
+  opacity: 0;
+}
+.maple-lu-beam {
+  position: absolute;
+  width: 280px;
+  height: 120vh;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 230, 102, 0.25) 20%,
+    rgba(255, 251, 214, 0.85) 50%,
+    rgba(255, 230, 102, 0.25) 80%,
+    transparent 100%
+  );
+  filter: blur(8px);
+  animation: mapleBeamPulse 1.8s ease-out forwards;
+}
+.maple-lu-card {
+  position: relative;
+  text-align: center;
+  padding: 20px 34px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(0, 78, 158, 0.96) 0%, rgba(0, 40, 85, 0.96) 100%);
+  border: 3px solid #ffe066;
+  box-shadow:
+    0 0 0 3px #b45309,
+    0 0 45px rgba(255, 204, 0, 0.85),
+    0 16px 40px rgba(0, 0, 0, 0.55);
+  animation: mapleCardPop 0.55s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
+}
+.maple-lu-sprites {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.maple-lu-title {
+  font-family: "Impact", "Arial Black", "Noto Sans TC", sans-serif;
+  font-size: 46px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  background: linear-gradient(180deg, #ffffff 0%, #fff085 38%, #ffb700 72%, #e65100 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 3px 0 #7c2d12) drop-shadow(0 0 14px rgba(255, 204, 0, 0.8));
+}
+.maple-lu-sub {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff9db;
+  background: rgba(0, 0, 0, 0.32);
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 224, 102, 0.55);
+}
+
+@keyframes mapleBeamPulse {
+  0% { transform: scaleX(0.2); opacity: 0; }
+  25% { transform: scaleX(1.15); opacity: 1; }
+  100% { transform: scaleX(1.6); opacity: 0; }
+}
+@keyframes mapleCardPop {
+  0% { transform: translateY(36px) scale(0.7); opacity: 0; }
+  70% { transform: translateY(-6px) scale(1.04); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
