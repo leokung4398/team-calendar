@@ -314,6 +314,9 @@ const FIELD_BOSS_META = {
     mapleLimbLabels: ['炎魔左上1臂', '炎魔右上1臂', '炎魔左下2臂', '炎魔右下2臂', '炎魔中段雙臂'],
     avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_leo.jpg?v=20261023v55',
+    mapleImageUrl: 'assets/bosses/boss_maple_zakum.jpg?v=20261114v70',
+    mapleThemeColor: '#f59e0b',
+    mapleThemeBg: 'linear-gradient(145deg, #1c0a04 0%, #3b1306 52%, #68210a 100%)',
     themeColor: '#38bdf8',
     themeBg: 'linear-gradient(145deg, #040914 0%, #091931 52%, #0c2b4e 100%)',
     accentColor: '#38bdf8',
@@ -339,6 +342,9 @@ const FIELD_BOSS_META = {
     mapleLimbLabels: ['龍王左側冰頭', '龍王右側雷頭', '龍王雙翼部位', '龍王雙爪部位', '龍王劇毒巨尾'],
     avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_hao.jpg?v=20261023v55',
+    mapleImageUrl: 'assets/bosses/boss_maple_horntail.jpg?v=20261114v70',
+    mapleThemeColor: '#c084fc',
+    mapleThemeBg: 'linear-gradient(145deg, #090d1c 0%, #17183b 52%, #311b58 100%)',
     themeColor: '#a855f7',
     themeBg: 'linear-gradient(145deg, #070512 0%, #160d31 52%, #2e1065 100%)',
     accentColor: '#c084fc',
@@ -364,6 +370,9 @@ const FIELD_BOSS_META = {
     mapleLimbLabels: ['賢者索羅門雕像', '賢者雷克斯雕像', '飛天胡克雕像', '冥界穆닌雕像', '黃金阿利爾雕像'],
     avatarEmoji: '',
     imageUrl: 'assets/bosses/boss_chun.jpg?v=20261023v55',
+    mapleImageUrl: 'assets/bosses/boss_maple_pinkbean.jpg?v=20261114v70',
+    mapleThemeColor: '#f472b6',
+    mapleThemeBg: 'linear-gradient(145deg, #1b0b26 0%, #32154b 52%, #591c63 100%)',
     themeColor: '#f97316',
     themeBg: 'linear-gradient(145deg, #110604 0%, #2a0c06 52%, #5c190b 100%)',
     accentColor: '#fb923c',
@@ -769,11 +778,11 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
   const isStageOpen = expandedBossStages.has(u.uid);
 
   return `
-    <div class="dr-boss-arena raid-tier-${esc(bs.nick.toLowerCase())} ${isStageOpen ? 'is-expanded' : 'is-collapsed'}" data-boss-arena="${esc(u.uid)}" style="background:${bs.meta.themeBg}; --boss-accent:${bs.meta.themeColor};">
+    <div class="dr-boss-arena raid-tier-${esc(bs.nick.toLowerCase())} ${isStageOpen ? 'is-expanded' : 'is-collapsed'}" data-boss-arena="${esc(u.uid)}" style="background:${(typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleThemeBg) ? bs.meta.mapleThemeBg : bs.meta.themeBg}; --boss-accent:${(typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleThemeColor) ? bs.meta.mapleThemeColor : bs.meta.themeColor};">
       <div class="dr-boss-header" data-toggle-boss-stage="${esc(u.uid)}" title="點擊展開或收合魔王討伐戰場">
         <div class="dr-boss-identity">
           <div class="dr-boss-avatar-wrap ${bs.todayDamage > 0 ? 'hit-today' : ''}">
-            <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-avatar-img">
+            <img src="${esc((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleImageUrl) ? bs.meta.mapleImageUrl : bs.meta.imageUrl)}" alt="${esc((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleBossName) ? bs.meta.mapleBossName : bs.meta.bossName)}" class="dr-boss-avatar-img">
             ${bs.todayDamage > 0 ? `<span class="dr-boss-hit-badge">-${bs.todayDamage}</span>` : ''}
           </div>
           <div>
@@ -814,7 +823,7 @@ function renderFieldBossWidget(u, dateStr, canSeeDetails) {
       <div class="dr-boss-collapsible-body" ${isStageOpen ? '' : 'hidden'}>
         <!-- 視覺化魔王立繪戰場舞台（全身部位 HUD 準星鎖定） -->
         <div class="dr-boss-visual-stage ${bs.bossPhase.tone}">
-          <img src="${esc(bs.meta.imageUrl)}" alt="${esc(bs.meta.bossName)}" class="dr-boss-stage-img" loading="lazy">
+          <img src="${esc((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleImageUrl) ? bs.meta.mapleImageUrl : bs.meta.imageUrl)}" alt="${esc((typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple' && bs.meta.mapleBossName) ? bs.meta.mapleBossName : bs.meta.bossName)}" class="dr-boss-stage-img" loading="lazy">
           <div class="dr-boss-stage-vignette"></div>
           <div class="dr-boss-corner-ornament tl"></div>
           <div class="dr-boss-corner-ornament tr"></div>
