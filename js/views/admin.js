@@ -7,8 +7,8 @@ import {
 } from '../data.js';
 import { APP } from '../config.js';
 import { esc, avatar, toast, confirmDialog, timeAgo } from '../utils.js';
-import { openAchievementsModal } from '../achievementsModal.js?v=20261114v68';
-import { ACHIEVEMENTS } from '../achievementsData.js?v=20261114v68';
+import { openAchievementsModal } from '../achievementsModal.js?v=20261114v69';
+import { ACHIEVEMENTS } from '../achievementsData.js?v=20261114v69';
 
 export function mountAdmin(el) {
   if (!isAdmin()) {
