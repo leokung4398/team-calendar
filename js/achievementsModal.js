@@ -1,5 +1,5 @@
 // 專案成果 Modal 彈窗元件（承襲 YouBike 2.0 活力與營運協同平台白底溫暖風格）
-import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from './achievementsData.js?v=20261119v75';
+import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from './achievementsData.js?v=20261120v76';
 import { esc } from './utils.js';
 
 export function openAchievementsModal() {
