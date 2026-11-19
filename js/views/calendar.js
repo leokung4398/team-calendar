@@ -5,7 +5,7 @@ import { dayInfo, ensureRange } from '../holidays.js';
 import { esc, ymd, addDays, WEEK } from '../utils.js';
 import { openEventViewer, openEventEditor } from '../eventForm.js';
 import { openExportDialog } from '../export.js';
-import { getMemosOnDay, openDayMemoModal } from './stickyHub.js';
+import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261119v75';
 
 export function mountCalendar(el, ctx) {
   if (!window.FullCalendar) {

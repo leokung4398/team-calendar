@@ -222,8 +222,11 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
   const isStageOpen = expandedIslandSet.has(contextId);
 
   const islandImg = isMaple
-    ? 'assets/kaizen/kaizen_island_maple.jpg?v=20261114v71'
-    : 'assets/kaizen/kaizen_island_city.jpg?v=20261114v71';
+    ? 'assets/kaizen/kaizen_island_maple.webp?v=20261119v75'
+    : 'assets/kaizen/kaizen_island_city.webp?v=20261119v75';
+  const islandThumbImg = isMaple
+    ? 'assets/kaizen/kaizen_island_maple_thumb.webp?v=20261119v75'
+    : 'assets/kaizen/kaizen_island_city_thumb.webp?v=20261119v75';
 
   const islandMainTitle = isMaple
     ? '《楓之谷・改善提案天空之城建造島》'
@@ -316,7 +319,7 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
       <div class="kz-island-header">
         <div class="kz-ih-left">
           <div class="kz-ih-avatar-wrap" data-kz-toggle-stage="${esc(contextId)}" title="點擊展開/收合 3D 未來城市建造島地圖">
-            <img src="${esc(islandImg)}" alt="改善提案建造島" class="kz-ih-thumb">
+            <img src="${esc(islandThumbImg)}" alt="改善提案建造島" class="kz-ih-thumb" loading="lazy" decoding="async">
             <span class="kz-ih-lv-pill">${esc(ks.islandLv.lv)}</span>
           </div>
           <div class="kz-ih-info">
@@ -391,7 +394,7 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
 
           <!-- 16:9 島嶼畫布與 4 大地標互動熱區（保證行動版座標精準對齊） -->
           <div class="kz-island-canvas">
-            <img src="${esc(islandImg)}" alt="${esc(islandMainTitle)}" class="kz-island-stage-img" data-kz-open-zoom loading="lazy" title="點擊放大全螢幕檢視島嶼全景">
+            <img src="${esc(islandImg)}" alt="${esc(islandMainTitle)}" class="kz-island-stage-img" data-kz-open-zoom loading="lazy" decoding="async" title="點擊放大全螢幕檢視島嶼全景">
             <div class="kz-island-stage-vignette"></div>
             <div class="kz-island-hotspots-layer">
               ${ks.landmarks.map(renderHotspot).join('')}
@@ -572,8 +575,11 @@ export function openKaizenIslandZoomModal(onRerender) {
   const canEdit = canEditKaizenIsland();
   const isMaple = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple';
   const islandImg = isMaple
-    ? 'assets/kaizen/kaizen_island_maple.jpg?v=20261114v71'
-    : 'assets/kaizen/kaizen_island_city.jpg?v=20261114v71';
+    ? 'assets/kaizen/kaizen_island_maple.webp?v=20261119v75'
+    : 'assets/kaizen/kaizen_island_city.webp?v=20261119v75';
+  const islandThumbImg = isMaple
+    ? 'assets/kaizen/kaizen_island_maple_thumb.webp?v=20261119v75'
+    : 'assets/kaizen/kaizen_island_city_thumb.webp?v=20261119v75';
   const islandMainTitle = isMaple
     ? '《楓之谷・改善提案天空之城建造島》'
     : '《微笑單車・未來城市改善提案建造島》';

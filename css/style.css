@@ -6523,7 +6523,7 @@ th.has-meeting { position: relative; }
 .wf-bg-still {
   position: absolute;
   inset: 0;
-  background-image: url('../assets/wishing_fountain_bg.jpg');
+  background-image: url('../assets/wishing_fountain_bg.webp?v=20261119v75');
   background-size: cover;
   background-position: center center;
   z-index: 1;
@@ -6534,7 +6534,7 @@ th.has-meeting { position: relative; }
 .wf-bg-water-ripple {
   position: absolute;
   inset: 0;
-  background-image: url('../assets/wishing_fountain_bg.jpg');
+  background-image: url('../assets/wishing_fountain_bg.webp?v=20261119v75');
   background-size: cover;
   background-position: center center;
   /* 精準對準畫面中下方的大理石橢圓形水池內部 */
@@ -7026,7 +7026,7 @@ th.has-meeting { position: relative; }
 .th-bg-still {
   position: absolute;
   inset: 0;
-  background-image: url('../assets/tree_hollow_bg.jpg');
+  background-image: url('../assets/tree_hollow_bg.webp?v=20261119v75');
   background-size: cover;
   background-position: center center;
   z-index: 1;
@@ -7037,7 +7037,7 @@ th.has-meeting { position: relative; }
 .th-bg-stream-ripple {
   position: absolute;
   inset: 0;
-  background-image: url('../assets/tree_hollow_bg.jpg');
+  background-image: url('../assets/tree_hollow_bg.webp?v=20261119v75');
   background-size: cover;
   background-position: center center;
   /* 僅精準包覆右下角藍綠色溪流河道，不影響中央樹根與草地 */
@@ -7052,7 +7052,7 @@ th.has-meeting { position: relative; }
 .th-bg-fire-shimmer {
   position: absolute;
   inset: 0;
-  background-image: url('../assets/tree_hollow_bg.jpg');
+  background-image: url('../assets/tree_hollow_bg.webp?v=20261119v75');
   background-size: cover;
   background-position: center center;
   /* 僅包覆左下角營火火焰區域 */

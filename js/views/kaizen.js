@@ -1,6 +1,6 @@
 // 改善提案作業管理辦法（2023.05 修訂 · 五版）圖文懶人包小卡、線上提案登錄表 ＆ 2026 修訂建議對照
 import { state, myUid, isAdmin, isFieldDeputy, userName, saveToolsDoc } from '../data.js';
-import { renderKaizenIslandWidget, bindKaizenIslandEvents } from '../kaizenIslandWidget.js?v=20261115v73';
+import { renderKaizenIslandWidget, bindKaizenIslandEvents } from '../kaizenIslandWidget.js?v=20261119v75';
 import { esc, ymd, toast, openModal, closeModal } from '../utils.js';
 
 const KAIZEN_CARDS = [
