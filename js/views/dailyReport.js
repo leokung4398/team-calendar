@@ -1031,6 +1031,22 @@ export function mountDailyReport(root) {
           ` : ''}
         </section>
 
+        ${viewMode === 'daily' && !isSup && me && isDailyReporter(me) ? `
+          <section class="card dr-my-spotlight-card ${mySubmitted ? 'is-done' : 'is-pending'}">
+            <div class="dr-ms-left">
+              <span class="dr-ms-badge">${mySubmitted ? '✓ 已完成回報' : '⏰ 今日尚未回報'}</span>
+              <div class="dr-ms-text">
+                <strong>我的 ${esc(fmtMD(selectedDate))} 回報狀態（${esc(me.displayName || '')}）</strong>
+                <span class="muted tiny">${mySubmitted ? '已送出並可隨時修改或一鍵複製 LINE 格式' : (myStatus?.code === 'pending' ? '點擊右側按鈕 15 秒極速完成今日回報，免往下滑動找卡片！' : esc(myStatus?.label || '免回報'))}</span>
+              </div>
+            </div>
+            <div class="dr-ms-actions">
+              <button type="button" class="btn sm primary" data-open-quick="${esc(selectedDate)}">${mySubmitted ? '修改我的回報' : '⚡ 立即極速填寫'}</button>
+              ${mySubmitted ? `<button type="button" class="btn sm dr-copy-mine-btn" data-copy-personal="${esc(myId)}">複製 LINE</button>` : ''}
+            </div>
+          </section>
+        ` : ''}
+
         ${viewMode === 'daily' ? renderDailyBoard({
           selectedDate, today, doc, info, officeMembers, fieldMembers, allReporters, supervisors,
           statuses, submittedCount, exemptCount, pendingCount, me, myId, myStatus, isSup, isDesigner, canManage,
@@ -2271,13 +2287,21 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
   `;
 
   document.body.appendChild(backdrop);
+  document.documentElement.classList.add('modal-open-lock');
+  document.body.classList.add('modal-open-lock');
 
   const notesIn = backdrop.querySelector('[data-sheet-notes]');
   const successBox = backdrop.querySelector('[data-sheet-success]');
   const previewPre = backdrop.querySelector('[data-sheet-preview]');
   const footBox = backdrop.querySelector('[data-sheet-foot]');
 
-  const close = () => backdrop.remove();
+  const close = () => {
+    backdrop.remove();
+    if (!document.querySelector('.modal-backdrop, .dr-sheet-backdrop')) {
+      document.documentElement.classList.remove('modal-open-lock');
+      document.body.classList.remove('modal-open-lock');
+    }
+  };
   backdrop.addEventListener('click', e => {
     if (e.target === backdrop) close();
   });
@@ -2463,6 +2487,9 @@ export function openQuickDailyReportSheet(dateStr = ymd(), modeOverride = null) 
       previewPre.textContent = lineText;
       successBox.hidden = false;
       footBox.hidden = true;
+      setTimeout(() => {
+        successBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 60);
     } else {
       toast('已儲存今日回報');
       close();

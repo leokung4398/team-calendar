@@ -11155,3 +11155,472 @@ html[data-theme="maple"] .kz-island-widget {
     grid-template-columns: 1fr 1fr !important;
   }
 }
+
+
+/* ============================================================================
+   Phase 2 (v75)：行動端 App 化底部導覽列、Modal 鎖捲、首屏優先與重度元件行動優化
+   ============================================================================ */
+
+/* 1. 開啟彈窗時鎖定背景頁面滾動（防止 iOS Scroll Chaining） */
+html.modal-open-lock,
+body.modal-open-lock {
+  overflow: hidden !important;
+}
+
+/* 2. 行動端底部 5 鍵 Tab Bar 與「更多功能」底部抽屜（桌面端預設隱藏） */
+.mobile-bottom-nav,
+.mobile-more-backdrop,
+.mobile-more-sheet {
+  display: none;
+}
+
+.nav-more-trigger {
+  background: transparent;
+  border: 0;
+  font: inherit;
+}
+
+/* 3. 每日回報「我的今日回報」快捷置頂卡 */
+.dr-my-spotlight-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(90deg, #fffbeb 0%, #ffffff 70%);
+}
+.dr-my-spotlight-card.is-done {
+  border-left-color: #15803d;
+  background: linear-gradient(90deg, #f0fdf4 0%, #ffffff 70%);
+}
+.dr-ms-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.dr-ms-badge {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  white-space: nowrap;
+}
+.dr-my-spotlight-card.is-done .dr-ms-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+.dr-ms-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.dr-ms-text strong {
+  font-size: 14px;
+  color: var(--ink);
+}
+.dr-ms-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+/* 4. 採購佈告欄載入遮罩與行動啟動卡 */
+.bulletin-loading-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 2;
+}
+.bulletin-mobile-card {
+  border-top: 4px solid var(--yb);
+}
+.bmc-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 800;
+  background: #fef9c3;
+  color: #854d0e;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* 5. 行動端（<= 768px）App 化主版面、Bottom Nav、Bottom Sheet 與各模組首屏最佳化 */
+@media (max-width: 768px) {
+  /* 頂部列瘦身為精簡 52px 單列：將多行 .tabs 交給底部固定 Tab Bar */
+  .topbar-in {
+    grid-template-columns: minmax(0, 1fr) auto;
+    height: 52px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .topbar .tabs,
+  .topbar .chat-top-btn,
+  .chat-fab-btn {
+    display: none !important;
+  }
+
+  /* 行動端底部固定 5 鍵 Tab Bar */
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-bottom-nav, 360);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    padding: 5px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 18px rgba(15, 23, 42, 0.08);
+  }
+  .mbn-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 46px;
+    padding: 4px 2px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    text-decoration: none;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: color 0.15s, background 0.15s;
+  }
+  .mbn-item.active {
+    color: var(--brand-dark);
+    background: rgba(255, 196, 0, 0.14);
+  }
+  .mbn-dot {
+    position: absolute;
+    top: 5px;
+    right: calc(50% - 14px);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: 1.5px solid #ffffff;
+  }
+  .mbn-badge {
+    top: 2px;
+    right: calc(50% - 20px);
+    font-size: 10px;
+    line-height: 15px;
+    min-width: 16px;
+    padding: 0 4px;
+  }
+
+  /* 三主題同步套用至底部導覽列 */
+  html[data-theme="editorial"] .mobile-bottom-nav {
+    background: rgba(250, 247, 242, 0.96);
+    border-top-color: #dcd2c0;
+  }
+  html[data-theme="editorial"] .mbn-item.active {
+    color: #1e3f35;
+    background: rgba(30, 63, 53, 0.1);
+  }
+  html[data-theme="maple"] .mobile-bottom-nav {
+    background: linear-gradient(180deg, #00478f 0%, #002b5c 100%);
+    border-top: 2px solid #ffcc00;
+  }
+  html[data-theme="maple"] .mbn-item {
+    color: #cbd5e1;
+  }
+  html[data-theme="maple"] .mbn-item.active {
+    color: #ffe066;
+    background: rgba(255, 136, 17, 0.25);
+  }
+
+  /* 「更多功能」滑出式底部抽屜 */
+  .mobile-more-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--z-bottom-nav, 360) + 10);
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+  }
+  .mobile-more-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: calc(var(--z-bottom-nav, 360) + 11);
+    background: var(--card, #ffffff);
+    border-radius: 20px 20px 0 0;
+    padding: 10px 14px calc(18px + env(safe-area-inset-bottom, 0px));
+    max-height: 82dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 -10px 36px rgba(15, 23, 42, 0.24);
+    animation: drSlideUp 0.2s ease-out;
+  }
+  .mms-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    margin: 0 auto 8px;
+  }
+  .mms-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15.5px;
+    color: var(--ink);
+  }
+  .mms-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mms-card {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 11px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-subtle, #f8fafc);
+    color: var(--ink);
+    text-decoration: none;
+    min-height: 56px;
+  }
+  .mms-card.active {
+    border-color: var(--yb);
+    background: var(--today, #fff8d6);
+  }
+  .mms-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .mms-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .mms-text strong {
+    font-size: 13.5px;
+    line-height: 1.25;
+  }
+  .mms-text small {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mms-theme-bar {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mms-theme-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  /* 預留底部導覽列高度給主內容、Footer、FAB 與 17:30 提醒 */
+  .main {
+    padding: 12px 10px calc(108px + env(safe-area-inset-bottom, 0px));
+  }
+  .yb-foot {
+    padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+  }
+  .dr-commuter-fab-wrap {
+    right: 12px;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+  .dr-gentle-toast {
+    right: 12px;
+    left: 12px;
+    width: auto;
+    bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+  }
+  #toast-root {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* 每日回報極速快填彈窗：手機真正改為貼底 Bottom Sheet */
+  .dr-sheet-backdrop {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .dr-bottom-sheet {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+  }
+  .dr-sheet-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: #cbd5e1;
+    margin: 8px auto 0;
+    flex-shrink: 0;
+  }
+  .dr-sheet-head {
+    padding: 10px 16px 10px;
+  }
+  .dr-sheet-body {
+    padding: 12px 16px;
+  }
+  .dr-chip-bar,
+  .dr-chip-scroll {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .dr-chip-bar > button,
+  .dr-chip-scroll > button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  .dr-card-head {
+    flex-wrap: wrap !important;
+    gap: 6px 8px;
+  }
+
+  /* 今日動態晨間生活誌：手機改單列橫向滑動卡片，讓即時狀態看板躍上第一屏！ */
+  .vibe-pills-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px !important;
+    padding-bottom: 4px;
+  }
+  .vibe-pills-row .vibe-pill {
+    flex: 0 0 82vw;
+    max-width: 310px;
+    scroll-snap-align: start;
+  }
+  .vibe-drawer-tab {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* 專案開發成果與里程碑彈窗：解除固定 Hero 吃掉 418px 空間的問題！ */
+  .modal.achieve-modal .modal-body {
+    padding: 0;
+  }
+  .achieve-container {
+    max-height: none;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .achieve-hero {
+    padding: 12px 14px 10px;
+  }
+  .achieve-hero-desc {
+    display: none;
+  }
+  .achieve-cats-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px !important;
+    padding-bottom: 4px;
+  }
+  .achieve-cat-card {
+    flex: 0 0 auto;
+    min-width: 148px;
+    padding: 8px 10px;
+  }
+  .achieve-cat-desc {
+    display: none;
+  }
+  .achieve-list {
+    overflow-y: visible;
+    padding: 10px 12px 24px;
+  }
+  .milestone-item {
+    padding: 12px;
+    gap: 10px;
+  }
+  .milestone-head {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* 導覽彈窗步驟列順暢橫滑 */
+  .guide-steps-bar {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* 楓之谷升級慶祝卡防窄螢幕溢位 */
+  .maple-lu-card {
+    max-width: calc(100vw - 24px);
+    padding: 16px 20px;
+  }
+  .maple-lu-title {
+    font-size: 32px;
+  }
+
+  /* 會議紀錄編輯器：議程跳轉改單列橫向滑動膠囊，節省 140px 高度 */
+  .min-nav-anchors {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .min-nav-anchors > button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* 揪團品項手機雙行清晰呈現，不再把甜度冰塊裁掉 */
+  .gb-item-chip {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .gb-item-chip .gb-what {
+    flex-basis: 100%;
+    order: 5;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    padding-left: 2px;
+  }
+}

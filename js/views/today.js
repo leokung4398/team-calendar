@@ -105,13 +105,15 @@ export function mountToday(el) {
     }
   });
 
-  function render() {
-    // 若使用者正聚焦在備忘錄或揪團輸入框打字中，避免背景快照或每分鐘計時器強制重繪覆蓋輸入狀態
+  function render(opts = {}) {
+    // 若使用者正聚焦在備忘錄或揪團輸入框打字中，或來自每分鐘時鐘微調，避免強制重繪覆蓋輸入與閱讀狀態
     const activeEl = document.activeElement;
     const isTypingInHub = activeEl && q('[data-sticky-hub]')?.contains(activeEl) && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName);
-    renderDailyVibeBar(q('[data-vibe]'), () => renderDailyVibeBar(q('[data-vibe]')));
-    if (!isTypingInHub) {
-      renderStickyHub(q('[data-sticky-hub]'), day, () => renderStickyHub(q('[data-sticky-hub]'), day));
+    if (!opts?.tickOnly) {
+      renderDailyVibeBar(q('[data-vibe]'), () => renderDailyVibeBar(q('[data-vibe]')));
+      if (!isTypingInHub) {
+        renderStickyHub(q('[data-sticky-hub]'), day, () => renderStickyHub(q('[data-sticky-hub]'), day));
+      }
     }
     const isToday = day === ymd();
     const now = nowMinutes();
@@ -284,8 +286,8 @@ export function mountToday(el) {
       </div>`;
   }
 
-  ensureRange(day, day).then(render);
-  const timer = setInterval(() => { if (day === ymd() || day === addDays(ymd(), -1)) render(); }, 60 * 1000);
+  ensureRange(day, day).then(() => render());
+  const timer = setInterval(() => { if (day === ymd() || day === addDays(ymd(), -1)) render({ tickOnly: true }); }, 60 * 1000);
   render();
-  return { update: render, destroy: () => clearInterval(timer) };
+  return { update: () => render(), destroy: () => clearInterval(timer) };
 }

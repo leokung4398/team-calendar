@@ -10,8 +10,9 @@ export function openAchievementsModal() {
   // 目前選取的分類 ('all' 或 'core', 'security', 'design', 'data')
   let currentCat = 'all';
 
-  // 預設全部展開，讓主管與同仁開箱即覽所有成果重點
-  const expandedSet = new Set(ACHIEVEMENTS.map(m => m.id));
+  // 桌面預設全部展開；手機端預設展開前 3 筆，方便快速掃描不需長捲（隨時可點「全部展開」）
+  const isMobileView = window.matchMedia('(max-width: 768px)').matches;
+  const expandedSet = new Set((isMobileView ? ACHIEVEMENTS.slice(0, 3) : ACHIEVEMENTS).map(m => m.id));
 
   function renderCategoryCards() {
     return Object.entries(ACHIEVEMENT_CATEGORIES)
@@ -148,6 +149,8 @@ export function openAchievementsModal() {
   `;
 
   root.appendChild(wrap);
+  document.documentElement.classList.add('modal-open-lock');
+  document.body.classList.add('modal-open-lock');
 
   const updateView = () => {
     wrap.querySelector('[data-cats-container]').innerHTML = renderCategoryCards();
@@ -158,6 +161,10 @@ export function openAchievementsModal() {
   const closeModal = () => {
     wrap.remove();
     document.removeEventListener('keydown', onKeyDown);
+    if (!document.querySelector('.modal-backdrop, .dr-sheet-backdrop')) {
+      document.documentElement.classList.remove('modal-open-lock');
+      document.body.classList.remove('modal-open-lock');
+    }
   };
 
   // 事件綁定
@@ -228,8 +235,7 @@ export function openAchievementsModal() {
   // ESC 鍵關閉
   const onKeyDown = ev => {
     if (ev.key === 'Escape') {
-      wrap.remove();
-      document.removeEventListener('keydown', onKeyDown);
+      closeModal();
     }
   };
   document.addEventListener('keydown', onKeyDown);

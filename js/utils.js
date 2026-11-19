@@ -135,6 +135,24 @@ export function toast(msg, type = 'info') {
 
 // ---------- Modal ----------
 let lastModalInstance = null;
+let openModalCount = 0;
+
+function lockBodyScroll() {
+  openModalCount++;
+  if (openModalCount === 1) {
+    document.documentElement.classList.add('modal-open-lock');
+    document.body.classList.add('modal-open-lock');
+  }
+}
+
+function unlockBodyScroll() {
+  openModalCount = Math.max(0, openModalCount - 1);
+  if (openModalCount === 0) {
+    document.documentElement.classList.remove('modal-open-lock');
+    document.body.classList.remove('modal-open-lock');
+  }
+}
+
 export function closeModal() {
   lastModalInstance?.close?.();
 }
@@ -142,16 +160,24 @@ export function closeModal() {
 export function openModal(optsOrHtml, stringOpts = {}) {
   if (typeof optsOrHtml === 'string') {
     const root = document.getElementById('modal-root');
-    root.innerHTML = '';
+    if (lastModalInstance) {
+      try { lastModalInstance.close?.(); } catch {}
+    }
     const wrap = document.createElement('div');
     wrap.className = 'modal-backdrop';
     const cls = ['modal', stringOpts.wide ? 'wide' : '', stringOpts.xl ? 'xl' : ''].filter(Boolean).join(' ');
     wrap.innerHTML = `<div class="${cls}" role="dialog" aria-modal="true"><div class="modal-body">${optsOrHtml}</div></div>`;
     root.appendChild(wrap);
+    lockBodyScroll();
     const modalEl = wrap.querySelector('.modal');
+    let closed = false;
     const close = () => {
+      if (closed) return;
+      closed = true;
       wrap.remove();
       document.removeEventListener('keydown', onKey);
+      unlockBodyScroll();
+      if (lastModalInstance?.el === modalEl) lastModalInstance = null;
     };
     const onKey = e => {
       if (e.key === 'Escape') close();
@@ -169,7 +195,7 @@ export function openModal(optsOrHtml, stringOpts = {}) {
   wrap.innerHTML = `
     <div class="modal ${wide ? 'wide' : ''}" role="dialog" aria-modal="true">
       <div class="modal-head">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0;">
           <h3>${esc(title)}</h3>
           ${extraHead ? `<div class="modal-head-extra">${extraHead}</div>` : ''}
         </div>
@@ -179,6 +205,7 @@ export function openModal(optsOrHtml, stringOpts = {}) {
       ${footer ? `<div class="modal-foot">${footer}</div>` : ''}
     </div>`;
   root.appendChild(wrap);
+  lockBodyScroll();
   const modalEl = wrap.querySelector('.modal');
   let closed = false;
 
@@ -225,6 +252,7 @@ export function openModal(optsOrHtml, stringOpts = {}) {
     closed = true;
     wrap.remove();
     document.removeEventListener('keydown', onKey);
+    unlockBodyScroll();
     onClose?.();
   }
 

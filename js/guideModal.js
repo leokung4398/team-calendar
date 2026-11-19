@@ -1,6 +1,6 @@
 // 功能操作導覽指引（含遊戲式全螢幕聚焦高亮導覽 Tour）
 import { openModal } from './utils.js';
-import { state, hasModulePermission, isFieldStaff, isSupervisor, isAdmin } from './data.js';
+import { state, hasModulePermission, isFieldStaff, isSupervisor, isFieldDeputy, isAdmin } from './data.js';
 
 export function openGuideModal() {
   const steps = [
@@ -109,12 +109,23 @@ export function openGuideModal() {
       <div class="guide-modal-wrap">
         <!-- 頂部進度指引標籤 -->
         <div class="guide-steps-bar">
-          ${steps.map((st, i) => `
+          ${steps.map((st, i) => {
+            const shortTitle = st.title.includes('月會') ? '月會紀錄'
+              : st.title.includes('今日') ? '今日動態'
+              : st.title.includes('行事曆') ? '行事曆'
+              : st.title.includes('例案') ? '例案追蹤'
+              : st.title.includes('模擬') ? '模擬體驗'
+              : st.title.includes('每日回報') ? '每日回報'
+              : st.title.includes('佈告欄') ? '採購佈告'
+              : st.title.includes('小工具') ? '百寶箱'
+              : st.title.split(/\s|[&(]/)[0];
+            return `
             <button type="button" class="guide-step-btn ${i === currentStep ? 'active' : (i < currentStep ? 'done' : '')}" data-step-nav="${i}">
               <span class="gs-num">${i + 1}</span>
-              <span class="gs-title">${st.title.split(/\s|[&(]/)[0]}</span>
+              <span class="gs-title">${shortTitle}</span>
             </button>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
 
         <!-- 導覽主卡片 -->
@@ -170,17 +181,38 @@ export function openGuideModal() {
     `;
   };
 
+  // 鍵盤左右方向鍵控制上下步
+  const onKey = e => {
+    if (e.key === 'ArrowRight') {
+      if (currentStep < steps.length - 1) {
+        currentStep++;
+        updateModal();
+      }
+    } else if (e.key === 'ArrowLeft') {
+      if (currentStep > 0) {
+        currentStep--;
+        updateModal();
+      }
+    }
+  };
+  document.addEventListener('keydown', onKey);
+
   const modal = openModal({
     title: '經營 Team 營運協同平台操作指引',
     body: renderContent(),
     footer: renderFooter(),
     wide: true,
+    onClose: () => document.removeEventListener('keydown', onKey),
   });
 
   const updateModal = () => {
     modal.el.querySelector('.modal-body').innerHTML = renderContent();
     modal.el.querySelector('.modal-foot').innerHTML = renderFooter();
     attachEvents();
+    const activeBtn = modal.el.querySelector('.guide-step-btn.active');
+    if (activeBtn) {
+      try { activeBtn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); } catch {}
+    }
   };
 
   const attachEvents = () => {
@@ -229,29 +261,6 @@ export function openGuideModal() {
         }
       };
     }
-  };
-
-  // 鍵盤左右方向鍵控制上下步
-  const onKey = e => {
-    if (e.key === 'ArrowRight') {
-      if (currentStep < steps.length - 1) {
-        currentStep++;
-        updateModal();
-      }
-    } else if (e.key === 'ArrowLeft') {
-      if (currentStep > 0) {
-        currentStep--;
-        updateModal();
-      }
-    }
-  };
-  document.addEventListener('keydown', onKey);
-
-  // 彈窗關閉時解綁鍵盤監聽
-  const origClose = modal.close;
-  modal.close = () => {
-    document.removeEventListener('keydown', onKey);
-    origClose();
   };
 
   attachEvents();
@@ -373,7 +382,7 @@ export function startInteractiveSpotlightTour() {
       position: 'bottom',
     },
     {
-      target: '.fb-scene-stage, .fb-hero-bar',
+      target: '.wf-hero-stage, .wf-hero-topbar',
       route: '#/wishes',
       badge: '許願與樹洞',
       title: '歐式羅馬許願池 ＆ 秘境森林解憂古樹洞',
@@ -381,11 +390,11 @@ export function startInteractiveSpotlightTour() {
       position: 'bottom',
     },
     {
-      target: '.kz-hero, .view-kaizen',
+      target: '.kz-island-widget, .kaizen-cards-grid, .view-kaizen',
       route: '#/kaizen',
-      badge: '管理員專屬',
-      title: '改善提案專區（文青微縮圖卡 ＆ 2026 修訂對照）',
-      body: '管理員專屬模組：收錄 Kinfolk 文青雜誌 × 3D 微縮工藝風格之<b>《改善提案作業管理辦法》6 張質感懶人包</b>、<b>2023 現行 vs 2026 通膨優化對照圖卡</b>及線上標準登錄表！',
+      badge: '改善提案',
+      title: '改善提案專區（3D 建造島 · 文青微縮圖卡 ＆ 2026 修訂對照）',
+      body: '收錄 3D 未來城市／楓之谷建造島、Kinfolk 文青雜誌風格之<b>《改善提案作業管理辦法》6 張質感懶人包</b>、<b>2023 現行 vs 2026 通膨優化對照圖卡</b>及線上標準登錄表！',
       position: 'bottom',
     }
   ].filter(s => {
@@ -393,7 +402,7 @@ export function startInteractiveSpotlightTour() {
     if (s.route === '#/simulation' && !hasModulePermission(state.me, 'simulation')) return false;
     if (s.route === '#/dailyReport' && !hasModulePermission(state.me, 'dailyReport')) return false;
     if (s.route === '#/bulletin' && !hasModulePermission(state.me, 'bulletin')) return false;
-    if (s.route === '#/kaizen' && !isAdmin()) return false;
+    if (s.route === '#/kaizen' && !isAdmin() && !isFieldDeputy(state.me)) return false;
     return true;
   });
 
@@ -529,16 +538,31 @@ export function startInteractiveSpotlightTour() {
       }
     }
 
-    // 捲動至可見區域（避免捲動到擋住頂部導覽列）
-    if (rect.top < 70 || rect.bottom > window.innerHeight - 60) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 計算提示卡片位置（動態讀取真實高度，手機自動貼齊底部/頂部安全區防裁切）
+    const cardRect = card.getBoundingClientRect();
+    const cardWidth = cardRect.width || Math.min(380, window.innerWidth - 24);
+    const cardHeight = cardRect.height || 230;
+    const gap = 14;
+
+    if (window.innerWidth <= 640) {
+      const targetInBottomHalf = (bTop + bHeight / 2) > (window.innerHeight * 0.52);
+      card.style.transform = 'none';
+      card.style.left = '12px';
+      card.style.right = '12px';
+      card.style.width = 'auto';
+      if (targetInBottomHalf) {
+        card.style.top = 'calc(12px + env(safe-area-inset-top, 0px))';
+        card.style.bottom = 'auto';
+      } else {
+        card.style.top = 'auto';
+        card.style.bottom = 'calc(12px + env(safe-area-inset-bottom, 0px))';
+      }
+      return;
     }
 
-    // 計算提示卡片位置（動態讀取提示卡真實高度，避免壓在目標框上）
-    const cardRect = card.getBoundingClientRect();
-    const cardWidth = cardRect.width || Math.min(380, window.innerWidth - 32);
-    const cardHeight = cardRect.height || 230;
-    const gap = 16;
+    card.style.right = '';
+    card.style.bottom = '';
+    card.style.width = '';
 
     let top = 0;
     let left = Math.max(16, Math.min(bLeft + (bWidth / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
@@ -571,12 +595,13 @@ export function startInteractiveSpotlightTour() {
       }
     }
 
+    top = Math.max(12, Math.min(top, window.innerHeight - cardHeight - 12));
     card.style.transform = 'none';
     card.style.top = `${top}px`;
     card.style.left = `${left}px`;
   }
 
-  function renderStep() {
+  function renderStep(waitAttempt = 0) {
     const s = tourSteps[stepIdx];
     const isTopbarGlobalElement = TOPBAR_GLOBAL_TARGETS.has(s.target);
 
@@ -592,11 +617,22 @@ export function startInteractiveSpotlightTour() {
       moreTrig.classList.toggle('tour-active-tab', !isTopbarGlobalElement && isMoreRoute);
     }
 
-    // 若需要切換頁面
+    // 若需要切換頁面，等待懶載入模組掛載目標元素（最多等待 2.4 秒）
     if (s.route && location.hash !== s.route) {
       location.hash = s.route;
-      setTimeout(renderStep, 250);
+      setTimeout(() => renderStep(1), 220);
       return;
+    }
+    const targetEl = document.querySelector(s.target);
+    if (!targetEl && waitAttempt > 0 && waitAttempt < 12) {
+      setTimeout(() => renderStep(waitAttempt + 1), 200);
+      return;
+    }
+    if (targetEl && !isTopbarGlobalElement) {
+      const r = targetEl.getBoundingClientRect();
+      if (r.top < 70 || r.bottom > window.innerHeight - 60) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     card.innerHTML = `
@@ -820,19 +856,42 @@ export function startInteractiveMinutesSpotlightTour() {
       maskTarget.setAttribute('height', bHeight);
     }
 
-    const cardWidth = Math.min(380, window.innerWidth - 32);
+    const cardRect = card.getBoundingClientRect();
+    const cardWidth = cardRect.width || Math.min(380, window.innerWidth - 24);
+    const cardHeight = cardRect.height || 240;
+
+    if (window.innerWidth <= 640) {
+      const targetInBottomHalf = (bTop + bHeight / 2) > (window.innerHeight * 0.52);
+      card.style.transform = 'none';
+      card.style.left = '12px';
+      card.style.right = '12px';
+      card.style.width = 'auto';
+      if (targetInBottomHalf) {
+        card.style.top = 'calc(12px + env(safe-area-inset-top, 0px))';
+        card.style.bottom = 'auto';
+      } else {
+        card.style.top = 'auto';
+        card.style.bottom = 'calc(12px + env(safe-area-inset-bottom, 0px))';
+      }
+      return;
+    }
+
+    card.style.right = '';
+    card.style.bottom = '';
+    card.style.width = '';
     let top = 0;
     let left = Math.max(16, Math.min(rect.left + (rect.width / 2) - (cardWidth / 2), window.innerWidth - cardWidth - 16));
 
-    if (s.position === 'top' && rect.top > 230) {
-      top = rect.top - 210;
+    if (s.position === 'top' && rect.top > cardHeight + 24) {
+      top = rect.top - cardHeight - 16;
     } else {
       top = rect.bottom + 16;
-      if (top + 230 > window.innerHeight) {
-        top = Math.max(16, rect.top - 220);
+      if (top + cardHeight + 16 > window.innerHeight) {
+        top = Math.max(12, rect.top - cardHeight - 16);
       }
     }
 
+    top = Math.max(12, Math.min(top, window.innerHeight - cardHeight - 12));
     card.style.transform = 'none';
     card.style.top = `${top}px`;
     card.style.left = `${left}px`;

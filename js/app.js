@@ -254,14 +254,146 @@ async function boot() {
       <footer class="yb-foot">
         <div class="lane"><span class="rider">${yb.bike(40, { spin: true })}</span><span class="maple-foot-companions" aria-hidden="true">${yb.mapleMushroomSvg(24)}${yb.mapleSlimeSvg(22)}${yb.mapleMesoSvg(18)}</span></div>
         <p>Have a nice ride・${esc(APP.groupName)}</p>
-      </footer>`;
+      </footer>
+      <nav class="mobile-bottom-nav" data-mobile-nav aria-label="行動端主導覽"></nav>
+      <div class="mobile-more-backdrop" data-mobile-more-bd hidden></div>
+      <aside class="mobile-more-sheet" data-mobile-more-sheet hidden aria-label="更多功能選單"></aside>`;
 
     const main = $('[data-main]');
+    const mobileNav = $('[data-mobile-nav]');
+    const mobileMoreBd = $('[data-mobile-more-bd]');
+    const mobileMoreSheet = $('[data-mobile-more-sheet]');
     let current = null;
     let currentRoute = '';
     let hasPendingDailyReport = false;
+    let lastTabsSig = '';
 
-    function renderTabs() {
+    const closeMobileMore = () => {
+      if (mobileMoreBd) mobileMoreBd.hidden = true;
+      if (mobileMoreSheet) mobileMoreSheet.hidden = true;
+    };
+
+    const openMobileMore = () => {
+      const canDaily = d.hasModulePermission(d.state.me, 'dailyReport');
+      const canSim = d.hasModulePermission(d.state.me, 'simulation');
+      const canBul = d.hasModulePermission(d.state.me, 'bulletin');
+      const canKaizen = d.isAdmin() || d.isFieldDeputy?.(d.state.me);
+      const curTheme = getCurrentTheme();
+      const items = [
+        { key: 'meeting', icon: '📋', label: '月會紀錄', sub: '議程與會議紀錄' },
+        { key: 'cases', icon: '📌', label: '例案追蹤', sub: '長期專案時間軸' },
+        ...(canSim ? [{ key: 'simulation', icon: '🛵', label: '模擬體驗', sub: '排班配額與巡檢' }] : []),
+        ...(canBul ? [{ key: 'bulletin', icon: '📰', label: '採購佈告欄', sub: '採購週報與交期' }] : []),
+        { key: 'tools', icon: '🧰', label: '實用小工具', sub: 'YouBike/天氣/雙鐵' },
+        { key: 'wishes', icon: '⛲', label: '許願池＆樹洞', sub: '投幣許願 / 匿名樹洞' },
+        ...(canKaizen ? [{ key: 'kaizen', icon: '🏝️', label: '改善提案', sub: '3D 建造島與辦法' }] : []),
+        ...(d.isAdmin() ? [{ key: 'admin', icon: '⚙️', label: '管理後台', sub: '組員與模組權限' }] : []),
+        ...(!canDaily ? [] : []),
+      ];
+      mobileMoreSheet.innerHTML = `
+        <div class="mms-handle"></div>
+        <div class="mms-head">
+          <strong>更多功能模組</strong>
+          <button type="button" class="icon-btn" data-mms-close aria-label="關閉">✕</button>
+        </div>
+        <div class="mms-grid">
+          ${items.map(it => `
+            <a href="#/${it.key}" class="mms-card ${currentRoute === it.key || (it.key === 'wishes' && currentRoute === 'vents') ? 'active' : ''}" data-mms-link>
+              <span class="mms-icon">${it.icon}</span>
+              <div class="mms-text">
+                <strong>${esc(it.label)}</strong>
+                <small>${esc(it.sub)}</small>
+              </div>
+            </a>
+          `).join('')}
+        </div>
+        <div class="mms-theme-bar">
+          <span class="mms-theme-title">介面風格</span>
+          <div class="um-theme-pills">
+            <button type="button" class="um-theme-pill ${curTheme === 'classic' ? 'active' : ''}" data-mms-theme="classic">經典黃</button>
+            <button type="button" class="um-theme-pill ${curTheme === 'editorial' ? 'active' : ''}" data-mms-theme="editorial">文青誌</button>
+            <button type="button" class="um-theme-pill ${curTheme === 'maple' ? 'active' : ''}" data-mms-theme="maple">楓之谷</button>
+          </div>
+        </div>
+      `;
+      mobileMoreBd.hidden = false;
+      mobileMoreSheet.hidden = false;
+      mobileMoreSheet.querySelector('[data-mms-close]').onclick = closeMobileMore;
+      mobileMoreSheet.querySelectorAll('[data-mms-link]').forEach(a => { a.onclick = closeMobileMore; });
+      mobileMoreSheet.querySelectorAll('[data-mms-theme]').forEach(b => {
+        b.onclick = () => {
+          applyTheme(b.dataset.mmsTheme, true);
+          if (b.dataset.mmsTheme === 'maple') yb.triggerMapleLevelUpEffect('歡迎來到弓箭手村！已啟動《楓之谷 MapleStory》經典混血主題！');
+          closeMobileMore();
+        };
+      });
+    };
+
+    if (mobileMoreBd) mobileMoreBd.onclick = closeMobileMore;
+
+    function renderMobileBottomNav() {
+      if (!mobileNav) return;
+      const canDaily = d.hasModulePermission(d.state.me, 'dailyReport');
+      const thirdKey = canDaily ? 'dailyReport' : 'meeting';
+      const thirdLabel = canDaily ? '每日回報' : '月會';
+      const primaryKeys = new Set(['today', 'schedule', thirdKey]);
+      const isMoreActive = !primaryKeys.has(currentRoute);
+
+      mobileNav.innerHTML = `
+        <a href="#/today" class="mbn-item ${currentRoute === 'today' ? 'active' : ''}">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span>今日</span>
+        </a>
+        <a href="#/schedule" class="mbn-item ${currentRoute === 'schedule' ? 'active' : ''}">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>行事曆</span>
+        </a>
+        <a href="#/${thirdKey}" class="mbn-item ${currentRoute === thirdKey ? 'active' : ''}" style="position:relative">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          <span>${thirdLabel}</span>
+          ${canDaily && hasPendingDailyReport ? '<span class="mbn-dot" aria-label="今日尚未回報"></span>' : ''}
+        </a>
+        <button type="button" class="mbn-item" data-mbn-chat style="position:relative">
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>聊天室</span>
+          <span class="badge mbn-badge" data-mobile-chat-badge hidden></span>
+        </button>
+        <button type="button" class="mbn-item ${isMoreActive ? 'active' : ''}" data-mbn-more>
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>更多</span>
+        </button>
+      `;
+
+      mobileNav.querySelector('[data-mbn-chat]').onclick = () => {
+        closeMobileMore();
+        toggleChatDrawer();
+      };
+      mobileNav.querySelector('[data-mbn-more]').onclick = () => {
+        if (mobileMoreSheet.hidden) openMobileMore();
+        else closeMobileMore();
+      };
+      // 同步現有聊天室未讀數
+      const topBadge = $('[data-topbar-chat-badge]');
+      const mobBadge = mobileNav.querySelector('[data-mobile-chat-badge]');
+      if (topBadge && mobBadge) {
+        mobBadge.textContent = topBadge.textContent;
+        mobBadge.hidden = topBadge.hidden;
+      }
+    }
+
+    function renderTabs(force = false) {
+      const permSig = [
+        currentRoute,
+        hasPendingDailyReport ? '1' : '0',
+        d.isAdmin() ? '1' : '0',
+        d.isFieldDeputy?.(d.state.me) ? '1' : '0',
+        d.hasModulePermission(d.state.me, 'simulation') ? '1' : '0',
+        d.hasModulePermission(d.state.me, 'dailyReport') ? '1' : '0',
+        d.hasModulePermission(d.state.me, 'bulletin') ? '1' : '0',
+      ].join('|');
+      if (!force && permSig === lastTabsSig) return;
+      lastTabsSig = permSig;
+
       const moreKeys = ['tools', 'wishes', 'vents', 'kaizen'];
       const isMoreActive = moreKeys.includes(currentRoute);
       const activeMoreLabel = isMoreActive ? routes[currentRoute]?.label : '百寶箱';
@@ -280,7 +412,7 @@ async function boot() {
 
       const moreDropdownHtml = `
         <div class="nav-more-dropdown" tabindex="0">
-          <span class="nav-more-trigger ${isMoreActive ? 'active' : ''}">${esc(activeMoreLabel)} ▾</span>
+          <button type="button" class="nav-more-trigger ${isMoreActive ? 'active' : ''}" data-more-trigger aria-haspopup="true" aria-expanded="false">${esc(activeMoreLabel)} ▾</button>
           <div class="nav-more-menu">
             <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
             <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
@@ -289,13 +421,32 @@ async function boot() {
         </div>
       `;
 
-      // 將「 百寶箱」插在「管理」之前（若管理存在）或最後
+      // 將「百寶箱」插在「管理」之前（若管理存在）或最後
       if (d.isAdmin()) {
         const adminLink = mainLinksHtml.pop();
         $('[data-tabs]').innerHTML = [...mainLinksHtml, moreDropdownHtml, adminLink].join('');
       } else {
         $('[data-tabs]').innerHTML = [...mainLinksHtml, moreDropdownHtml].join('');
       }
+
+      const moreWrap = $('[data-tabs] .nav-more-dropdown');
+      const moreBtn = $('[data-more-trigger]');
+      if (moreWrap && moreBtn) {
+        moreBtn.onclick = e => {
+          e.stopPropagation();
+          const nextOpen = !moreWrap.classList.contains('open');
+          moreWrap.classList.toggle('open', nextOpen);
+          moreBtn.setAttribute('aria-expanded', String(nextOpen));
+        };
+        moreWrap.querySelectorAll('.nav-more-menu a').forEach(a => {
+          a.onclick = () => {
+            moreWrap.classList.remove('open');
+            moreBtn.setAttribute('aria-expanded', 'false');
+          };
+        });
+      }
+
+      renderMobileBottomNav();
     }
 
     let routeSeq = 0;
@@ -443,6 +594,11 @@ async function boot() {
     const onDocClick = e => {
       if (!panel.hidden && !e.target.closest('.bell-wrap') && !e.target.closest('.modal-backdrop')) panel.hidden = true;
       if (!umenu.hidden && !e.target.closest('.user-wrap')) umenu.hidden = true;
+      const openMore = document.querySelector('.nav-more-dropdown.open');
+      if (openMore && !e.target.closest('.nav-more-dropdown')) {
+        openMore.classList.remove('open');
+        openMore.querySelector('[data-more-trigger]')?.setAttribute('aria-expanded', 'false');
+      }
     };
     document.addEventListener('click', onDocClick);
     panel.addEventListener('click', e => {

@@ -111,11 +111,12 @@ export function initChatDrawer() {
 }
 
 export function updateTopbarChatBadge() {
-  const badge = document.querySelector('[data-topbar-chat-badge]');
-  if (!badge) return;
   const unread = getUnreadChatCount();
-  badge.textContent = unread > 99 ? '99+' : String(unread);
-  badge.hidden = unread === 0;
+  const txt = unread > 99 ? '99+' : String(unread);
+  document.querySelectorAll('[data-topbar-chat-badge], [data-mobile-chat-badge]').forEach(badge => {
+    badge.textContent = txt;
+    badge.hidden = unread === 0;
+  });
 }
 
 function renderChatSystem() {
