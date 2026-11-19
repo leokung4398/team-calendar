@@ -210,7 +210,7 @@ const FREEWAY_CORRIDORS = [
     distKm: 31,
     baseMin: 26,
     hotspots: '湖口服務區、竹北交流道、新竹系統',
-    mapQuery: '國道一號湖口到新竹科学園區路況',
+    mapQuery: '國道一號湖口到新竹科學園區路況',
   },
   {
     id: 'n3_north',
@@ -313,7 +313,80 @@ export function mountTools(el) {
   let thsrTo = '台中';
   let traFrom = '台北';
   let traTo = '新竹';
-  let travelDate = ymd();
+  let ybDebounceTimer = null;
+  let ybComposing = false;
+
+  function buildYbResultsHtml() {
+    const allYb = ybStationsCache || [];
+    const areaStations = allYb.filter(s => {
+      if (ybArea !== 'ALL' && s.area_code !== ybArea) return false;
+      if (ybOnlyEbike && !(Number(s.available_spaces_detail?.eyb) > 0)) return false;
+      if (ybQuery.trim()) {
+        const q = ybQuery.trim().toLowerCase();
+        const hay = `${s.name_tw || ''} ${s.district_tw || ''} ${s.address_tw || ''} ${s.station_no || ''}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+    const totalYb2InArea = areaStations.reduce((sum, s) => sum + (Number(s.available_spaces_detail?.yb2) || 0), 0);
+    const totalEybInArea = areaStations.reduce((sum, s) => sum + (Number(s.available_spaces_detail?.eyb) || 0), 0);
+    const displayYbStations = areaStations.slice(0, 24);
+
+    return `
+      <div class="yb-summary-strip">
+        <span>符合條件共 <b>${areaStations.length.toLocaleString()}</b> 站（顯示前 ${displayYbStations.length} 站）</span>
+        <span class="yb-sum-pill yb2">2.0 可借合計：<b>${totalYb2InArea.toLocaleString()}</b> 輛</span>
+        <span class="yb-sum-pill eyb">2.0E 電輔車合計：<b>${totalEybInArea.toLocaleString()}</b> 輛</span>
+      </div>
+
+      ${ybLoading && !ybStationsCache ? `
+        <div class="bw-empty" style="padding:24px">正在從 YouBike 官方伺服器同步全台 9,700+ 場站即時車位資料…</div>
+      ` : ybError ? `
+        <div class="bw-empty" style="color:#DC2626">${esc(ybError)}</div>
+      ` : displayYbStations.length === 0 ? `
+        <div class="bw-empty">找不到符合「${esc(ybQuery)}」的場站，請嘗試切換縣市或放寬關鍵字。</div>
+      ` : `
+        <div class="yb-stations-grid">
+          ${displayYbStations.map(s => {
+            const yb2 = Number(s.available_spaces_detail?.yb2 ?? s.available_spaces ?? 0);
+            const eyb = Number(s.available_spaces_detail?.eyb ?? 0);
+            const empty = Number(s.empty_spaces ?? 0);
+            const total = Number(s.parking_spaces ?? (yb2 + eyb + empty));
+            const active = Number(s.status) === 1;
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((s.lat && s.lng) ? `${s.lat},${s.lng}` : `YouBike ${s.name_tw}`)}`;
+            return `
+              <div class="yb-st-card ${!active ? 'suspended' : ''}">
+                <div class="yb-st-head">
+                  <span class="yb-st-dist">${esc(s.district_tw || '場站')}</span>
+                  <strong class="yb-st-name" title="${esc(s.name_tw)}">${esc(s.name_tw)}</strong>
+                  <a href="${mapUrl}" target="_blank" rel="noopener" class="yb-st-map-btn" title="在 Google Maps 開啟導航 (${esc(s.address_tw || '')})">導航</a>
+                </div>
+                <div class="yb-st-addr" title="${esc(s.address_tw || '')}">${esc(s.address_tw || '無地址資訊')} · #${esc(s.station_no || '')}</div>
+                <div class="yb-st-metrics">
+                  <div class="yb-m-box yb2 ${yb2 === 0 ? 'zero' : ''}">
+                    <span class="yb-m-lbl">2.0 一般</span>
+                    <strong class="yb-m-val">${yb2}</strong>
+                  </div>
+                  <div class="yb-m-box eyb ${eyb === 0 ? 'zero' : ''}">
+                    <span class="yb-m-lbl">2.0E 電輔</span>
+                    <strong class="yb-m-val">${eyb}</strong>
+                  </div>
+                  <div class="yb-m-box empty ${empty === 0 ? 'zero' : ''}">
+                    <span class="yb-m-lbl">可還空位</span>
+                    <strong class="yb-m-val">${empty}</strong>
+                  </div>
+                </div>
+                <div class="yb-st-foot">
+                  <span>總柱數 ${total}</span>
+                  <span>${active ? ` ${(s.updated_at || '').slice(11, 16) || '即時'}` : '暫停營運'}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `}
+    `;
+  }
 
   // 4. 1968 路況地圖狀態
   let activeCorridorId = 'n1_north';
@@ -335,21 +408,8 @@ export function mountTools(el) {
     const customBms = Array.isArray(bmDoc?.list) ? bmDoc.list : [];
     const allBookmarks = [...customBms, ...DEFAULT_BOOKMARKS];
 
-    // 篩選 YouBike 場站
+    // 篩選 YouBike 場站總數（詳細結果由 buildYbResultsHtml 局部更新）
     const allYb = ybStationsCache || [];
-    const areaStations = allYb.filter(s => {
-      if (ybArea !== 'ALL' && s.area_code !== ybArea) return false;
-      if (ybOnlyEbike && !(Number(s.available_spaces_detail?.eyb) > 0)) return false;
-      if (ybQuery.trim()) {
-        const q = ybQuery.trim().toLowerCase();
-        const hay = `${s.name_tw || ''} ${s.district_tw || ''} ${s.address_tw || ''} ${s.station_no || ''}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-    const totalYb2InArea = areaStations.reduce((sum, s) => sum + (Number(s.available_spaces_detail?.yb2) || 0), 0);
-    const totalEybInArea = areaStations.reduce((sum, s) => sum + (Number(s.available_spaces_detail?.eyb) || 0), 0);
-    const displayYbStations = areaStations.slice(0, 24);
 
     // 計算高鐵 / 台鐵試算結果
     const thsrEst = getThsrEstimate(thsrFrom, thsrTo);
@@ -414,58 +474,9 @@ export function mountTools(el) {
             </label>
           </div>
 
-          <div class="yb-summary-strip">
-            <span>符合條件共 <b>${areaStations.length.toLocaleString()}</b> 站（顯示前 ${displayYbStations.length} 站）</span>
-            <span class="yb-sum-pill yb2">2.0 可借合計：<b>${totalYb2InArea.toLocaleString()}</b> 輛</span>
-            <span class="yb-sum-pill eyb">2.0E 電輔車合計：<b>${totalEybInArea.toLocaleString()}</b> 輛</span>
+          <div data-yb-results>
+            ${buildYbResultsHtml()}
           </div>
-
-          ${ybLoading && !ybStationsCache ? `
-            <div class="bw-empty" style="padding:24px">正在從 YouBike 官方伺服器同步全台 9,700+ 場站即時車位資料…</div>
-          ` : ybError ? `
-            <div class="bw-empty" style="color:#DC2626">${esc(ybError)}</div>
-          ` : displayYbStations.length === 0 ? `
-            <div class="bw-empty">找不到符合「${esc(ybQuery)}」的場站，請嘗試切換縣市或放寬關鍵字。</div>
-          ` : `
-            <div class="yb-stations-grid">
-              ${displayYbStations.map(s => {
-                const yb2 = Number(s.available_spaces_detail?.yb2 ?? s.available_spaces ?? 0);
-                const eyb = Number(s.available_spaces_detail?.eyb ?? 0);
-                const empty = Number(s.empty_spaces ?? 0);
-                const total = Number(s.parking_spaces ?? (yb2 + eyb + empty));
-                const active = Number(s.status) === 1;
-                const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((s.lat && s.lng) ? `${s.lat},${s.lng}` : `YouBike ${s.name_tw}`)}`;
-                return `
-                  <div class="yb-st-card ${!active ? 'suspended' : ''}">
-                    <div class="yb-st-head">
-                      <span class="yb-st-dist">${esc(s.district_tw || '場站')}</span>
-                      <strong class="yb-st-name" title="${esc(s.name_tw)}">${esc(s.name_tw)}</strong>
-                      <a href="${mapUrl}" target="_blank" rel="noopener" class="yb-st-map-btn" title="在 Google Maps 開啟導航 (${esc(s.address_tw || '')})">導航</a>
-                    </div>
-                    <div class="yb-st-addr" title="${esc(s.address_tw || '')}">${esc(s.address_tw || '無地址資訊')} · #${esc(s.station_no || '')}</div>
-                    <div class="yb-st-metrics">
-                      <div class="yb-m-box yb2 ${yb2 === 0 ? 'zero' : ''}">
-                        <span class="yb-m-lbl">2.0 一般</span>
-                        <strong class="yb-m-val">${yb2}</strong>
-                      </div>
-                      <div class="yb-m-box eyb ${eyb === 0 ? 'zero' : ''}">
-                        <span class="yb-m-lbl">2.0E 電輔</span>
-                        <strong class="yb-m-val">${eyb}</strong>
-                      </div>
-                      <div class="yb-m-box empty ${empty === 0 ? 'zero' : ''}">
-                        <span class="yb-m-lbl">可還空位</span>
-                        <strong class="yb-m-val">${empty}</strong>
-                      </div>
-                    </div>
-                    <div class="yb-st-foot">
-                      <span>總柱數 ${total}</span>
-                      <span>${active ? ` ${(s.updated_at || '').slice(11, 16) || '即時'}` : '暫停營運'}</span>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          `}
         </div>
         ` : ''}
 
@@ -499,7 +510,7 @@ export function mountTools(el) {
                     title="Windy 颱風與風場即時預報"
                   ></iframe>
                 </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
                   <span class="muted tiny">${esc(curCwaMap.desc)}</span>
                   <div style="display:flex;gap:4px;flex-shrink:0">
                     <button type="button" class="btn sm ghost" data-open-cwa-zoom style="padding:3px 8px;font-size:11px">放大互動</button>
@@ -523,7 +534,7 @@ export function mountTools(el) {
                   ${WEATHER_REGIONS.map(r => `<button type="button" class="${r.id === activeRegionId ? 'active' : ''}" data-w-region="${r.id}">${esc(r.label)}</button>`).join('')}
                 </div>
               </div>
-              <div class="weather-cards-row" style="grid-template-columns:repeat(auto-fill, minmax(195px, 1fr));gap:10px">
+              <div class="weather-cards-row">
                 ${region.cities.map(c => {
                   const w = weatherCache.get(c.name);
                   if (!w) {
@@ -588,7 +599,6 @@ export function mountTools(el) {
               <select data-thsr-to class="rail-st-select">
                 ${THSR_STATIONS.map(s => `<option value="${s.name}" ${s.name === thsrTo ? 'selected' : ''}>終點：高鐵${s.name}站</option>`).join('')}
               </select>
-              <input type="date" data-rail-date value="${esc(travelDate)}" class="rail-date-input">
             </div>
 
             ${!thsrEst ? `
@@ -617,7 +627,7 @@ export function mountTools(el) {
                 </div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-                <a href="https://www.google.com/maps/dir/${encodeURIComponent('高鐵' + thsrFrom + '站')}/${encodeURIComponent('高鐵' + thsrTo + '站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none">查看 Google 即時下一班高鐵時刻 (${esc(thsrFrom)} → ${esc(thsrTo)}) ↗</a>
+                <a href="https://www.google.com/maps/dir/${encodeURIComponent('高鐵' + thsrFrom + '站')}/${encodeURIComponent('高鐵' + thsrTo + '站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none;white-space:normal;text-align:center">查看 Google 即時下一班高鐵時刻 (${esc(thsrFrom)} → ${esc(thsrTo)}) ↗</a>
                 <a href="https://www.thsrc.com.tw/ArticleContent/a3b630bb-1066-4352-a1ef-58c7b4e8ef7c" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">高鐵官網時刻表 ↗</a>
                 <a href="https://irs.thsrc.com.tw/IMINT/" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">高鐵網路訂票系統 ↗</a>
               </div>
@@ -631,7 +641,6 @@ export function mountTools(el) {
               <select data-tra-to class="rail-st-select">
                 ${TRA_STATIONS.map(s => `<option value="${s.name}" ${s.name === traTo ? 'selected' : ''}>終點：${s.name}車站</option>`).join('')}
               </select>
-              <input type="date" data-rail-date value="${esc(travelDate)}" class="rail-date-input">
             </div>
 
             ${!traEst ? `
@@ -660,7 +669,7 @@ export function mountTools(el) {
                 </div>
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-                <a href="https://www.google.com/maps/dir/${encodeURIComponent(traFrom + '車站')}/${encodeURIComponent(traTo + '車站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none">查看即時下一班台鐵＆誤點動態 (${esc(traFrom)} → ${esc(traTo)}) ↗</a>
+                <a href="https://www.google.com/maps/dir/${encodeURIComponent(traFrom + '車站')}/${encodeURIComponent(traTo + '車站')}/data=!4m2!4m1!3e3" target="_blank" rel="noopener" class="btn sm primary" style="text-decoration:none;white-space:normal;text-align:center">查看即時下一班台鐵＆誤點動態 (${esc(traFrom)} → ${esc(traTo)}) ↗</a>
                 <a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">台鐵官網時刻查詢 ↗</a>
                 <a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobystation" target="_blank" rel="noopener" class="btn sm ghost" style="text-decoration:none">各站列車即時誤點看板 ↗</a>
               </div>
@@ -738,7 +747,7 @@ export function mountTools(el) {
                     </button>
                   </div>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+                <div class="tools-calc-g3">
                   <label style="font-size:11px;color:var(--muted)">公里數(km)
                     <input type="number" data-calc-km value="${calcKm}" min="0" step="0.1" style="width:100%;padding:5px;border-radius:6px;border:1px solid var(--border)">
                   </label>
@@ -761,7 +770,7 @@ export function mountTools(el) {
 
               <div style="background:#F8FAFC;padding:10px 12px;border-radius:10px;border:1px solid var(--border)">
                 <div style="font-size:12.5px;font-weight:700;margin-bottom:6px">區間天數／工作日計算</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div class="tools-calc-g2">
                   <label style="font-size:11px;color:var(--muted)">起始日
                     <input type="date" data-d-start value="${esc(dateStart)}" style="width:100%;padding:4px;border-radius:6px;border:1px solid var(--border)">
                   </label>
@@ -777,7 +786,7 @@ export function mountTools(el) {
           </div>
 
           <div class="card pad">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
               <div>
                 <h3 style="margin:0;font-size:15px">團隊常用系統與表單捷徑</h3>
                 <div class="muted tiny">點選「內建直開」可直接在上方互動面板操作；點選「↗」可另開官方網頁</div>
@@ -828,23 +837,29 @@ export function mountTools(el) {
       };
     });
 
-    // 1. YouBike 場站搜尋與縣市切換
+    // 1. YouBike 場站搜尋與縣市切換（僅局部更新 [data-yb-results]，支援中文組字防抖，不重載氣象/地圖 iframe）
     const ybAreaSel = el.querySelector('[data-yb-area]');
     const ybQueryIn = el.querySelector('[data-yb-query]');
     const ybEbikeChk = el.querySelector('[data-yb-ebike]');
     const ybRefreshBtn = el.querySelector('[data-yb-refresh]');
-    if (ybAreaSel) ybAreaSel.onchange = () => { ybArea = ybAreaSel.value; render(); };
-    if (ybEbikeChk) ybEbikeChk.onchange = () => { ybOnlyEbike = ybEbikeChk.checked; render(); };
+    const refreshYbResultsOnly = () => {
+      const box = el.querySelector('[data-yb-results]');
+      if (box) box.innerHTML = buildYbResultsHtml();
+    };
+    if (ybAreaSel) ybAreaSel.onchange = () => { ybArea = ybAreaSel.value; refreshYbResultsOnly(); };
+    if (ybEbikeChk) ybEbikeChk.onchange = () => { ybOnlyEbike = ybEbikeChk.checked; refreshYbResultsOnly(); };
     if (ybQueryIn) {
+      ybQueryIn.addEventListener('compositionstart', () => { ybComposing = true; });
+      ybQueryIn.addEventListener('compositionend', () => {
+        ybComposing = false;
+        ybQuery = ybQueryIn.value;
+        refreshYbResultsOnly();
+      });
       ybQueryIn.oninput = () => {
         ybQuery = ybQueryIn.value;
-        const pos = ybQueryIn.selectionStart || ybQuery.length;
-        render();
-        const nextIn = el.querySelector('[data-yb-query]');
-        if (nextIn) {
-          nextIn.focus();
-          try { nextIn.setSelectionRange(pos, pos); } catch {}
-        }
+        if (ybComposing) return;
+        clearTimeout(ybDebounceTimer);
+        ybDebounceTimer = setTimeout(refreshYbResultsOnly, 160);
       };
     }
     if (ybRefreshBtn) {
@@ -879,25 +894,24 @@ export function mountTools(el) {
     const cwaZoom = el.querySelector('[data-open-cwa-zoom]');
     if (cwaZoom) {
       cwaZoom.onclick = () => {
-        openModal(`
-          <div class="modal-head">
-            <h3>${esc(curCwaMap.label)}</h3>
-            <button class="icon-btn" data-close>✕</button>
-          </div>
-          <div style="text-align:center;background:#0F172A;padding:12px;border-radius:12px">
-            ${curCwaMap.type === 'iframe' ? `
-              <iframe src="${curCwaMap.url}" style="width:100%;height:72vh;border:none;border-radius:8px;display:block" title="${esc(curCwaMap.label)}"></iframe>
-            ` : `
-              <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" style="max-width:100%;max-height:74vh;border-radius:8px">
-            `}
-          </div>
-          <div class="modal-foot">
-            <span class="muted tiny">${esc(curCwaMap.desc)}</span>
-            <span class="spacer"></span>
+        openModal({
+          title: curCwaMap.label,
+          wide: true,
+          body: `
+            <div style="text-align:center;background:#0F172A;padding:10px;border-radius:12px">
+              ${curCwaMap.type === 'iframe' ? `
+                <iframe src="${curCwaMap.url}" style="width:100%;height:68vh;border:none;border-radius:8px;display:block" title="${esc(curCwaMap.label)}"></iframe>
+              ` : `
+                <img src="${curCwaMap.url}?t=${cwaTimestamp}" alt="${esc(curCwaMap.label)}" style="max-width:100%;max-height:70vh;border-radius:8px">
+              `}
+            </div>
+            <div class="muted tiny" style="margin-top:8px">${esc(curCwaMap.desc)}</div>
+          `,
+          footer: `
             ${curCwaMap.extUrl ? `<a href="${esc(curCwaMap.extUrl)}" target="_blank" rel="noopener" class="btn primary" style="text-decoration:none">前往 Windy 官網完整版 ↗</a>` : ''}
-            <button class="btn" data-close>關閉</button>
-          </div>
-        `, { wide: true });
+            <button type="button" class="btn" data-close>關閉</button>
+          `,
+        });
       };
     }
 
@@ -921,9 +935,6 @@ export function mountTools(el) {
     if (traFromSel) traFromSel.onchange = () => { traFrom = traFromSel.value; render(); };
     if (traToSel) traToSel.onchange = () => { traTo = traToSel.value; render(); };
     if (traSwapBtn) traSwapBtn.onclick = () => { const t = traFrom; traFrom = traTo; traTo = t; render(); };
-
-    const railDateIn = el.querySelector('[data-rail-date]');
-    if (railDateIn) railDateIn.onchange = () => { travelDate = railDateIn.value; };
 
     // 4. 1968 國道走廊切換
     el.querySelectorAll('[data-fw-corridor]').forEach(card => {

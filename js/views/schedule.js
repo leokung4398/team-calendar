@@ -8,8 +8,9 @@ import { openExportDialog } from '../export.js';
 import { getMemosOnDay, openDayMemoModal } from './stickyHub.js?v=20261114v70';
 
 export function mountSchedule(el, ctx) {
-  // 偏好視圖：'calendar' (月曆) 或 'grid' (總表)
+  // 偏好視圖：'calendar' (月曆)、'list' (清單)、'grid' (總表)
   let currentView = localStorage.getItem('preferred_sched_view') || 'calendar';
+  let selectedDay = ymd();
 
   let person = '';
   let typeFilter = '';
@@ -20,29 +21,33 @@ export function mountSchedule(el, ctx) {
   el.innerHTML = `
     <div class="toolbar">
       <div class="nav-group">
-        <button class="btn icon" data-act="prev" title="上個月">‹</button>
+        <button class="btn icon" data-act="prev" title="上個月" aria-label="上個月">‹</button>
         <button class="btn" data-act="today">本月</button>
-        <button class="btn icon" data-act="next" title="下個月">›</button>
+        <button class="btn icon" data-act="next" title="下個月" aria-label="下個月">›</button>
       </div>
       <h2 class="view-title" data-title></h2>
       <div class="filters">
         <div class="seg" data-switcher title="切換檢視視圖">
           <label><input type="radio" name="schedViewMode" value="calendar" ${currentView === 'calendar' ? 'checked' : ''}><span>月曆</span></label>
+          <label><input type="radio" name="schedViewMode" value="list" ${currentView === 'list' ? 'checked' : ''}><span>清單</span></label>
           <label><input type="radio" name="schedViewMode" value="grid" ${currentView === 'grid' ? 'checked' : ''}><span>總表</span></label>
         </div>
         <select data-f="person" title="組員篩選" ${currentView === 'grid' ? 'style="display:none;"' : ''}></select>
         <select data-f="type" title="行程類型篩選" ${currentView === 'grid' ? 'style="display:none;"' : ''}></select>
-        <button class="btn" data-act="export">⬇ <span class="hide-sm">匯出 Excel</span></button>
+        <button class="btn" data-act="export" aria-label="匯出 Excel">⬇ <span>匯出</span><span class="hide-sm"> Excel</span></button>
       </div>
     </div>
 
-    <!-- 月曆視圖面板 -->
-    <div class="sched-panel" data-panel="calendar" ${currentView === 'calendar' ? '' : 'hidden'}>
+    <!-- 月曆／清單視圖面板 -->
+    <div class="sched-panel" data-panel="calendar" ${currentView !== 'grid' ? '' : 'hidden'}>
       <div class="card cal-wrap"><div data-cal></div></div>
+      <!-- 手機端點選日期當日完整日程卡片（解決 360px 格子截斷字數與假日消失問題） -->
+      <div class="card pad cal-day-agenda" data-cal-day-agenda></div>
     </div>
 
     <!-- 總表面板 -->
     <div class="sched-panel" data-panel="grid" ${currentView === 'grid' ? '' : 'hidden'}>
+      <div class="mobile-scroll-hint">← 左右滑動查看整月排程 · 點日期可記備忘 →</div>
       <div class="card grid-wrap"><div class="grid-scroll" data-grid></div></div>
       <p class="hint" style="margin-top: 8px;">點選空白格可新增自己的行程（管理員可替任何組員新增）；點選色塊可查看細節。</p>
     </div>
@@ -73,7 +78,7 @@ export function mountSchedule(el, ctx) {
     }
     const [y, m] = (ctx.month || ymd().slice(0, 7)).split('-').map(Number);
     cal = new window.FullCalendar.Calendar(q('[data-cal]'), {
-      initialView: 'dayGridMonth',
+      initialView: currentView === 'list' ? 'listMonth' : 'dayGridMonth',
       initialDate: new Date(y, m - 1, 1),
       headerToolbar: false,
       height: 'auto',
@@ -81,6 +86,7 @@ export function mountSchedule(el, ctx) {
       firstDay: 0,
       dayMaxEventRows: 4,
       eventOrder: 'order,title',
+      noEventsContent: '本月尚無符合條件的行程紀錄',
       dayHeaderContent: a => WEEK[a.date.getDay()],
       dayCellContent: a => ({ html: dayCellHtml(a.date) }),
       moreLinkContent: a => `還有 ${a.num} 筆`,
@@ -98,11 +104,21 @@ export function mountSchedule(el, ctx) {
           ensureRange(from, to).then(() => {
             cal.setOption('dayCellClassNames', a => cellClass(a.date));
             cal.setOption('dayCellContent', a => ({ html: dayCellHtml(a.date) }));
+            renderDayAgendaPanel();
           });
         }
         refreshCalendar();
       },
-      dateClick: a => openEventEditor({ date: a.dateStr }),
+      dateClick: a => {
+        selectedDay = a.dateStr;
+        if (window.matchMedia('(max-width: 640px)').matches && currentView === 'calendar') {
+          renderDayAgendaPanel();
+          q('[data-cal-day-agenda]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          renderDayAgendaPanel();
+          openEventEditor({ date: a.dateStr });
+        }
+      },
       eventClick: a => {
         if (a.event.id.startsWith('m_')) {
           location.hash = '#/meeting';
@@ -119,6 +135,86 @@ export function mountSchedule(el, ctx) {
     });
 
     cal.render();
+    renderDayAgendaPanel();
+  }
+
+  function renderDayAgendaPanel() {
+    const host = q('[data-cal-day-agenda]');
+    if (!host) return;
+    if (currentView === 'list') {
+      host.hidden = true;
+      return;
+    }
+    host.hidden = false;
+    const d = selectedDay || ymd();
+    const info = dayInfo(d);
+    const mItem = meetingOn(d);
+    const dayMemos = getMemosOnDay(d);
+    const dayEvs = eventList()
+      .filter(ev => ev.startDate <= d && ev.endDate >= d && (!person || ev.participantUids.includes(person)) && (!typeFilter || ev.typeId === typeFilter));
+
+    const holTag = info.name
+      ? `<span class="badge-tag warn">${esc(info.name)}</span>`
+      : (info.makeup ? '<span class="badge-tag warn">補班日</span>' : (info.off ? '<span class="badge-tag muted">週末</span>' : ''));
+
+    host.innerHTML = `
+      <div class="cda-head">
+        <div class="cda-title-wrap">
+          <strong>${esc(d.slice(5).replace('-', '/'))}（週${weekdayZh(d)}）行程與備忘</strong>
+          ${holTag}
+        </div>
+        <div class="cda-actions">
+          <button type="button" class="btn sm ghost" data-cda-memo="${esc(d)}">📝 備忘 (${dayMemos.length})</button>
+          <button type="button" class="btn sm primary" data-cda-add="${esc(d)}">＋ 新增行程</button>
+        </div>
+      </div>
+      <div class="cda-list">
+        ${mItem ? `
+          <div class="cda-item cda-meeting" data-cda-meeting>
+            <span class="cda-pill" style="background:#1e293b;color:#fff">月會</span>
+            <div class="cda-body">
+              <strong>經營 Team 月會（${esc(mItem.startTime || '')}–${esc(mItem.endTime || '')}）</strong>
+              <small class="muted">${esc(mItem.location || '會議室')} · 點擊前往月會頁</small>
+            </div>
+          </div>
+        ` : ''}
+        ${dayEvs.map(ev => {
+          const t = typeOf(ev.typeId);
+          const names = ev.participantUids.map(userName).join('、');
+          return `
+            <div class="cda-item" data-cda-ev="${esc(ev.id)}">
+              <span class="cda-pill" style="background:${esc(t.color)};color:#fff">${esc(t.name)}</span>
+              <div class="cda-body">
+                <strong>${esc(names)}</strong>
+                <small class="muted">${esc(timeOnDayText(ev, d))}${ev.reason ? ' · ' + esc(ev.reason) : ''}</small>
+              </div>
+            </div>
+          `;
+        }).join('')}
+        ${dayMemos.map(mm => `
+          <div class="cda-item cda-memo" data-cda-memo="${esc(d)}">
+            <span class="cda-pill" style="background:#fef3c7;color:#92400e">${mm.done ? '✓備忘' : '備忘'}</span>
+            <div class="cda-body">
+              <strong style="${mm.done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(mm.text)}</strong>
+              <small class="muted">${mm.scope === 'team' ? '全組共享' : '個人備忘'}</small>
+            </div>
+          </div>
+        `).join('')}
+        ${(!mItem && !dayEvs.length && !dayMemos.length) ? `<div class="muted small-text" style="padding:6px 2px">當日尚無登記行程或備忘。</div>` : ''}
+      </div>
+    `;
+
+    host.querySelector('[data-cda-add]')?.addEventListener('click', () => openEventEditor({ date: d }));
+    host.querySelectorAll('[data-cda-memo]').forEach(btn => {
+      btn.addEventListener('click', () => openDayMemoModal(d, () => { refreshCalendar(); renderDayAgendaPanel(); }));
+    });
+    host.querySelector('[data-cda-meeting]')?.addEventListener('click', () => { location.hash = '#/meeting'; });
+    host.querySelectorAll('[data-cda-ev]').forEach(row => {
+      row.addEventListener('click', () => {
+        const ev = state.events.get(row.dataset.cdaEv);
+        if (ev) openEventViewer(ev);
+      });
+    });
   }
 
   function updateTitle() {
@@ -195,6 +291,7 @@ export function mountSchedule(el, ctx) {
       cal.getEventSources().forEach(s => s.remove());
       cal.addEventSource(items);
     });
+    renderDayAgendaPanel();
   }
 
   // ---- 2. 總表 (Grid) 渲染 ----
@@ -216,7 +313,7 @@ export function mountSchedule(el, ctx) {
       const cls = [i.off ? 'off' : '', i.makeup ? 'makeup' : '', d === today ? 'today' : '', mItem ? 'has-meeting' : ''].join(' ');
       const tipParts = [i.name, i.makeup ? '補班' : '', mItem ? `月會 ${mItem.startTime || ''}–${mItem.endTime || ''}` : '', dayMemos.length ? `備忘 ${dayMemos.length} 筆` : ''].filter(Boolean);
       const tip = tipParts.join(' / ');
-      const mIcon = mItem ? `<div class="meeting-dot" title="${esc(tip)}" style="font-size:10px;font-weight:800;color:#1e293b">月會</div>` : '';
+      const mIcon = mItem ? `<div class="meeting-dot" data-open-meeting="1" title="${esc(tip)}" style="font-size:10px;font-weight:800;color:#1e293b">月會</div>` : '';
       const memoPin = dayMemos.length
         ? `<div class="memo-dot" data-open-memo="${d}" title="${esc(dayMemos.map(x => `${x.done ? '[完成]' : '[待辦]'} ${x.text}`).join('\n'))}" style="cursor:pointer;font-size:10px;line-height:1.1;margin-top:2px;color:${pendingMemos.length ? '#d97706' : '#94a3b8'};font-weight:800">備忘${pendingMemos.length || ''}</div>`
         : '';
@@ -245,12 +342,14 @@ export function mountSchedule(el, ctx) {
     q('[data-grid]').innerHTML = `<table class="sched"><thead><tr><th class="who corner">組員</th>${head}</tr></thead><tbody>${body}</tbody></table>`;
     updateLegend();
 
-    // 首次進入時把今天捲到可見範圍
+    // 首次進入時把今天捲到可見範圍（依實際凍結姓名欄寬度動態計算）
     if (ctx.month === today.slice(0, 7) && !gridScrolled) {
       gridScrolled = true;
       const th = q('thead th.today');
       const sc = q('[data-grid]');
-      if (th && sc) sc.scrollLeft = Math.max(0, th.offsetLeft - 200);
+      const whoCol = q('thead th.corner');
+      const offset = (whoCol?.offsetWidth || 100) + 12;
+      if (th && sc) sc.scrollLeft = Math.max(0, th.offsetLeft - offset);
     }
   }
 
@@ -265,6 +364,10 @@ export function mountSchedule(el, ctx) {
 
   // 總表互動事件
   q('[data-grid]').addEventListener('click', e => {
+    if (e.target.closest('[data-open-meeting]')) {
+      location.hash = '#/meeting';
+      return;
+    }
     const memoBtn = e.target.closest('[data-open-memo], th[data-head-day]');
     if (memoBtn) {
       const d = memoBtn.dataset.openMemo || memoBtn.dataset.headDay;
@@ -288,18 +391,19 @@ export function mountSchedule(el, ctx) {
     currentView = mode;
     localStorage.setItem('preferred_sched_view', mode);
 
-    const isCal = mode === 'calendar';
+    const isCal = mode === 'calendar' || mode === 'list';
     q('[data-panel=calendar]').hidden = !isCal;
     q('[data-panel=grid]').hidden = isCal;
 
-    // 月曆專屬篩選器顯示/隱藏
+    // 月曆/清單專屬篩選器顯示/隱藏
     q('[data-f=person]').style.display = isCal ? '' : 'none';
     q('[data-f=type]').style.display = isCal ? '' : 'none';
 
     if (isCal) {
       if (cal) {
+        const targetFcView = mode === 'list' ? 'listMonth' : 'dayGridMonth';
+        if (cal.view.type !== targetFcView) cal.changeView(targetFcView);
         cal.updateSize();
-        // 同步月份至 Calendar
         const [y, m] = ctx.month.split('-').map(Number);
         const curCalDate = cal.getDate();
         if (curCalDate.getFullYear() !== y || curCalDate.getMonth() !== (m - 1)) {
@@ -308,6 +412,7 @@ export function mountSchedule(el, ctx) {
           refreshCalendar();
         }
       }
+      renderDayAgendaPanel();
     } else {
       const { from, to } = monthRange(ctx.month);
       ensureEventsFrom(from);
@@ -330,7 +435,7 @@ export function mountSchedule(el, ctx) {
       ctx.month = shiftMonth(ctx.month, delta);
     }
 
-    if (currentView === 'calendar' && cal) {
+    if ((currentView === 'calendar' || currentView === 'list') && cal) {
       if (delta === 0) cal.today();
       else if (delta === -1) cal.prev();
       else if (delta === 1) cal.next();

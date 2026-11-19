@@ -129,7 +129,7 @@ export function getKaizenIslandState(seasonKeyOverride = null) {
     let stageLabel = '規劃打樁中';
     let stageTone = 'seed';
     if (pct >= 100) { stageLabel = '地標已落成 ✨'; stageTone = 'max'; }
-    else if (pct >= 60) { stageLabel = '主體完工 80%'; stageTone = 'high'; }
+    else if (pct >= 60) { stageLabel = `主體完工 ${pct}%`; stageTone = 'high'; }
     else if (pct >= 25) { stageLabel = '熱烈興建中'; stageTone = 'mid'; }
 
     return {
@@ -249,6 +249,7 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
         <div class="kz-spot-beacon">
           <span class="kz-spot-pulse"></span>
           <span class="kz-spot-icon">${bIcon}</span>
+          <span class="kz-spot-mini-ratio">${lm.current}/${lm.target}</span>
         </div>
         <div class="kz-spot-card">
           <div class="kz-spot-top">
@@ -274,7 +275,7 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
     const bName = isMaple ? lm.mapleBuilding : lm.cityBuilding;
     const bIcon = isMaple ? lm.mapleIcon : lm.icon;
     return `
-      <div class="kz-lm-box ${lm.stageTone}">
+      <div class="kz-lm-box ${lm.stageTone}" data-kz-lm-card="${idx}">
         <div class="kz-lm-head">
           <div class="kz-lm-title-wrap">
             <span class="kz-lm-emoji">${bIcon}</span>
@@ -379,9 +380,6 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
           <!-- 可收合的 3D 微縮城市建造舞台 ＆ 4 大子項目即時控制台 -->
       <div class="kz-island-collapsible" ${isStageOpen ? '' : 'hidden'}>
         <div class="kz-island-visual-stage">
-          <img src="${esc(islandImg)}" alt="${esc(islandMainTitle)}" class="kz-island-stage-img" data-kz-open-zoom loading="lazy" title="點擊放大全螢幕檢視島嶼全景">
-          <div class="kz-island-stage-vignette"></div>
-
           <!-- 左上角賽季與建造模式浮水印 -->
           <div class="kz-stage-top-hud">
             <span class="kz-hud-pill">🏝️ ${esc(ks.seasonLabel)}</span>
@@ -391,9 +389,13 @@ export function renderKaizenIslandWidget({ contextId = 'daily_card', compact = f
             </div>
           </div>
 
-          <!-- 4 大地標互動熱區 -->
-          <div class="kz-island-hotspots-layer">
-            ${ks.landmarks.map(renderHotspot).join('')}
+          <!-- 16:9 島嶼畫布與 4 大地標互動熱區（保證行動版座標精準對齊） -->
+          <div class="kz-island-canvas">
+            <img src="${esc(islandImg)}" alt="${esc(islandMainTitle)}" class="kz-island-stage-img" data-kz-open-zoom loading="lazy" title="點擊放大全螢幕檢視島嶼全景">
+            <div class="kz-island-stage-vignette"></div>
+            <div class="kz-island-hotspots-layer">
+              ${ks.landmarks.map(renderHotspot).join('')}
+            </div>
           </div>
 
           <!-- 底部提示列 -->
@@ -542,6 +544,24 @@ export function bindKaizenIslandEvents(containerEl, onRerender) {
       openKaizenIslandZoomModal(onRerender);
     };
   });
+
+  // 7. 行動裝置點擊地標圓點時，捲動定位至下方對應地標子項目控制卡
+  containerEl.querySelectorAll('[data-kz-spot-idx]').forEach(spot => {
+    spot.onclick = e => {
+      if (e.target.closest('button')) return;
+      if (window.innerWidth <= 768) {
+        e.stopPropagation();
+        const idx = spot.dataset.kzSpotIdx;
+        const card = containerEl.querySelector(`[data-kz-lm-card="${idx}"]`);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          card.classList.remove('wf-card-highlight');
+          void card.offsetWidth;
+          card.classList.add('wf-card-highlight');
+        }
+      }
+    };
+  });
 }
 
 /**
@@ -558,58 +578,56 @@ export function openKaizenIslandZoomModal(onRerender) {
     ? '《楓之谷・改善提案天空之城建造島》'
     : '《微笑單車・未來城市改善提案建造島》';
 
-  openModal(`
-    <div class="modal-head" style="padding-bottom:10px;border-bottom:1px solid #e2e8f0;margin-bottom:12px">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="yb-sum-pill" style="background:#0f172a;color:#38bdf8;border:1px solid #38bdf8;font-weight:800">🏝️ ${esc(ks.seasonLabel)} · 全島全景檢視</span>
-          <strong style="font-size:18px;color:#0f172a">${esc(islandMainTitle)}</strong>
-          <span class="yb-sum-pill" style="background:#fef3c7;color:#b45309;font-weight:800">半年進度：${ks.totalCurrent} / ${ks.totalTarget} 件（${ks.progressPct}%）</span>
-        </div>
+  const modal = openModal({
+    title: `🏝️ ${ks.seasonLabel} · ${islandMainTitle}`,
+    wide: true,
+    body: `
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <span class="yb-sum-pill" style="background:#0f172a;color:#38bdf8;border:1px solid #38bdf8;font-weight:800">🏝️ ${esc(ks.seasonLabel)} · ${esc(isMaple ? ks.islandLv.mapleTitle : ks.islandLv.title)}</span>
+        <span class="yb-sum-pill" style="background:#fef3c7;color:#b45309;font-weight:800">半年進度：${ks.totalCurrent} / ${ks.totalTarget} 件（${ks.progressPct}%）</span>
+        <span class="yb-sum-pill" style="background:#ecfdf5;color:#047857;font-weight:700">✨ 已點亮 ${ks.landmarks.filter(l => l.pct >= 100).length} / 4 座地標</span>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        ${canEdit ? `<button type="button" class="btn sm primary" id="kz-zoom-open-editor">✏️ 自訂半年數字與地標</button>` : ''}
-        <button type="button" class="icon-btn" data-close>✕</button>
-      </div>
-    </div>
-
-    <div id="kz-zoom-modal-stage-wrap">
-      <div class="kz-island-visual-stage" style="min-height:68vh;max-height:80vh;aspect-ratio:16/9;margin:0 auto">
-        <img src="${esc(islandImg)}" alt="${esc(islandMainTitle)}" class="kz-island-stage-img" style="cursor:default;object-fit:contain;background:#082f49">
-        <div class="kz-island-stage-vignette"></div>
-        <div class="kz-stage-top-hud">
-          <span class="kz-hud-pill">🏝️ ${esc(ks.seasonLabel)} · ${esc(isMaple ? ks.islandLv.mapleTitle : ks.islandLv.title)}</span>
-          <span class="kz-hud-pill gold">✨ 已點亮 ${ks.landmarks.filter(l => l.pct >= 100).length} / 4 座地標</span>
-        </div>
-        <div class="kz-island-hotspots-layer">
-          ${ks.landmarks.map((lm, idx) => {
-            const bName = isMaple ? lm.mapleBuilding : lm.cityBuilding;
-            const bIcon = isMaple ? lm.mapleIcon : lm.icon;
-            const isMax = lm.pct >= 100;
-            return `
-              <div class="kz-island-hotspot ${lm.stageTone} ${isMax ? 'is-completed' : ''}"
-                   style="left:${lm.pos.left}%; top:${lm.pos.top}%;">
-                <div class="kz-spot-beacon">
-                  <span class="kz-spot-pulse"></span>
-                  <span class="kz-spot-icon">${bIcon}</span>
-                </div>
-                <div class="kz-spot-card">
-                  <div class="kz-spot-top">
-                    <span class="kz-spot-name">${esc(lm.name)}</span>
-                    <strong class="kz-spot-num">${lm.current}<small>/${lm.target}</small></strong>
+      <div class="kz-zoom-scroll" id="kz-zoom-modal-stage-wrap">
+        <div class="kz-island-visual-stage kz-zoom-stage">
+          <div class="kz-island-canvas">
+            <img src="${esc(islandImg)}" alt="${esc(islandMainTitle)}" class="kz-island-stage-img" style="cursor:default;object-fit:cover;background:#082f49">
+            <div class="kz-island-stage-vignette"></div>
+            <div class="kz-island-hotspots-layer">
+              ${ks.landmarks.map(lm => {
+                const bName = isMaple ? lm.mapleBuilding : lm.cityBuilding;
+                const bIcon = isMaple ? lm.mapleIcon : lm.icon;
+                const isMax = lm.pct >= 100;
+                return `
+                  <div class="kz-island-hotspot ${lm.stageTone} ${isMax ? 'is-completed' : ''}"
+                       style="left:${lm.pos.left}%; top:${lm.pos.top}%;">
+                    <div class="kz-spot-beacon">
+                      <span class="kz-spot-pulse"></span>
+                      <span class="kz-spot-icon">${bIcon}</span>
+                      <span class="kz-spot-mini-ratio">${lm.current}/${lm.target}</span>
+                    </div>
+                    <div class="kz-spot-card">
+                      <div class="kz-spot-top">
+                        <span class="kz-spot-name">${esc(lm.name)}</span>
+                        <strong class="kz-spot-num">${lm.current}<small>/${lm.target}</small></strong>
+                      </div>
+                      <div class="kz-spot-bldg">${esc(bName)} ${isMax ? '✨' : ''}</div>
+                      <div class="kz-spot-bar"><span style="width:${lm.pct}%"></span></div>
+                    </div>
                   </div>
-                  <div class="kz-spot-bldg">${esc(bName)} ${isMax ? '✨' : ''}</div>
-                  <div class="kz-spot-bar"><span style="width:${lm.pct}%"></span></div>
-                </div>
-              </div>
-            `;
-          }).join('')}
+                `;
+              }).join('')}
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  `, { wide: true });
+    `,
+    footer: `
+      ${canEdit ? `<button type="button" class="btn primary" id="kz-zoom-open-editor">✏️ 自訂半年數字與地標</button>` : ''}
+      <button type="button" class="btn" data-close>關閉</button>
+    `,
+  });
 
-  const edBtn = document.getElementById('kz-zoom-open-editor');
+  const edBtn = modal.querySelector('#kz-zoom-open-editor');
   if (edBtn) {
     edBtn.onclick = () => {
       closeModal();
@@ -625,108 +643,102 @@ export function openKaizenIslandEditorModal(onSaved) {
   const ks = getKaizenIslandState();
   const isMaple = typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'maple';
 
-  openModal(`
-    <div class="modal-head" style="padding-bottom:12px;border-bottom:1px solid #e2e8f0;margin-bottom:14px">
-      <div>
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span class="yb-sum-pill" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;font-weight:800">包于巧專屬・半年量化控制台</span>
-          <strong style="font-size:18px;color:#0f172a">🏝️ 自訂改善提案「半年目標＆4大地標數字」</strong>
-        </div>
-        <div class="muted tiny" style="margin-top:4px">
-          這裡修改的數字會即時同步到「<b>每日回報（包于巧個人卡片）</b>」與「<b>改善提案專區</b>」！分子、分母、子項目名稱都可以自由填寫。
-        </div>
-      </div>
-      <button type="button" class="icon-btn" data-close>✕</button>
-    </div>
-
-    <form id="kz-island-editor-form" class="form" style="gap:14px;max-height:75vh;overflow-y:auto;padding-right:4px">
-      <!-- 賽季與計算模式設定 -->
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field">
-          <span>計分半年賽季</span>
-          <select name="seasonKey" id="kz-modal-season-sel" style="font-weight:700">
-            <option value="2026-H1" ${ks.seasonKey === '2026-H1' ? 'selected' : ''}>2026 上半年 (1~6月 · H1)</option>
-            <option value="2026-H2" ${ks.seasonKey === '2026-H2' ? 'selected' : ''}>2026 下半年 (7~12月 · H2)</option>
-            <option value="2027-H1" ${ks.seasonKey === '2027-H1' ? 'selected' : ''}>2027 上半年 (1~6月 · H1)</option>
-          </select>
-        </div>
-        <div class="field">
-          <span>半年總數計算方式</span>
-          <select name="calcMode" id="kz-modal-calc-mode" style="font-weight:700">
-            <option value="sum" ${ks.calcMode === 'sum' ? 'selected' : ''}>自動由下方 4 大子項目加總（推薦）</option>
-            <option value="manual" ${ks.calcMode === 'manual' ? 'selected' : ''}>手動直接指定半年總完成數 / 總目標數</option>
-          </select>
-        </div>
+  const modal = openModal({
+    title: '🏝️ 自訂改善提案「半年目標＆4大地標數字」',
+    wide: true,
+    body: `
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span class="yb-sum-pill" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;font-weight:800">包于巧專屬・半年量化控制台</span>
+        <span class="muted tiny">修改後會即時同步至「每日回報」與「改善提案專區」</span>
       </div>
 
-      <!-- 手動指定半年總分子 / 分母區塊（當選 manual 時醒目顯示，選 sum 時也可預覽） -->
-      <div id="kz-manual-total-box" style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:12px 14px;display:${ks.calcMode === 'manual' ? 'grid' : 'none'};grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field">
-          <span>🎯 手動填寫：半年目前累計完成件數（分子）</span>
-          <input type="number" name="manualCurrent" value="${ks.manualCurrent}" min="0" max="9999" style="font-size:16px;font-weight:800;color:#0f172a">
+      <form id="kz-island-editor-form" class="form" style="gap:14px">
+        <!-- 賽季與計算模式設定 -->
+        <div class="row2" style="background:var(--bg-subtle);border:1px solid var(--border);border-radius:12px;padding:12px 14px">
+          <div class="field">
+            <span>計分半年賽季</span>
+            <select name="seasonKey" id="kz-modal-season-sel" style="font-weight:700">
+              <option value="2026-H1" ${ks.seasonKey === '2026-H1' ? 'selected' : ''}>2026 上半年 (1~6月 · H1)</option>
+              <option value="2026-H2" ${ks.seasonKey === '2026-H2' ? 'selected' : ''}>2026 下半年 (7~12月 · H2)</option>
+              <option value="2027-H1" ${ks.seasonKey === '2027-H1' ? 'selected' : ''}>2027 上半年 (1~6月 · H1)</option>
+            </select>
+          </div>
+          <div class="field">
+            <span>半年總數計算方式</span>
+            <select name="calcMode" id="kz-modal-calc-mode" style="font-weight:700">
+              <option value="sum" ${ks.calcMode === 'sum' ? 'selected' : ''}>自動由下方 4 大子項目加總（推薦）</option>
+              <option value="manual" ${ks.calcMode === 'manual' ? 'selected' : ''}>手動直接指定半年總完成數 / 總目標數</option>
+            </select>
+          </div>
         </div>
-        <div class="field">
-          <span>🏁 手動填寫：半年總目標件數（分母）</span>
-          <input type="number" name="manualTarget" value="${ks.manualTarget}" min="1" max="9999" style="font-size:16px;font-weight:800;color:#b45309">
-        </div>
-      </div>
 
-      <!-- 4 大島嶼地標 / 子項目自訂表 -->
-      <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;padding:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
-          <strong style="font-size:14px;color:#0f172a">🏗️ 島嶼 4 大子項目 / 地標部位設定（名稱、目前件數、目標件數皆可自訂）</strong>
-          <span class="muted tiny">每當子項目達 100%，島上對應地標就會發光落成！</span>
+        <!-- 手動指定半年總分子 / 分母區塊 -->
+        <div id="kz-manual-total-box" class="row2" style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:12px 14px;display:${ks.calcMode === 'manual' ? 'grid' : 'none'}">
+          <div class="field">
+            <span>🎯 手動填寫：半年目前累計完成件數（分子）</span>
+            <input type="number" name="manualCurrent" value="${ks.manualCurrent}" min="0" max="9999" style="font-weight:800">
+          </div>
+          <div class="field">
+            <span>🏁 手動填寫：半年總目標件數（分母）</span>
+            <input type="number" name="manualTarget" value="${ks.manualTarget}" min="1" max="9999" style="font-weight:800">
+          </div>
         </div>
 
-        <div style="display:flex;flex-direction:column;gap:10px">
-          ${ks.landmarks.map((lm, i) => `
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:36px 1.3fr 1.1fr 95px 95px;gap:8px;align-items:end" class="kz-modal-lm-row">
-              <div style="font-size:22px;text-align:center;padding-bottom:4px">${isMaple ? lm.mapleIcon : lm.icon}</div>
-              <div class="field">
-                <span>子項目 ${i + 1} 名稱（考核/階段）</span>
-                <input type="text" name="lm_name_${i}" value="${esc(lm.name)}" required>
+        <!-- 4 大島嶼地標 / 子項目自訂表 -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+            <strong style="font-size:14px">🏗️ 島嶼 4 大子項目 / 地標部位設定</strong>
+            <span class="muted tiny">子項目達 100% 時地標會發光落成！</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px">
+            ${ks.landmarks.map((lm, i) => `
+              <div class="kz-modal-lm-row">
+                <div class="kz-modal-lm-icon">${isMaple ? lm.mapleIcon : lm.icon}</div>
+                <div class="field kz-modal-lm-name">
+                  <span>子項目 ${i + 1} 名稱（考核/階段）</span>
+                  <input type="text" name="lm_name_${i}" value="${esc(lm.name)}" required>
+                </div>
+                <div class="field kz-modal-lm-bldg">
+                  <span>對應島嶼地標建築名</span>
+                  <input type="text" name="lm_bldg_${i}" value="${esc(isMaple ? lm.mapleBuilding : lm.cityBuilding)}" required>
+                </div>
+                <div class="field kz-modal-lm-cur">
+                  <span>目前(分子)</span>
+                  <input type="number" name="lm_cur_${i}" value="${lm.current}" min="0" max="999" required style="font-weight:800">
+                </div>
+                <div class="field kz-modal-lm-tgt">
+                  <span>目標(分母)</span>
+                  <input type="number" name="lm_tgt_${i}" value="${lm.target}" min="1" max="999" required style="font-weight:800">
+                </div>
               </div>
-              <div class="field">
-                <span>對應島嶼地標建築名</span>
-                <input type="text" name="lm_bldg_${i}" value="${esc(isMaple ? lm.mapleBuilding : lm.cityBuilding)}" required>
-              </div>
-              <div class="field">
-                <span>目前數字(分子)</span>
-                <input type="number" name="lm_cur_${i}" value="${lm.current}" min="0" max="999" required style="font-weight:800;color:#0369a1">
-              </div>
-              <div class="field">
-                <span>半年目標(分母)</span>
-                <input type="number" name="lm_tgt_${i}" value="${lm.target}" min="1" max="999" required style="font-weight:800;color:#b45309">
-              </div>
-            </div>
-          `).join('')}
+            `).join('')}
+          </div>
         </div>
-      </div>
 
-      <div class="field">
-        <span>島嶼標語 / 備註說明（顯示於卡片標題下方）</span>
-        <input type="text" name="islandSubtitle" value="${esc(ks.islandSubtitle)}" placeholder="例如：每完成 1 件改善提案審查，就為島嶼點亮一座新地標！">
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #e2e8f0;flex-wrap:wrap;gap:10px">
-        <span class="muted tiny">最後更新：${ks.updatedAtIso ? `${esc(ks.updatedByName)}（${new Date(ks.updatedAtIso).toLocaleString('zh-TW')}）` : '預設初始值'}</span>
-        <div style="display:flex;gap:10px">
-          <button type="button" class="btn" data-close>取消</button>
-          <button type="submit" class="btn primary">💾 儲存半年數字並更新建造島</button>
+        <div class="field">
+          <span>島嶼標語 / 備註說明（顯示於卡片標題下方）</span>
+          <input type="text" name="islandSubtitle" value="${esc(ks.islandSubtitle)}" placeholder="例如：每完成 1 件改善提案審查，就為島嶼點亮一座新地標！">
         </div>
-      </div>
-    </form>
-  `, { wide: true });
 
-  const modeSel = document.getElementById('kz-modal-calc-mode');
-  const manualBox = document.getElementById('kz-manual-total-box');
+        <div class="muted tiny">最後更新：${ks.updatedAtIso ? `${esc(ks.updatedByName)}（${new Date(ks.updatedAtIso).toLocaleString('zh-TW')}）` : '預設初始值'}</div>
+      </form>
+    `,
+    footer: `
+      <button type="button" class="btn" data-close>取消</button>
+      <button type="submit" form="kz-island-editor-form" class="btn primary">💾 儲存半年數字並更新建造島</button>
+    `,
+  });
+
+  const modeSel = modal.querySelector('#kz-modal-calc-mode');
+  const manualBox = modal.querySelector('#kz-manual-total-box');
   if (modeSel && manualBox) {
     modeSel.onchange = () => {
       manualBox.style.display = modeSel.value === 'manual' ? 'grid' : 'none';
     };
   }
 
-  const seasonSel = document.getElementById('kz-modal-season-sel');
+  const seasonSel = modal.querySelector('#kz-modal-season-sel');
   if (seasonSel) {
     seasonSel.onchange = () => {
       activeSeasonKey = seasonSel.value;
@@ -735,7 +747,7 @@ export function openKaizenIslandEditorModal(onSaved) {
     };
   }
 
-  const form = document.getElementById('kz-island-editor-form');
+  const form = modal.querySelector('#kz-island-editor-form');
   if (form) {
     form.onsubmit = async e => {
       e.preventDefault();

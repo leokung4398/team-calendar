@@ -413,6 +413,7 @@ export function mountKaizen(el) {
             <strong style="font-size:13.5px;color:#0F172A">提案採分、等級、獎金、點數與核准權限速查表（列入每年 6 月、12 月考績參考）</strong>
             <span class="muted tiny">※ 3 等(含)以上案件不先撥入薪資，於每月經營月會由總經理公開頒獎表揚！</span>
           </div>
+          <div class="mobile-scroll-hint">← 左右滑動查看完整採分等級表 →</div>
           <div class="table-wrap">
             <table class="kaizen-tier-table">
               <thead>
@@ -605,7 +606,7 @@ export function mountKaizen(el) {
                     <span class="fw-status-pill" style="background:${tier.badgeBg};color:${tier.badgeColor}">自評預估：${tier.grade} (${tier.prizeText} / ${tier.points}點)</span>
                     <span class="muted tiny">實施日：${esc(p.startDate || '-')} · 實施區域：<b>${esc(p.implArea || '新辦公室')}</b></span>
                   </div>
-                  <div style="display:flex;gap:6px;align-items:center">
+                  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
                     <button type="button" class="btn sm ${liked ? 'primary' : 'ghost'}" data-like-prop="${esc(p.id)}" style="padding:3px 9px;font-size:12px">
                       好點子 (${likes.length})
                     </button>
@@ -788,14 +789,36 @@ export function mountKaizen(el) {
       };
     });
 
-    // 試算器輸入即時更新
+    // 試算器輸入即時局部更新（不重繪整頁，避免手機鍵盤跳動與焦點遺失）
+    const prize2026Map = { '1 等': 'NT$ 25,000', '2 等': 'NT$ 12,000', '3 等': 'NT$ 6,000', '4 等': 'NT$ 2,000', '5 等': 'NT$ 800', '6 等': 'NT$ 500', '7 等': 'NT$ 300', '8 等': '再接再厲 ($0)' };
+    const updateScoreRes = () => {
+      const box = el.querySelector('[data-kz-score-res]');
+      if (!box) return;
+      const tier = getKaizenTierByScore(kzScore);
+      const prizeTxt = calcVer === '2026' ? (prize2026Map[tier.grade] || tier.prizeText) : tier.prizeText;
+      box.innerHTML = `
+        對應等級：<span style="background:${tier.badgeBg};color:${tier.badgeColor};padding:2px 8px;border-radius:999px;font-weight:800">${tier.grade}</span>
+        · 獎金 <b style="color:#B45309;font-size:15px">${prizeTxt}</b> · 考績 <b>${tier.points} 點</b>
+        <div class="muted tiny" style="margin-top:3px">核准權限：${esc(tier.approver)}</div>
+      `;
+    };
+    const updateDeptRes = () => {
+      const box = el.querySelector('[data-kz-dept-res]');
+      if (!box) return;
+      const ratePct = kzDeptStaff > 0 ? Math.round((kzDeptProposers / kzDeptStaff) * 100) : 0;
+      const eligible = ratePct >= 80;
+      const perFee = calcVer === '2026' ? (ratePct >= 100 ? 300 : 200) : 50;
+      const bonus = eligible ? kzDeptStaff * perFee : 0;
+      box.innerHTML = `
+        參與率：<b style="color:${eligible ? '#059669' : '#DC2626'};font-size:15px">${ratePct}%</b>（${eligible ? ` 達標！每半年領活動費 <b>NT$ ${bonus.toLocaleString()} 元</b>（每人 $${perFee} 元）` : ` 未達 80% 門檻（需至少 ${Math.ceil(kzDeptStaff * 0.8)} 人提案）`}）
+      `;
+    };
+
     const kzScoreIn = el.querySelector('[data-kz-score]');
     if (kzScoreIn) {
       kzScoreIn.oninput = () => {
         kzScore = Math.max(0, Math.min(100, Number(kzScoreIn.value || 0)));
-        render();
-        const nextIn = el.querySelector('[data-kz-score]');
-        if (nextIn) nextIn.focus();
+        updateScoreRes();
       };
     }
     const kzStaffIn = el.querySelector('[data-kz-staff]');
@@ -803,17 +826,13 @@ export function mountKaizen(el) {
     if (kzStaffIn) {
       kzStaffIn.oninput = () => {
         kzDeptStaff = Math.max(1, Number(kzStaffIn.value || 1));
-        render();
-        const nextIn = el.querySelector('[data-kz-staff]');
-        if (nextIn) nextIn.focus();
+        updateDeptRes();
       };
     }
     if (kzPropIn) {
       kzPropIn.oninput = () => {
         kzDeptProposers = Math.max(0, Number(kzPropIn.value || 0));
-        render();
-        const nextIn = el.querySelector('[data-kz-proposers]');
-        if (nextIn) nextIn.focus();
+        updateDeptRes();
       };
     }
 
@@ -943,172 +962,167 @@ function readImageFileAsDataUrl(file, maxWidth = 1100) {
 function openNewProposalModal(currentList, onSaved) {
   const meName = state.me?.displayName || '孔令淳';
   const today = ymd();
-  openModal(`
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #f1f5f9">
-      <div style="display:flex;align-items:center;gap:10px;min-width:0">
-        <div style="min-width:0">
-          <h3 style="margin:0;font-size:17px;font-weight:800;color:#0f172a">線上填寫「改善提案登錄表」</h3>
-          <div style="font-size:12px;color:#64748b;margin-top:2px">100% 對齊公司標準 Word 表格（GUT02202 雙頁規格：含改善前後對照圖＆採分基準表）</div>
-        </div>
-      </div>
-      <button type="button" class="icon-btn" data-close style="flex-shrink:0">✕</button>
-    </div>
+  const modal = openModal({
+    title: '線上填寫「改善提案登錄表」',
+    wide: true,
+    body: `
+      <div class="muted tiny" style="margin-bottom:12px">100% 對齊公司標準 Word 表格（GUT02202 雙頁規格：含改善前後對照圖＆採分基準表）</div>
 
-    <form class="form" id="kz-proposal-form" style="gap:14px;max-height:76vh;overflow-y:auto;padding-right:4px">
-      <div class="field">
-        <span>案名（提案主題名稱） <em>*</em></span>
-        <input type="text" name="title" required placeholder="例如：模擬體驗會議閱覽體驗升級與防呆視覺化報表重構">
-      </div>
+      <form class="form" id="kz-proposal-form" style="gap:14px">
+        <div class="field">
+          <span>案名（提案主題名稱） <em>*</em></span>
+          <input type="text" name="title" required placeholder="例如：模擬體驗會議閱覽體驗升級與防呆視覺化報表重構">
+        </div>
 
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-        <div class="field">
-          <span>提案類別(請勾選)</span>
-          <select name="category">
-            <option value="流程" selected>流程</option>
-            <option value="品質">品質</option>
-            <option value="成本">成本</option>
-            <option value="5S">5S</option>
-            <option value="其它">其它</option>
-          </select>
-        </div>
-        <div class="field">
-          <span>提案單位</span>
-          <input type="text" name="dept" value="經營組" required>
-        </div>
-        <div class="field">
-          <span>人事編號</span>
-          <input type="text" name="empId" value="B4398" placeholder="例如：B4398">
-        </div>
-        <div class="field">
-          <span>姓名 <em>*</em></span>
-          <input type="text" name="proposerName" value="${esc(meName)}" required>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-        <div class="field">
-          <span>實施起始日（從 MM月DD日起實施中） <em>*</em></span>
-          <input type="date" name="startDate" value="${esc(today)}" required>
-        </div>
-        <div class="field">
-          <span>實施區域</span>
-          <input type="text" name="implArea" value="新辦公室" placeholder="例如：新辦公室 / 全區場站">
-        </div>
-        <div class="field">
-          <span>共同提案人（選填）</span>
-          <input type="text" name="coProposer" placeholder="個人提案免填">
-        </div>
-      </div>
-
-      <!-- 會簽單位與標準化文件區塊 -->
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:1fr 2fr;gap:10px">
-        <div class="field">
-          <span>會簽單位（□是 □否）</span>
-          <div style="display:flex;gap:6px">
-            <select name="needCoSign" style="width:90px">
-              <option value="否" selected>□ 否</option>
-              <option value="是">是</option>
-            </select>
-            <input type="text" name="coSignDept" placeholder="會簽單位名稱（無免填）" style="flex:1">
-          </div>
-        </div>
-        <div class="field">
-          <span>標準化文件（□新增 □修訂 · 作業標準書/表單/圖面）</span>
-          <div style="display:grid;grid-template-columns:110px 130px 1fr 80px;gap:6px">
-            <select name="stdDocAction">
-              <option value="無" selected>無異動</option>
-              <option value="新增">新增</option>
-              <option value="修訂">修訂</option>
-            </select>
-            <select name="stdDocType">
-              <option value="">文件類型…</option>
-              <option value="作業標準書">作業標準書</option>
-              <option value="表單文件">表單文件</option>
-              <option value="圖面文件">圖面文件</option>
-            </select>
-            <input type="text" name="stdDocNo" placeholder="文件編號">
-            <input type="text" name="stdDocVer" placeholder="版次">
-          </div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="field">
-          <span>改善前問題是什麼（請說明改善前有何缺失需要改善的） <em>*</em></span>
-          <textarea name="beforeDesc" rows="5" required placeholder="1. 報表產出極度耗時、易出錯…&#10;2. 視覺擁擠，長官閱覽體驗不佳…&#10;3. 缺乏動態下鑽與重點警示…"></textarea>
-        </div>
-        <div class="field">
-          <span>我的對策：（說明利用什麼方式或手法將問題處理完成） <em>*</em></span>
-          <textarea name="afterDesc" rows="5" required placeholder="1. 開發「自動化數據轉譯引擎 (ETL)」…&#10;2. 導入「專屬報告模式」與「減法視覺設計」…&#10;3. 建構「動態戰情室」與「多媒體實證牆」…"></textarea>
-        </div>
-      </div>
-
-      <!-- 效果確認（有形效益 / 無形效益 / 平行展開） -->
-      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
-        <div style="font-size:13.5px;font-weight:800;color:#92400e">效果確認：（將改善完成後有形的及無形的成果加以說明）</div>
-        <div class="field">
-          <span>有形效益（具體量化指標：如工時縮減、零錯誤率、成本節省） <em>*</em></span>
-          <textarea name="tangibleBenefit" rows="3" required placeholder="• 製表工時大幅縮減（自動化）：由原先 2 小時縮減至 1 分鐘內，節省達 90% 以上…&#10;• 零人工錯誤率（防呆）：自動讀取並對齊 CSV 數據…"></textarea>
-        </div>
-        <div class="field">
-          <span>無形效益（質性與體驗升級：如直覺決策輔助、專業形象、無紙化）</span>
-          <textarea name="intangibleBenefit" rows="3" placeholder="• 直覺化決策輔助（例外管理）：導入色彩心理學讓高階主管一秒鎖定痛點…&#10;• 會議體驗與專業度躍升：有圖有真相…"></textarea>
-        </div>
-        <div class="field">
-          <span>平行展開（未來擴充與跨部門複製性）</span>
-          <textarea name="horizontalExpansion" rows="2" placeholder="• 跨部門無縫複製套用：可低成本快速平行展開至其他單位…"></textarea>
-        </div>
-      </div>
-
-      <!-- 改善前 / 改善後 圖畫或截圖附件 -->
-      <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px">
-        <div style="font-size:13px;font-weight:800;color:#0f172a;margin-bottom:8px">將您改善前與改善後的過程、方法、圖片、表格以圖畫(或附件)任何人都能一目了然（選填，支援上傳截圖）</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="kz-form-g4">
           <div class="field">
-            <span>改善前圖片／截圖</span>
-            <input type="file" name="beforeImgFile" accept="image/*" style="font-size:12px">
+            <span>提案類別(請勾選)</span>
+            <select name="category">
+              <option value="流程" selected>流程</option>
+              <option value="品質">品質</option>
+              <option value="成本">成本</option>
+              <option value="5S">5S</option>
+              <option value="其它">其它</option>
+            </select>
           </div>
           <div class="field">
-            <span>改善後圖片／截圖</span>
-            <input type="file" name="afterImgFile" accept="image/*" style="font-size:12px">
+            <span>提案單位</span>
+            <input type="text" name="dept" value="經營組" required>
+          </div>
+          <div class="field">
+            <span>人事編號</span>
+            <input type="text" name="empId" value="B4398" placeholder="例如：B4398">
+          </div>
+          <div class="field">
+            <span>姓名 <em>*</em></span>
+            <input type="text" name="proposerName" value="${esc(meName)}" required>
           </div>
         </div>
-      </div>
 
-      <!-- 擴散相關單位與自評採分 -->
-      <div style="display:grid;grid-template-columns:120px 1fr 130px 150px;gap:10px;align-items:end">
-        <div class="field">
-          <span>擴散相關單位</span>
-          <select name="spreadNeed">
-            <option value="需要" selected>需要</option>
-            <option value="不需要">□ 不需要</option>
-          </select>
+        <div class="kz-form-g3">
+          <div class="field">
+            <span>實施起始日（從 MM月DD日起實施中） <em>*</em></span>
+            <input type="date" name="startDate" value="${esc(today)}" required>
+          </div>
+          <div class="field">
+            <span>實施區域</span>
+            <input type="text" name="implArea" value="新辦公室" placeholder="例如：新辦公室 / 全區場站">
+          </div>
+          <div class="field">
+            <span>共同提案人（選填）</span>
+            <input type="text" name="coProposer" placeholder="個人提案免填">
+          </div>
         </div>
-        <div class="field">
-          <span>需擴散之單位說明</span>
-          <input type="text" name="canSpread" placeholder="例如：客服滿意度監控、物流調度分析等相關單位">
-        </div>
-        <div class="field">
-          <span>擴散狀態</span>
-          <select name="spreadStatus">
-            <option value="未擴散" selected>□ 未擴散</option>
-            <option value="已擴散">已擴散</option>
-          </select>
-        </div>
-        <div class="field">
-          <span>自評預估採分(0~100)</span>
-          <input type="number" name="selfScore" value="78" min="31" max="100">
-        </div>
-      </div>
 
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #f1f5f9">
-        <button type="button" class="btn" data-close style="padding:8px 18px;border-radius:10px">取消</button>
-        <button type="submit" class="btn primary" style="padding:8px 20px;border-radius:10px">儲存並產出標準登錄表</button>
-      </div>
-    </form>
-  `, { wide: true });
+        <!-- 會簽單位與標準化文件區塊 -->
+        <div class="kz-form-cosign">
+          <div class="field">
+            <span>會簽單位（□是 □否）</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <select name="needCoSign" style="width:90px;flex-shrink:0">
+                <option value="否" selected>□ 否</option>
+                <option value="是">是</option>
+              </select>
+              <input type="text" name="coSignDept" placeholder="會簽單位名稱（無免填）" style="flex:1;min-width:130px">
+            </div>
+          </div>
+          <div class="field">
+            <span>標準化文件（□新增 □修訂 · 作業標準書/表單/圖面）</span>
+            <div class="kz-form-stddoc">
+              <select name="stdDocAction">
+                <option value="無" selected>無異動</option>
+                <option value="新增">新增</option>
+                <option value="修訂">修訂</option>
+              </select>
+              <select name="stdDocType">
+                <option value="">文件類型…</option>
+                <option value="作業標準書">作業標準書</option>
+                <option value="表單文件">表單文件</option>
+                <option value="圖面文件">圖面文件</option>
+              </select>
+              <input type="text" name="stdDocNo" placeholder="文件編號">
+              <input type="text" name="stdDocVer" placeholder="版次">
+            </div>
+          </div>
+        </div>
 
-  document.getElementById('kz-proposal-form').onsubmit = async e => {
+        <div class="kz-form-g2">
+          <div class="field">
+            <span>改善前問題是什麼（請說明改善前有何缺失需要改善的） <em>*</em></span>
+            <textarea name="beforeDesc" rows="5" required placeholder="1. 報表產出極度耗時、易出錯…&#10;2. 視覺擁擠，長官閱覽體驗不佳…&#10;3. 缺乏動態下鑽與重點警示…"></textarea>
+          </div>
+          <div class="field">
+            <span>我的對策：（說明利用什麼方式或手法將問題處理完成） <em>*</em></span>
+            <textarea name="afterDesc" rows="5" required placeholder="1. 開發「自動化數據轉譯引擎 (ETL)」…&#10;2. 導入「專屬報告模式」與「減法視覺設計」…&#10;3. 建構「動態戰情室」與「多媒體實證牆」…"></textarea>
+          </div>
+        </div>
+
+        <!-- 效果確認（有形效益 / 無形效益 / 平行展開） -->
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:13.5px;font-weight:800;color:#92400e">效果確認：（將改善完成後有形的及無形的成果加以說明）</div>
+          <div class="field">
+            <span>有形效益（具體量化指標：如工時縮減、零錯誤率、成本節省） <em>*</em></span>
+            <textarea name="tangibleBenefit" rows="3" required placeholder="• 製表工時大幅縮減（自動化）：由原先 2 小時縮減至 1 分鐘內，節省達 90% 以上…&#10;• 零人工錯誤率（防呆）：自動讀取並對齊 CSV 數據…"></textarea>
+          </div>
+          <div class="field">
+            <span>無形效益（質性與體驗升級：如直覺決策輔助、專業形象、無紙化）</span>
+            <textarea name="intangibleBenefit" rows="3" placeholder="• 直覺化決策輔助（例外管理）：導入色彩心理學讓高階主管一秒鎖定痛點…&#10;• 會議體驗與專業度躍升：有圖有真相…"></textarea>
+          </div>
+          <div class="field">
+            <span>平行展開（未來擴充與跨部門複製性）</span>
+            <textarea name="horizontalExpansion" rows="2" placeholder="• 跨部門無縫複製套用：可低成本快速平行展開至其他單位…"></textarea>
+          </div>
+        </div>
+
+        <!-- 改善前 / 改善後 圖畫或截圖附件 -->
+        <div style="background:var(--bg-subtle);border:1px solid var(--border);border-radius:12px;padding:12px 14px">
+          <div style="font-size:13px;font-weight:800;margin-bottom:8px">改善前與改善後圖片／截圖附件（選填）</div>
+          <div class="kz-form-g2">
+            <div class="field">
+              <span>改善前圖片／截圖</span>
+              <input type="file" name="beforeImgFile" accept="image/*" style="font-size:13px">
+            </div>
+            <div class="field">
+              <span>改善後圖片／截圖</span>
+              <input type="file" name="afterImgFile" accept="image/*" style="font-size:13px">
+            </div>
+          </div>
+        </div>
+
+        <!-- 擴散相關單位與自評採分 -->
+        <div class="kz-form-spread">
+          <div class="field">
+            <span>擴散相關單位</span>
+            <select name="spreadNeed">
+              <option value="需要" selected>需要</option>
+              <option value="不需要">□ 不需要</option>
+            </select>
+          </div>
+          <div class="field">
+            <span>需擴散之單位說明</span>
+            <input type="text" name="canSpread" placeholder="例如：客服滿意度監控、物流調度分析等相關單位">
+          </div>
+          <div class="field">
+            <span>擴散狀態</span>
+            <select name="spreadStatus">
+              <option value="未擴散" selected>□ 未擴散</option>
+              <option value="已擴散">已擴散</option>
+            </select>
+          </div>
+          <div class="field">
+            <span>自評預估採分(0~100)</span>
+            <input type="number" name="selfScore" value="78" min="31" max="100">
+          </div>
+        </div>
+      </form>
+    `,
+    footer: `
+      <button type="button" class="btn" data-close>取消</button>
+      <button type="submit" form="kz-proposal-form" class="btn primary">儲存並產出標準登錄表</button>
+    `,
+  });
+
+  modal.querySelector('#kz-proposal-form').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
     const beforeImg = await readImageFileAsDataUrl(f.beforeImgFile?.files?.[0]);

@@ -90,7 +90,7 @@ export function openEventEditor({ ev = null, date = null, ownerUid = null } = {}
   const initEt = v.period === 'am' ? '12:00' : v.period === 'pm' ? '17:30' : (v.endTime || '17:30');
 
   const modeSwitchBar = !ev ? `
-    <div style="display:flex;align-items:center;justify-content:space-between;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:6px 10px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:6px 10px;margin-bottom:12px">
       <span style="font-size:12.5px;font-weight:700;color:#334155">選擇要建立的項目：</span>
       <div style="display:flex;gap:6px">
         <button type="button" class="btn small primary" style="padding:4px 12px">差勤行程</button>

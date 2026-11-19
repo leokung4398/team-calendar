@@ -146,13 +146,20 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
   });
 
   const weekDayHeaders = ['週日', '週一', '週二', '週三', '週四', '週五', '週六'];
+  const shortWd = ['日', '一', '二', '三', '四', '五', '六'];
+  const currentMonthCells = calendarDates.filter(c => c.isCurrentMonth);
+  const preferPair = isNorth && (
+    window._inspNorthMode
+      ? window._inspNorthMode === 'pair'
+      : window.matchMedia('(max-width: 640px)').matches
+  );
 
   containerEl.innerHTML = `
     <div class="daily-inspection-wrapper" style="display:flex; flex-direction:column; gap:12px;">
       
       <!-- 圖3 輕量化：頂部規則與行政區範圍（預設收合，點擊展開/收合） -->
-      <details class="card insp-collapsible-card" style="background:linear-gradient(135deg, ${isNorth ? '#f0f9ff' : '#f0fdf4'} 0%, #ffffff 100%); border-left:4px solid ${isNorth ? '#0284c7' : '#16a34a'}; padding:10px 16px;">
-        <summary class="insp-collapsible-summary">
+      <details class="card insp-collapsible-card" style="background:linear-gradient(135deg, ${isNorth ? '#f0f9ff' : '#f0fdf4'} 0%, #ffffff 100%); border-left:4px solid ${isNorth ? '#0284c7' : '#16a34a'}; padding:10px 14px;">
+        <summary class="insp-collapsible-summary" style="flex-wrap:wrap; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
             <h3 style="margin:0; font-size:15.5px; color:#0f172a;">
               ${isNorth ? '北區每日品管區域範圍' : '南區每日品管區域範圍'}（${yearNum} 年 ${monthNum} 月）
@@ -160,9 +167,15 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
             <span class="badge-tag ${isNorth ? 'info' : 'ok'} small">${isNorth ? 'Leo & Hao 雙人協同' : '南部各縣市巡檢'}</span>
             <span class="insp-expand-hint">▸ 展開規則與行政區範圍</span>
           </div>
-          <div style="display:flex; gap:8px; align-items:center;" onclick="event.stopPropagation()">
+          <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;" onclick="event.stopPropagation()">
+            ${isNorth ? `
+              <div class="seg small" data-insp-mode-seg>
+                <button type="button" class="${preferPair ? 'active' : ''}" data-set-insp-mode="pair">雙人並排</button>
+                <button type="button" class="${!preferPair ? 'active' : ''}" data-set-insp-mode="calendar">各自月曆</button>
+              </div>
+            ` : ''}
             <button type="button" class="btn primary small" data-save-daily-insp style="background:${isNorth ? '#0284c7' : '#16a34a'};">
-              儲存${isNorth ? '北區' : '南區'}每日排程
+              儲存${isNorth ? '北區' : '南區'}排程
             </button>
           </div>
         </summary>
@@ -203,8 +216,44 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
         </div>
       </details>
 
-      <!-- 組員排程日曆卡片 (並排或分卡) -->
-      ${members.map(m => {
+      <!-- 北區雙人同日並排對照視圖（手機上最直覺比較 Leo vs Hao 每日去向！） -->
+      ${preferPair ? `
+        <div class="card pad" style="padding:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+            <strong style="font-size:14px;color:#0f172a">Leo ＆ Hao 每日同列對照（點任一格即可修改）</strong>
+            <span class="muted tiny">共 ${currentMonthCells.length} 日</span>
+          </div>
+          <div class="insp-pair-list">
+            <div class="insp-pair-head">
+              <span>日期</span>
+              <span>Leo（孔令淳）</span>
+              <span>Hao（葉爵豪）</span>
+            </div>
+            ${currentMonthCells.map(cell => {
+              const leoVal = schedules.Leo?.[cell.dateStr] || '';
+              const haoVal = schedules.Hao?.[cell.dateStr] || '';
+              const leoSt = getLocationBadgeStyle(leoVal);
+              const haoSt = getLocationBadgeStyle(haoVal);
+              const isToday = cell.dateStr === ymd();
+              return `
+                <div class="insp-pair-row ${cell.isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''}">
+                  <div class="insp-pair-date">
+                    <strong>${cell.dateStr.slice(5).replace('-', '/')}</strong>
+                    <span>(${shortWd[cell.dayOfWeek]})</span>
+                    ${isToday ? '<em class="insp-today-dot">今</em>' : ''}
+                  </div>
+                  <button type="button" class="daily-insp-cell insp-pair-btn" data-date="${cell.dateStr}" data-member="Leo" style="background:${leoVal ? leoSt.bg : '#fff'};border-color:${leoVal ? leoSt.border : '#cbd5e1'};color:${leoVal ? leoSt.text : '#94a3b8'}">
+                    ${leoVal ? esc(leoVal) : '＋排定'}
+                  </button>
+                  <button type="button" class="daily-insp-cell insp-pair-btn" data-date="${cell.dateStr}" data-member="Hao" style="background:${haoVal ? haoSt.bg : '#fff'};border-color:${haoVal ? haoSt.border : '#cbd5e1'};color:${haoVal ? haoSt.text : '#94a3b8'}">
+                    ${haoVal ? esc(haoVal) : '＋排定'}
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      ` : members.map(m => {
         const stats = memberStats[m.key] || {};
         const memberSchedule = schedules[m.key] || {};
 
@@ -246,15 +295,15 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
                 const isToday = cell.dateStr === ymd();
 
                 return `
-                  <div class="daily-insp-cell ${cell.isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''}" 
+                  <div class="daily-insp-cell ${cell.isWeekend ? 'is-weekend' : ''} ${isToday ? 'is-today' : ''} ${cell.isCurrentMonth ? '' : 'is-outside-month'}" 
                        data-date="${cell.dateStr}" 
                        data-member="${m.key}"
-                       style="${cell.isCurrentMonth ? '' : 'opacity:0.35;'} padding:4px;">
+                       style="${cell.isCurrentMonth ? '' : 'opacity:0.35;'} padding:4px; cursor:pointer;">
                     
-                    <!-- 日期列（Excel 標頭：平日淡黃 #fef3c7，週末亮紅 #ef4444 白字） -->
+                    <!-- 日期列（Excel 標頭：平日淡黃 #fef3c7，週末亮紅 #ef4444 白字；手機端同步顯示星期幾） -->
                     <div class="cell-date-bar" style="margin-bottom:4px; padding:3px 6px; border-radius:4px; background:${cell.isWeekend ? '#ef4444' : '#fef9c3'}; border:1px solid ${cell.isWeekend ? '#dc2626' : '#fef08a'};">
                       <span class="cell-day-num" style="font-size:12px; font-weight:800; color:${cell.isWeekend ? '#ffffff' : '#78350f'};">
-                        ${cell.dateStr.slice(5).replace('-', '/')}
+                        ${cell.dateStr.slice(5).replace('-', '/')}<span class="insp-mobile-wd"> (${shortWd[cell.dayOfWeek]})</span>
                       </span>
                       ${isToday ? '<span class="badge-tag warn tiny" style="font-size:9px; padding:0 3px; background:#fff; color:#b45309; border:none;">今日</span>' : ''}
                     </div>
@@ -281,6 +330,14 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
 
     </div>
   `;
+
+  // 北區雙人並排 / 各自月曆切換
+  containerEl.querySelectorAll('[data-set-insp-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window._inspNorthMode = btn.dataset.setInspMode;
+      renderDailyInspectionView(containerEl, zone, curMonth, onMonthChange);
+    });
+  });
 
   // 綁定儲存按鈕
   containerEl.querySelector('[data-save-daily-insp]')?.addEventListener('click', async () => {
@@ -327,30 +384,29 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
           請設定 <b>${esc(memberKey)}</b> 於 <b>${dateStr}</b> 的巡檢區域或行程：
         </div>
         <div style="margin-bottom:12px;">
-          <input type="text" id="dlg-insp-loc" value="${esc(currentVal)}" class="input" style="width:100%; font-size:15px; padding:8px 12px;" placeholder="輸入行政區或行程（例如：新店、永和、辦公室、台中）">
+          <input type="text" id="dlg-insp-loc" value="${esc(currentVal)}" class="input" style="width:100%; font-size:16px; padding:10px 12px;" placeholder="輸入行政區或行程（例如：新店、永和、辦公室、台中）">
         </div>
-        <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px;">常用快選：</div>
-        <div style="display:flex; flex-wrap:wrap; gap:6px; max-height:160px; overflow-y:auto; padding:4px;">
+        <div style="font-size:12px; font-weight:700; color:#64748b; margin-bottom:6px;">常用快選（點擊即可帶入）：</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; max-height:180px; overflow-y:auto; padding:4px;">
           ${recommendations.map(r => `
-            <button type="button" class="quick-chip-btn" data-chip="${esc(r)}">${esc(r)}</button>
+            <button type="button" class="quick-chip-btn" data-chip="${esc(r)}" style="min-height:34px;padding:5px 11px;font-size:13px">${esc(r)}</button>
           `).join('')}
         </div>
       `;
 
-      // 簡易彈跳視窗
+      // 標準彈跳視窗（支援點背景、ESC 與 Enter 確認）
       const modalRoot = document.getElementById('modal-root') || document.body;
       const modalOverlay = document.createElement('div');
       modalOverlay.className = 'modal-backdrop';
-      modalOverlay.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:9999; display:flex; align-items:center; justify-content:center; padding:16px;';
       
       modalOverlay.innerHTML = `
-        <div class="modal" style="background:#fff; border-radius:12px; width:100%; max-width:440px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.15);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <div class="modal" style="max-width:440px;">
+          <div class="modal-head">
             <h3 style="margin:0; font-size:16px;">設定巡檢地點</h3>
-            <button type="button" class="btn icon ghost" data-dlg-close style="font-size:18px;">✕</button>
+            <button type="button" class="icon-btn" data-dlg-close aria-label="關閉">✕</button>
           </div>
-          <div>${promptHtml}</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
+          <div class="modal-body">${promptHtml}</div>
+          <div class="modal-foot" style="justify-content:space-between;">
             ${currentVal ? `<button type="button" class="btn danger small" data-dlg-clear>清空此日</button>` : '<div></div>'}
             <div style="display:flex; gap:8px;">
               <button type="button" class="btn ghost small" data-dlg-close>取消</button>
@@ -361,6 +417,8 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
       `;
 
       modalRoot.appendChild(modalOverlay);
+      document.documentElement.classList.add('modal-open-lock');
+      document.body.classList.add('modal-open-lock');
 
       const locInput = modalOverlay.querySelector('#dlg-insp-loc');
       locInput.focus();
@@ -372,7 +430,17 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
         });
       });
 
-      const closeModal = () => modalOverlay.remove();
+      const closeModal = () => {
+        modalOverlay.remove();
+        document.removeEventListener('keydown', onKey);
+        if (!document.querySelector('.modal-backdrop, .dr-sheet-backdrop')) {
+          document.documentElement.classList.remove('modal-open-lock');
+          document.body.classList.remove('modal-open-lock');
+        }
+      };
+      const onKey = ev => { if (ev.key === 'Escape') closeModal(); };
+      document.addEventListener('keydown', onKey);
+      modalOverlay.addEventListener('click', ev => { if (ev.target === modalOverlay) closeModal(); });
       modalOverlay.querySelectorAll('[data-dlg-close]').forEach(b => b.addEventListener('click', closeModal));
 
       const persistAndRerender = async () => {
@@ -389,21 +457,25 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
         renderDailyInspectionView(containerEl, zone, curMonth, onMonthChange);
       };
 
-      modalOverlay.querySelector('[data-dlg-clear]')?.addEventListener('click', () => {
-        if (!schedules[memberKey]) schedules[memberKey] = {};
-        schedules[memberKey][dateStr] = ''; // 明確設為空字串，防止被預設值覆蓋
-        persistAndRerender();
-      });
-
-      modalOverlay.querySelector('[data-dlg-save]').addEventListener('click', () => {
+      const doSave = () => {
         const val = locInput.value.trim();
         if (!schedules[memberKey]) schedules[memberKey] = {};
-        schedules[memberKey][dateStr] = val; // 設為新地點或空字串
+        schedules[memberKey][dateStr] = val;
+        persistAndRerender();
+      };
+
+      locInput.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') { ev.preventDefault(); doSave(); }
+      });
+      modalOverlay.querySelector('[data-dlg-clear]')?.addEventListener('click', () => {
+        if (!schedules[memberKey]) schedules[memberKey] = {};
+        schedules[memberKey][dateStr] = '';
         persistAndRerender();
       });
+
+      modalOverlay.querySelector('[data-dlg-save]').addEventListener('click', doSave);
     };
 
-    cell.querySelector('[data-loc-badge]')?.addEventListener('click', triggerEdit);
-    cell.querySelector('[data-add-loc-btn]')?.addEventListener('click', triggerEdit);
+    cell.addEventListener('click', triggerEdit);
   });
 }

@@ -462,12 +462,25 @@ export function mountWishes(el) {
       };
     }
 
-    // 點擊池底金幣：直接幫該願望投幣附議 +1，並捲動高亮下方願望卡片
+    // 點擊池底金幣：桌面直接附議並高亮；行動裝置先定位至卡片再讓使用者決定是否投幣（防盲投）
     el.querySelectorAll('[data-pool-coin]').forEach(coinEl => {
       coinEl.onclick = async e => {
         e.stopPropagation();
         const wid = coinEl.dataset.poolCoin;
         const w = state.wishes.get(wid);
+        const isTouchMobile = window.innerWidth <= 860 || window.matchMedia?.('(hover: none)').matches;
+        if (isTouchMobile) {
+          const targetCard = el.querySelector(`[data-wish-card="${CSS.escape(wid)}"]`);
+          if (targetCard) {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            targetCard.classList.remove('wf-card-highlight');
+            void targetCard.offsetWidth;
+            targetCard.classList.add('wf-card-highlight');
+          }
+          toast(`🪙「${(w?.title || '許願').slice(0, 18)}」— 點擊卡片上的「+1 投幣」即可附議`, 'info');
+          return;
+        }
+
         const leftPct = Number(coinEl.dataset.coinLeft || 50);
         const topPct = (Number(coinEl.dataset.coinTop || 50) * 0.36) + 52;
         const alreadyVoted = Array.isArray(w?.votes) && w.votes.includes(uid);
@@ -476,7 +489,7 @@ export function mountWishes(el) {
           leftPct,
           topPct,
           text: alreadyVoted ? ` 已收回附議：${w?.title || ''}` : ` +1 投幣集氣：${(w?.title || '').slice(0, 14)}`,
-          symbol: '',
+          symbol: '★',
         };
         await toggleWishVote(wid);
         render();
@@ -497,7 +510,7 @@ export function mountWishes(el) {
           leftPct: 44 + Math.random() * 12,
           topPct: 62 + Math.random() * 12,
           text: ` 願望入池：${(wishTitle || '').slice(0, 15)}`,
-          symbol: '',
+          symbol: '★',
         };
         render();
       });
@@ -518,7 +531,7 @@ export function mountWishes(el) {
           leftPct,
           topPct,
           text: alreadyVoted ? '已取消附議' : ` +1 附議投入池中！`,
-          symbol: '',
+          symbol: '★',
         };
         await toggleWishVote(wid);
         render();

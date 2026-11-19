@@ -48,6 +48,7 @@ export function mountAdmin(el) {
           </div>
         </div>
         <p class="hint">新人入職時可點擊右上角「<b>＋ 新增組員</b>」預先授權建檔（設定姓名、公司 Email、職稱與內/外勤工作性質），新人首次使用公司 Google 帳號登入後將<b>自動無縫認領</b>。停用後該組員無法登入、從名單隱藏，<b>停用滿 ${APP.purgeAfterDays} 天未重新啟用將自動刪除</b>（過去的行程保留，顯示為「已離職組員」）。</p>
+        <div class="mobile-scroll-hint">← 左右滑動管理組員職稱與系統權限（姓名欄已鎖定）→</div>
         <div class="table-scroll"><table class="table" data-users></table></div>
       </section>
       <section class="card pad">
@@ -118,6 +119,7 @@ export function mountAdmin(el) {
           </div>
         </div>
 
+        <div class="mobile-scroll-hint">← 左右滑動切換各組員模組開關（姓名欄已鎖定）→</div>
         <div class="table-scroll">
           <table class="table perm-matrix-table" data-perm-table>
             <!-- 動態渲染矩陣內容 -->
@@ -401,7 +403,7 @@ export function mountAdmin(el) {
     };
     if (!editingUser) {
       q('[data-users]').innerHTML = `
-        <thead><tr><th style="width:72px; text-align:center;">順序</th><th>組員</th><th>職位</th><th>工作性質</th><th>Email</th><th>系統權限</th><th>啟用</th><th>狀態</th></tr></thead>
+        <thead><tr><th class="admin-sticky-col">組員</th><th style="width:72px; text-align:center;">順序</th><th>職位</th><th>工作性質</th><th>Email</th><th>系統權限</th><th>啟用</th><th>狀態</th></tr></thead>
         <tbody>${users.map((u, i) => {
           const canReorder = u.active;
           const activeIdx = activeList.findIndex(x => x.uid === u.uid);
@@ -410,13 +412,13 @@ export function mountAdmin(el) {
           const isSuper = isSupervisor(u);
           return `
           <tr data-uid="${esc(u.uid)}" class="${u.active ? '' : 'inactive'}">
+            <td class="admin-sticky-col"><span class="person">${avatar(u, 28)}${esc(u.displayName)}${u.uid === me ? '<span class="me-tag">我</span>' : ''}${isField ? '<span class="member-field-tag">外勤</span>' : ''}</span></td>
             <td style="text-align:center; white-space:nowrap;">
               ${canReorder ? `
                 <button type="button" class="btn icon small ghost" data-user-up="${activeIdx}" ${activeIdx === 0 ? 'disabled' : ''} title="往前移" style="padding:2px 4px; font-size:11px;">▲</button>
                 <button type="button" class="btn icon small ghost" data-user-down="${activeIdx}" ${activeIdx === activeList.length - 1 ? 'disabled' : ''} title="往後移" style="padding:2px 4px; font-size:11px;">▼</button>
               ` : '<span class="muted small-text">-</span>'}
             </td>
-            <td><span class="person">${avatar(u, 28)}${esc(u.displayName)}${u.uid === me ? '<span class="me-tag">我</span>' : ''}${isField ? '<span class="member-field-tag">外勤</span>' : ''}</span></td>
             <td><input type="text" name="title" value="${esc(u.title || '')}" placeholder="例：經營企劃專員" style="width:155px; font-size:13px; padding:4px 8px;"></td>
             <td>
               ${isSuper ? `<span class="muted small-text">主管（免回報）</span>` : `
@@ -568,7 +570,7 @@ export function mountAdmin(el) {
     table.innerHTML = `
       <thead>
         <tr>
-          <th style="min-width:180px;">組員姓名 / 職稱</th>
+          <th class="admin-sticky-col" style="min-width:170px;">組員姓名 / 職稱</th>
           <th style="min-width:120px;">系統角色</th>
           <th style="text-align:center; min-width:130px;">
             <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
@@ -602,7 +604,7 @@ export function mountAdmin(el) {
 
           return `
             <tr data-perm-uid="${esc(u.uid)}">
-              <td>
+              <td class="admin-sticky-col">
                 <div class="person" style="gap:8px;">
                   ${avatar(u, 30)}
                   <div>

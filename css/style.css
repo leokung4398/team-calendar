@@ -11624,3 +11624,572 @@ body.modal-open-lock {
     padding-left: 2px;
   }
 }
+
+/* ============================================================================
+   Phase 3 (v75)：各核心模組行動版體驗精修（行事曆 / 巡檢 / 模擬 / 建造島 / 小工具 / 聊天室 / 後台）
+   ============================================================================ */
+
+/* 1. 通用橫向滑動提示（桌面隱藏，行動裝置顯示） */
+.mobile-scroll-hint {
+  display: none;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+  padding: 4px 10px;
+  margin-bottom: 6px;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+}
+
+/* 2. 行事曆：行動版當日明細卡 (Selected-Day Agenda Card) */
+.cal-day-agenda {
+  margin-top: 12px;
+  border-top: 3px solid var(--yb, #f59e0b);
+  scroll-margin-top: 72px;
+}
+.cda-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+.cda-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.cda-meta strong {
+  font-size: 15px;
+  color: var(--ink);
+}
+.cda-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cda-events {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cda-ev {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-subtle, #f8fafc);
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.15s ease;
+}
+.cda-ev:active {
+  transform: scale(0.99);
+}
+.cda-ev-bar {
+  width: 4px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.cda-ev-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cda-ev-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cda-ev-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  word-break: break-word;
+}
+.cda-ev-sub {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+.cda-memos {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.cda-memo-row {
+  font-size: 12.5px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  color: #78350f;
+}
+
+/* 3. 每日品管巡檢：行動版星期標籤 ＆ 北區雙人並排視圖 */
+.insp-mobile-wd {
+  display: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.daily-insp-cell {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.insp-pair-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.insp-pair-row {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  gap: 8px;
+  align-items: stretch;
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 8px;
+}
+.insp-pair-row.is-today {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+.insp-pair-row.is-weekend {
+  background: #f8fafc;
+}
+.insp-pair-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border-radius: 8px;
+  background: var(--bg-subtle, #f1f5f9);
+  text-align: center;
+  gap: 2px;
+}
+.insp-pair-date strong {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.15;
+}
+.insp-pair-date small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.insp-pair-cells {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.insp-pair-cell {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px 9px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--card, #ffffff);
+  cursor: pointer;
+  min-height: 54px;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.insp-pair-cell:active {
+  transform: scale(0.98);
+}
+.insp-pair-cell.has-val {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+.insp-pair-who {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.insp-pair-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.insp-pair-note {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 4. 模擬體驗：觸控編輯模式標示、Popover 點擊展開與 12 個月摺疊區塊 */
+.sim-touch-edit-on .sim-admin-dbl-cell {
+  outline: 1.5px dashed #f59e0b;
+  outline-offset: -2px;
+  background: rgba(254, 243, 199, 0.35);
+}
+.crosscheck-badge-wrap.open .crosscheck-popover {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+.sim-month-details {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card, #ffffff);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.sim-month-details > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-weight: 800;
+  background: var(--bg-subtle, #f8fafc);
+  user-select: none;
+}
+.sim-month-details > summary::-webkit-details-marker {
+  display: none;
+}
+.sim-month-details[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+.sim-month-details-body {
+  padding: 10px 12px;
+}
+
+/* 5. 改善提案建造島：全島放大舞台、編輯彈窗地標列 ＆ 行動版精簡標點 */
+.kz-island-canvas {
+  position: absolute;
+  inset: 0;
+}
+.kz-spot-mini-ratio {
+  display: none;
+}
+.kz-zoom-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.kz-zoom-stage {
+  min-height: 62vh;
+  max-height: 76vh;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+}
+.kz-modal-lm-row {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 36px 1.3fr 1.1fr 95px 95px;
+  gap: 8px;
+  align-items: end;
+}
+.kz-modal-lm-icon {
+  font-size: 22px;
+  text-align: center;
+  padding-bottom: 4px;
+}
+
+/* 6. 改善提案登錄表彈窗：響應式表單格線 ＆ 速查表寬度 */
+.kz-form-g4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.kz-form-g3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.kz-form-g2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.kz-form-cosign {
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 10px;
+}
+.kz-form-stddoc {
+  display: grid;
+  grid-template-columns: 110px 130px 1fr 80px;
+  gap: 6px;
+}
+.kz-form-spread {
+  display: grid;
+  grid-template-columns: 120px 1fr 130px 150px;
+  gap: 10px;
+  align-items: end;
+}
+.kaizen-tier-table {
+  min-width: 640px;
+}
+
+/* 7. 實用小工具：響應式氣象卡片 ＆ 差旅試算格線 */
+.weather-cards-row {
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 10px;
+}
+.tools-calc-g3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.tools-calc-g2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+/* 8. 聊天室：桌面隱藏精簡表情觸發鈕、圖片點擊光箱游標 ＆ 行動鎖捲 */
+.chat-rx-picker-btn {
+  display: none;
+}
+.chat-msg-img {
+  cursor: zoom-in;
+}
+body.chat-open-lock {
+  overflow: hidden !important;
+}
+
+/* 9. 管理後台：水平捲動時鎖定組員姓名首欄 */
+.admin-sticky-col {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--card, #ffffff);
+  box-shadow: 2px 0 6px rgba(15, 23, 42, 0.06);
+}
+thead .admin-sticky-col {
+  z-index: 3;
+  background: var(--bg-subtle, #f8fafc);
+}
+html[data-theme="maple"] .admin-sticky-col {
+  background: #fffcf0;
+}
+html[data-theme="maple"] thead .admin-sticky-col {
+  background: #fef3c7;
+}
+html[data-theme="editorial"] .admin-sticky-col {
+  background: #fbfaf6;
+}
+html[data-theme="editorial"] thead .admin-sticky-col {
+  background: #f3eee3;
+}
+
+/* ================= 行動裝置統一響應式微調 (<= 860px / 768px / 640px) ================= */
+@media (max-width: 860px) {
+  .mobile-scroll-hint {
+    display: block;
+  }
+  .insp-mobile-wd {
+    display: inline;
+  }
+  .daily-insp-cell.is-outside-month {
+    display: none !important;
+  }
+  .wf-float-toast {
+    left: 50% !important;
+    max-width: calc(100% - 20px);
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 改善提案登錄表：所有多欄表單流暢折疊 */
+  .kz-form-g4,
+  .kz-form-g3,
+  .kz-form-stddoc,
+  .kz-form-spread {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kz-form-g2,
+  .kz-form-cosign {
+    grid-template-columns: 1fr;
+  }
+
+  /* 建造島編輯彈窗：圖示+名稱+建築各佔整行，目前/目標並排不拆開 */
+  .kz-modal-lm-row {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .kz-modal-lm-icon {
+    grid-column: 1 / -1;
+    text-align: left;
+    padding-bottom: 0;
+  }
+  .kz-modal-lm-name,
+  .kz-modal-lm-bldg {
+    grid-column: 1 / -1;
+  }
+
+  /* 建造島 3D 舞台：將上下 HUD 移出圖片外避免遮擋島嶼，並將地標改為清爽精簡圓點+比例膠囊 */
+  .kz-island-visual-stage {
+    aspect-ratio: auto !important;
+    min-height: 0 !important;
+    display: flex;
+    flex-direction: column;
+    background: #082f49;
+  }
+  .kz-island-canvas {
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    order: 2;
+    overflow: hidden;
+  }
+  .kz-island-stage-img {
+    width: 100%;
+    height: 100% !important;
+    object-fit: cover;
+  }
+  .kz-island-stage-vignette {
+    display: none;
+  }
+  .kz-stage-top-hud {
+    position: static !important;
+    order: 1;
+    padding: 8px 10px;
+    background: rgba(15, 23, 42, 0.88);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  }
+  .kz-stage-bottom-hud {
+    position: static !important;
+    order: 3;
+    padding: 8px 10px;
+    background: rgba(15, 23, 42, 0.92);
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .kz-island-hotspots-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .kz-island-hotspot {
+    pointer-events: auto;
+  }
+  .kz-island-hotspot .kz-spot-card {
+    display: none !important;
+  }
+  .kz-spot-beacon {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    width: auto !important;
+    height: auto !important;
+    background: rgba(15, 23, 42, 0.88) !important;
+    border: 1.5px solid #38bdf8;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.45);
+  }
+  .kz-spot-mini-ratio {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 900;
+    color: #fde047;
+    line-height: 1;
+  }
+  .kz-zoom-stage {
+    min-height: 0 !important;
+    max-height: none !important;
+    min-width: 100%;
+  }
+  .kz-zoom-stage .kz-island-hotspots-layer {
+    top: 0;
+    height: 100%;
+  }
+
+  /* 實用小工具：解除 YouBike 巢狀捲動陷阱、縮減國道地圖高度 */
+  .yb-stations-grid {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  .freeway-map-box {
+    height: 260px !important;
+  }
+  .tools-calc-g3,
+  .tools-calc-g2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  /* 行程表橫向模式：壓縮組員固定欄，一次多看 2~3 天 */
+  table.sched .who {
+    min-width: 88px !important;
+    max-width: 98px !important;
+    width: 92px !important;
+    padding: 6px !important;
+  }
+  table.sched .who-title {
+    display: none !important;
+  }
+  table.sched .who-in {
+    gap: 5px;
+  }
+
+  /* 氣象鄉鎮小卡：手機標準 2 欄並排 */
+  .weather-cards-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* 聊天室行動端：隱藏無意義「放大」鈕，零票表情收納至 😊+ */
+  .chat-max-btn {
+    display: none !important;
+  }
+  .chat-rx-picker-btn {
+    display: inline-flex;
+  }
+  .chat-msg-actions:not(.rx-open) .chat-rx-btn.is-zero {
+    display: none;
+  }
+
+  /* 改善提案登錄表 4/3 欄在極窄手機（<=420px 仍 2 欄或 1 欄） */
+  .kz-form-stddoc,
+  .kz-form-spread {
+    grid-template-columns: 1fr;
+  }
+}

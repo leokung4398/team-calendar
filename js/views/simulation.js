@@ -201,7 +201,9 @@ function getDailyInspectionCrossCheck(monthKey) {
 export function mountSimulation(el, ctx = {}) {
   let curMonth = ctx.month || ymd().slice(0, 7);
   let activeSubTab = ctx.subTab || 'matrix'; // 'matrix' | 'north' | 'south' | 'annual'
-  let annualViewMode = 'vertical'; // 'vertical' (Excel一月~十一月垂直展開) | 'summary' (年度趨勢彙整)
+  let annualViewMode = 'vertical'; // 'vertical' (一月~十二月折疊展開) | 'master' (母體總數表)
+  let adminQuotaTouchMode = false; // 管理員單點微調配額模式（觸控裝置友善！）
+  let lastMatrixScrollLeft = 0;
 
   function getSortedTeamUsers() {
     const allUsers = [...state.users.values()].filter(u => u.active !== false && u.displayName !== '徐嘉鴻');
@@ -297,7 +299,7 @@ export function mountSimulation(el, ctx = {}) {
             <span class="month-trigger-hint">▸ 切換月份</span>
           </div>
           <div class="month-expander-ZeroDrawer">
-            ${SIMULATION_2026_MONTHS.slice(0, 11).map(mKey => {
+            ${SIMULATION_2026_MONTHS.map(mKey => {
               const mNum = Number(mKey.slice(5, 7));
               const isCur = mKey === curMonth && activeSubTab !== 'annual';
               return `
@@ -387,11 +389,19 @@ export function mountSimulation(el, ctx = {}) {
         </div>
 
         <!-- 核心排班矩陣表格（完整包含 Excel 第 1~2 列「出差日期」與「外縣市天數」） -->
-        <div class="card pad" style="overflow-x:auto;">
+        <div class="card pad sim-matrix-card" data-sim-matrix-scroll style="overflow-x:auto;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-            <div style="display:flex;align-items:center;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <h3 style="font-size:15.5px; margin:0;">各縣市配額與組員排班矩陣（${yStr}/${mStr}）</h3>
-              <span class="info-pill-tip" data-tip="點選上方粉紅列『出差日期』可記錄幾號出差；點選下方組員格子可編輯排班次數${isAdmin() ? '；管理員快速雙擊左側配額或當月工作天可微調基準數值' : ''}">ⓘ 操作提示</span>
+              <span class="info-pill-tip" data-tip="點選上方粉紅列『出差日期』可記錄幾號出差；點選下方組員格子可編輯排班次數${isAdmin() ? '；管理員可開啟「微調配額模式」單點調整，或電腦端雙擊左側基準配額' : ''}">ⓘ 操作提示</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span class="mobile-scroll-hint" style="margin:0;padding:2px 8px">← 左右滑動填寫各組員 →</span>
+              ${isAdmin() ? `
+                <button type="button" class="btn small ${adminQuotaTouchMode ? 'primary' : 'ghost'}" data-toggle-quota-mode>
+                  ${adminQuotaTouchMode ? '✓ 微調配額中（單點數字可改）' : '✏️ 微調配額/工作天'}
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -568,11 +578,11 @@ export function mountSimulation(el, ctx = {}) {
     bindEvents();
   }
 
-  /** 子分頁 4：渲染「 2026年度總覽（一月～十一月垂直展開表）」與「 母體總數試算表」 */
+  /** 子分頁 4：渲染「 2026年度總覽（一月～十二月折疊展開表）」與「 母體總數試算表」 */
   function renderAnnualAndMasterView(container, sortedUsers) {
-    const activeMonths = SIMULATION_2026_MONTHS.slice(0, 11); // 2026-01 ~ 2026-11
+    const activeMonths = SIMULATION_2026_MONTHS; // 2026-01 ~ 2026-12
 
-    // 建立單一月份的唯讀精簡矩陣區塊（高度還原使用者截圖中「2026年度」一月、二月、三月垂直排列的視覺！）
+    // 建立單一月份的唯讀精簡矩陣區塊（採 <details> 折疊，預設展開當月，手機載入輕快不長捲）
     const renderMonthBlock = (mKey) => {
       const mData = getMergedMonthSimulationData(mKey);
       const { userTotalDays, userTotalVehicles } = computeMonthUserMetrics(
@@ -583,6 +593,7 @@ export function mountSimulation(el, ctx = {}) {
         mData.hist
       );
       const zhMonth = MONTH_ZH_NAMES[mKey] || mKey;
+      const isOpenByDefault = mKey === curMonth;
       let totalTarget = 0;
       let totalVeh = 0;
       mData.quotas.forEach(q => {
@@ -591,21 +602,22 @@ export function mountSimulation(el, ctx = {}) {
       });
 
       return `
-        <div class="card pad" style="border:1.5px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="background:#ef4444; color:#fff; font-weight:900; font-size:15px; padding:4px 14px; border-radius:4px; letter-spacing:1px;">
+        <details class="card pad sim-annual-month-details" ${isOpenByDefault ? 'open' : ''} style="border:1.5px solid #cbd5e1; box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+          <summary style="list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span style="background:#ef4444; color:#fff; font-weight:900; font-size:14.5px; padding:4px 12px; border-radius:4px; letter-spacing:1px;">
                 ${esc(zhMonth)}
               </span>
               <span style="font-size:13px; color:#334155;">工作天：<b>${mData.workDays}</b> 天</span>
-              <span style="font-size:13px; color:#475569;">｜ 總抽檢目標：<b>${totalVeh.toLocaleString()}</b> 台</span>
+              <span style="font-size:13px; color:#475569;">｜ 目標：<b>${totalVeh.toLocaleString()}</b> 台</span>
+              <span class="muted tiny">（點此展開/收合 ▾）</span>
             </div>
-            <button type="button" class="btn small ghost" data-edit-single-month="${mKey}" style="font-weight:700; color:#2563eb;">
-              切換至 ${esc(zhMonth)} 編輯模式 ↗
+            <button type="button" class="btn small ghost" data-edit-single-month="${mKey}" onclick="event.stopPropagation()" style="font-weight:700; color:#2563eb;">
+              切換至 ${esc(zhMonth)} 編輯 ↗
             </button>
-          </div>
+          </summary>
 
-          <div style="overflow-x:auto;">
+          <div style="overflow-x:auto; margin-top:10px;">
             <table style="width:100%; border-collapse:collapse; min-width:900px; font-size:12.5px; text-align:center; border:2px solid #334155;">
               <thead>
                 <!-- 出差日期列 -->
@@ -680,7 +692,7 @@ export function mountSimulation(el, ctx = {}) {
               </tfoot>
             </table>
           </div>
-        </div>
+        </details>
       `;
     };
 
@@ -694,22 +706,22 @@ export function mountSimulation(el, ctx = {}) {
           <div>
             <h3 style="margin:0; font-size:17px; color:#92400e;">2026 全年度執行總覽 ＆ 全台母體車輛配額試算表</h3>
             <p style="margin:4px 0 0 0; font-size:12.5px; color:#b45309;">
-              完整整合試算表中的「<b>2026年度 (一月～十一月垂直總表)</b>」與「<b>總數表 (全台 114,094 台母體抽驗比例公式)</b>」
+              完整整合「<b>2026年度 (一月～十二月折疊總表)</b>」與「<b>總數表 (全台 114,094 台母體抽驗比例公式)</b>」
             </p>
           </div>
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button type="button" class="btn small ${annualViewMode === 'vertical' ? 'primary' : 'ghost'}" data-annual-mode="vertical">
-              2026年度垂直展開表 (一月～十一月)
+              年度月份總表 (1~12月)
             </button>
             <button type="button" class="btn small ${annualViewMode === 'master' ? 'primary' : 'ghost'}" data-annual-mode="master">
-              母體總數與抽驗比例表 (總數表)
+              全台母體與抽驗比例表
             </button>
           </div>
         </div>
 
         ${annualViewMode === 'vertical' ? `
-          <!-- 一月～十一月垂直展開長表（完全還原使用者截圖視覺） -->
-          <div style="display:flex; flex-direction:column; gap:18px;">
+          <!-- 一月～十二月可折疊展開長表 -->
+          <div style="display:flex; flex-direction:column; gap:12px;">
             ${activeMonths.map(mKey => renderMonthBlock(mKey)).join('')}
           </div>
         ` : ''}
@@ -718,7 +730,7 @@ export function mountSimulation(el, ctx = {}) {
         <div class="card pad" id="fleet-master-section" style="border-top:4px solid #0284c7;">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
             <div>
-              <div style="display:flex; align-items:center; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span class="badge-tag info">總數表 (配額計算源頭)</span>
                 <h3 style="margin:0; font-size:17px;">全台各縣市 2.0 / 2.0E 母體車輛數與抽驗配額試算表</h3>
               </div>
@@ -866,13 +878,45 @@ export function mountSimulation(el, ctx = {}) {
       });
     });
 
-    // 點擊連動膠囊跳轉至北區/南區每日巡檢月曆
-    el.querySelectorAll('[data-jump-zone]').forEach(chip => {
+    // 點擊連動膠囊：在觸控小螢幕先展開明細 Popover，點 Popover 內連結（或桌面直接點擊）才跳轉至北區/南區巡檢月曆
+    el.querySelectorAll('.crosscheck-mini-pill[data-jump-zone]').forEach(chip => {
+      chip.addEventListener('click', e => {
+        if (window.matchMedia('(hover: none), (max-width: 860px)').matches) {
+          e.stopPropagation();
+          const wrap = chip.closest('.crosscheck-badge-wrap');
+          const wasOpen = wrap?.classList.contains('open');
+          el.querySelectorAll('.crosscheck-badge-wrap.open').forEach(w => w.classList.remove('open'));
+          if (wrap && !wasOpen) {
+            wrap.classList.add('open');
+            return;
+          }
+        }
+        activeSubTab = chip.dataset.jumpZone;
+        render();
+      });
+    });
+    el.querySelectorAll('[data-jump-zone]:not(.crosscheck-mini-pill)').forEach(chip => {
       chip.addEventListener('click', () => {
         activeSubTab = chip.dataset.jumpZone;
         render();
       });
     });
+
+    // 管理員微調配額模式開關（解決手機無法 dblclick 問題）
+    el.querySelector('[data-toggle-quota-mode]')?.addEventListener('click', () => {
+      adminQuotaTouchMode = !adminQuotaTouchMode;
+      render();
+      if (adminQuotaTouchMode) toast('已開啟微調模式：直接單點任一「工作天」或左側基準配額即可修改！', 'info');
+    });
+
+    // 還原並追蹤矩陣橫向捲動位置（編輯右側組員時不再彈回最左邊！）
+    const matrixScrollEl = el.querySelector('[data-sim-matrix-scroll]');
+    if (matrixScrollEl) {
+      if (lastMatrixScrollLeft > 0) matrixScrollEl.scrollLeft = lastMatrixScrollLeft;
+      matrixScrollEl.addEventListener('scroll', () => {
+        lastMatrixScrollLeft = matrixScrollEl.scrollLeft;
+      }, { passive: true });
+    }
 
     // 年度總覽內的模式切換（垂直展開表 vs 母體總數表）
     el.querySelectorAll('[data-annual-mode]').forEach(btn => {
@@ -979,9 +1023,9 @@ export function mountSimulation(el, ctx = {}) {
       });
     });
 
-    // 管理員快速雙擊（dblclick）左側基準配額或「當月工作天」開啟單格微調模式
+    // 管理員快速雙擊（dblclick）或於「微調配額模式」單點（click）左側基準配額或「當月工作天」開啟單格微調
     el.querySelectorAll('.sim-admin-dbl-cell').forEach(cell => {
-      cell.addEventListener('dblclick', (e) => {
+      const startQuotaInlineEdit = (e) => {
         if (!isAdmin()) return;
         if (cell.querySelector('.sim-quota-inline-input')) return;
         e.preventDefault();
@@ -1084,6 +1128,11 @@ export function mountSimulation(el, ctx = {}) {
         input.addEventListener('blur', () => {
           commitEdit(false);
         });
+      };
+
+      cell.addEventListener('dblclick', startQuotaInlineEdit);
+      cell.addEventListener('click', (e) => {
+        if (adminQuotaTouchMode) startQuotaInlineEdit(e);
       });
     });
   }
