@@ -1037,8 +1037,8 @@ export function mountVents(el) {
                 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
                   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                     <strong style="font-size:13.5px;color:${v.isAnonymous ? '#475569' : 'var(--text)'}">${esc(v.authorName || '匿名單車客')}</strong>
-                    ${v.isAnonymous ? `<span class="badge" style="background:#F1F5F9;color:#475569;font-size:11px">完全匿名</span>` : ''}
-                    <span class="badge" style="background:#FEF3C7;color:#92400E;font-size:11px">${esc(cat.label)}</span>
+                    ${v.isAnonymous ? `<span class="badge inline" style="background:#F1F5F9;color:#475569;font-size:11px">完全匿名</span>` : ''}
+                    <span class="badge inline" style="background:#FEF3C7;color:#92400E;font-size:11px">${esc(cat.label)}</span>
                     <span class="muted" style="font-size:11.5px">${esc(formatTaipeiDateTime(v.createdAt || v.createdAtIso, { includeYear: true, includeTime: true }))}</span>
                   </div>
                   ${canDel ? `<button class="btn sm ghost" data-del-vent="${esc(v.id)}" style="color:var(--danger);padding:2px 6px">✕</button>` : ''}
@@ -1067,8 +1067,8 @@ export function mountVents(el) {
                         `).join('')}
                       </div>
                     ` : ''}
-                    <form class="vent-reply-form" data-vreply-form="${esc(v.id)}" style="display:flex;gap:6px;align-items:center">
-                      <input type="text" name="text" required placeholder="寫下打氣或共鳴留言…" style="flex:1;padding:6px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px">
+                    <form class="vent-reply-form" data-vreply-form="${esc(v.id)}" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+                      <input type="text" name="text" required placeholder="寫下打氣或共鳴留言…" style="flex:1 1 160px;min-width:0;padding:6px 10px;border-radius:8px;border:1px solid var(--border);font-size:13px">
                       <label style="display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;cursor:pointer">
                         <input type="checkbox" name="anon" checked> 匿名回覆
                       </label>
@@ -1110,16 +1110,28 @@ export function mountVents(el) {
       };
     });
 
-    // 點擊枝頭微光燈籠：送出「 拍拍」並飛入暖心光點
+    // 點擊枝頭微光燈籠：手機先捲動定位檢視（防盲投），桌面直接送出「拍拍」
     el.querySelectorAll('[data-tree-lantern]').forEach(lantern => {
       lantern.onclick = async e => {
         e.stopPropagation();
         const vid = lantern.dataset.treeLantern;
+        const isTouchMobile = window.matchMedia('(max-width: 860px)').matches;
+        if (isTouchMobile) {
+          const card = el.querySelector(`[data-vent-card="${CSS.escape(vid)}"]`);
+          if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.remove('th-card-highlight');
+            void card.offsetWidth;
+            card.classList.add('th-card-highlight');
+            toast('已定位至對應心聲，點擊卡片下方按鈕即可送暖！', 'info');
+          }
+          return;
+        }
         pendingPlaneOpts = {
           leftPct: 50,
           topPct: 53,
           text: '已為夥伴送上溫暖拍拍與打氣星光！',
-          symbol: '',
+          symbol: '✦',
         };
         await toggleVentReaction(vid, 'hug');
         render();
@@ -1142,7 +1154,7 @@ export function mountVents(el) {
           leftPct: 50,
           topPct: 53,
           text: '點擊中央「古樹洞」寫下心聲，或點左下「營火」燒掉鳥事！',
-          symbol: '',
+          symbol: '✈',
         });
       };
     }
@@ -1155,7 +1167,7 @@ export function mountVents(el) {
             leftPct: 50,
             topPct: 53,
             text: '心聲已飛入千年樹洞，並化為枝頭暖燈！',
-            symbol: '',
+            symbol: '★',
           };
           render();
         });
@@ -1165,13 +1177,13 @@ export function mountVents(el) {
     el.querySelectorAll('[data-vent-rx]').forEach(btn => {
       btn.onclick = async () => {
         const rxType = btn.dataset.rxType;
-        const emojiMap = { hug: '', cry: '', cheer: '' };
+        const emojiMap = { hug: '♥', cry: '✦', cheer: '★' };
         el.querySelector('[data-th-stage]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         pendingPlaneOpts = {
           leftPct: 50,
           topPct: 53,
-          text: `${emojiMap[rxType] || ''} 溫暖打氣已傳遞至古樹洞！`,
-          symbol: emojiMap[rxType] || '',
+          text: `${emojiMap[rxType] || '★'} 溫暖打氣已傳遞至古樹洞！`,
+          symbol: emojiMap[rxType] || '★',
         };
         await toggleVentReaction(btn.dataset.ventRx, rxType);
         render();

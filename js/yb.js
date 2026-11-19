@@ -1,7 +1,9 @@
 // YouBike 風格小元素（自繪 SVG，非官方商標）＋ 楓之谷主題彩蛋 SVG 圖騰與 LEVEL UP 特效
 // 單車：低跨式車架 + 前置車籃，wheel 群組可加上 .spin 轉動
 import { APP } from './config.js';
-import { toMin } from './utils.js';
+import { toMin, esc } from './utils.js';
+
+let _msGradSeq = 0;
 
 const wheel = (cx, cy) => `
   <g class="yb-wheel" style="transform-origin:${cx}px ${cy}px">
@@ -13,6 +15,7 @@ const wheel = (cx, cy) => `
 
 /** 楓之谷經典吉祥物 SVG（菇菇寶貝 Orange Mushroom / 紅楓葉 Maple Leaf / 綠水靈 Slime / 雪吉拉 Yeti / 皮卡啾 Pink Bean / 楓幣 Meso） */
 export function mapleMushroomSvg(size = 24, cls = '') {
+  const gid = `msCapGrad_${++_msGradSeq}`;
   return `<svg class="maple-sprite mushroom ${cls}" width="${size}" height="${size}" viewBox="0 0 36 36" aria-hidden="true">
     <!-- 菇菇寶貝米白身體 -->
     <path d="M10 21 C9 29 12 33 18 33 C24 33 27 29 26 21 Z" fill="#FFF3D6" stroke="#4A2508" stroke-width="2" stroke-linejoin="round"/>
@@ -23,9 +26,9 @@ export function mapleMushroomSvg(size = 24, cls = '') {
     <ellipse cx="24" cy="28" rx="1.8" ry="1" fill="#FF8A65" opacity=".75"/>
     <path d="M16.5 28.5 Q18 30 19.5 28.5" fill="none" stroke="#4A2508" stroke-width="1.4" stroke-linecap="round"/>
     <!-- 經典亮橘色香菇傘帽 -->
-    <path d="M4 21 C3 10 10 4 18 4 C26 4 33 10 32 21 C26 23 10 23 4 21 Z" fill="url(#msCapGrad)" stroke="#4A2508" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M4 21 C3 10 10 4 18 4 C26 4 33 10 32 21 C26 23 10 23 4 21 Z" fill="url(#${gid})" stroke="#4A2508" stroke-width="2" stroke-linejoin="round"/>
     <defs>
-      <linearGradient id="msCapGrad" x1="0" y1="0" x2="0" y2="1">
+      <linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="#FF9E22"/>
         <stop offset="65%" stop-color="#FF6600"/>
         <stop offset="100%" stop-color="#D94600"/>
@@ -99,7 +102,7 @@ export function bike(size = 28, { spin = false, cls = '' } = {}) {
     <path d="M 21 10 Q 26 9 31 10 Q 29 13 25 13 Q 22 13 21 10 Z" fill="#1e293b"/>
 
     <!-- 楓之谷主題專屬彩蛋：坐在單車上的 Q 版菇菇寶貝 (僅在 data-theme="maple" 時顯示) -->
-    <g class="maple-rider-sprite" style="display:none">
+    <g class="maple-rider-sprite">
       <path d="M 21 9 C 21 3 31 3 31 9 Z" fill="#FF6600" stroke="#4A2508" stroke-width="1.3"/>
       <circle cx="24.5" cy="6" r="1.3" fill="#FFE066"/>
       <circle cx="28" cy="6.5" r="1.2" fill="#FFE066"/>
@@ -186,7 +189,7 @@ export function triggerMapleLevelUpEffect(subText = '每日任務完成！EXP +1
         ${mapleSlimeSvg(32)}
       </div>
       <div class="maple-lu-title">LEVEL UP!</div>
-      <div class="maple-lu-sub">${subText}</div>
+      <div class="maple-lu-sub">${esc(subText)}</div>
     </div>
   `;
   document.body.appendChild(wrap);

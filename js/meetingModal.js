@@ -218,7 +218,7 @@ export function openMeetingEditor(m = null) {
       if (evs.some(x => ['leave', 'trip'].includes(x.ev.typeId))) newBusy.add(u.uid);
     });
     const nextRec = suggestNextRecorder(newDate, newBusy);
-    q('[name=recorderUid]').innerHTML = userOptions(nextRec);
+    q('[name=recorderUid]').innerHTML = userOptions(nextRec, true);
   };
 
   q('[data-save]').onclick = async () => {
@@ -306,7 +306,20 @@ export function openAgendaLinkEditor(meeting, agendaIndex) {
   const q = s => modal.el.querySelector(s);
   const listEl = q('[data-links-list]');
 
+  const syncLinksFromDOM = () => {
+    const rows = [...listEl.querySelectorAll('.agenda-link-row')];
+    if (!rows.length) return;
+    links.length = 0;
+    rows.forEach(r => {
+      links.push({
+        title: r.querySelector('.link-title')?.value || '',
+        url: r.querySelector('.link-url')?.value || '',
+      });
+    });
+  };
+
   q('[data-add-link]').onclick = () => {
+    syncLinksFromDOM();
     links.push({ title: '', url: '' });
     listEl.innerHTML = renderLinkRows();
     modal.el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -314,6 +327,7 @@ export function openAgendaLinkEditor(meeting, agendaIndex) {
 
   listEl.addEventListener('click', e => {
     if (e.target.closest('[data-del-link]')) {
+      syncLinksFromDOM();
       const row = e.target.closest('.agenda-link-row');
       const idx = Number(row.dataset.i);
       links.splice(idx, 1);
@@ -729,7 +743,7 @@ export function openMinutesEditor(meeting) {
   });
 
   // 快速詞彙插入至討論重點
-  modal.el.addEventListener('click', e => {
+  modal.el.addEventListener('click', async e => {
     const chipBtn = e.target.closest('[data-insert-txt]');
     if (chipBtn) {
       const txt = chipBtn.dataset.insertTxt;
@@ -795,7 +809,7 @@ export function openMinutesEditor(meeting) {
       const postponeNote = `【因公請假】報告人（${presName}）本次請假，議題暫緩討論。`;
       const postponeConc = `本次暫緩，延至下月月會追蹤報告。`;
 
-      if (disc && (!disc.value.trim() || confirm(`確定將此議題標記為「請假暫緩」嗎？`))) {
+      if (disc && (!disc.value.trim() || await confirmDialog(`確定將此議題標記為「請假暫緩」嗎？`, { title: '確認標記暫緩', okText: '確定暫緩' }))) {
         disc.value = postponeNote;
         if (conc) conc.value = postponeConc;
 
@@ -819,13 +833,13 @@ export function openMinutesEditor(meeting) {
   });
 
   // 帶入主管常態宣達事項
-  q('[data-insert-general-template]')?.addEventListener('click', () => {
+  q('[data-insert-general-template]')?.addEventListener('click', async () => {
     const ta = q('[name=generalNotes]');
     const template = `1. 提醒上下班務必確實執行打卡系統，若有漏打請依規定提出補簽。
 2. 全員確實落實行事曆雙週預審與外出報備機制。
 3. 部門年度考核表與個人改善提案請同仁掌握時程儘速提交。
 4. 個人特休假請同仁依年度規劃儘早安排休畢。`;
-    if (ta.value.trim() && !confirm('綜合紀錄已有內容，確定要帶入範本嗎？')) return;
+    if (ta.value.trim() && !(await confirmDialog('綜合紀錄已有內容，確定要覆寫並帶入範本嗎？', { title: '帶入宣達範本', okText: '確定帶入' }))) return;
     ta.value = template;
     ta.focus();
     modal.el.dispatchEvent(new Event('input', { bubbles: true }));
@@ -847,8 +861,19 @@ export function openMinutesEditor(meeting) {
     toast('已將下次會議資訊加入至紀錄末尾', 'success');
   });
 
+  const syncActionItemsFromDOM = () => {
+    const rows = [...aiListEl.querySelectorAll('.action-item-row')];
+    if (!rows.length) return;
+    curActionItems = rows.map(r => ({
+      task: r.querySelector('.ai-task')?.value || '',
+      ownerUid: r.querySelector('.ai-owner')?.value || '',
+      dueDate: r.querySelector('.ai-due')?.value || '',
+    }));
+  };
+
   // 待辦項目增刪
   q('[data-add-ai]').onclick = () => {
+    syncActionItemsFromDOM();
     curActionItems.push({ task: '', ownerUid: '', dueDate: '' });
     aiListEl.innerHTML = renderActionRows(curActionItems);
     modal.el.dispatchEvent(new Event('change', { bubbles: true }));
@@ -856,6 +881,7 @@ export function openMinutesEditor(meeting) {
 
   aiListEl.addEventListener('click', e => {
     if (e.target.closest('[data-del-ai]')) {
+      syncActionItemsFromDOM();
       const row = e.target.closest('.action-item-row');
       const idx = Number(row.dataset.aiIdx);
       curActionItems.splice(idx, 1);
@@ -1232,16 +1258,16 @@ export function openMinutesEmailHelper(meeting) {
         </div>
 
         <!-- 1. 收件者 -->
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="width:76px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">收件者：</span>
-          <input type="text" data-recipients-input readonly value="${esc(recipientsExcludeSelf)}" style="flex:1; font-size:12px; padding:6px 10px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; color:#334155;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="min-width:64px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">收件者：</span>
+          <input type="text" data-recipients-input readonly value="${esc(recipientsExcludeSelf)}" style="flex:1 1 180px; min-width:0; font-size:12px; padding:6px 10px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; color:#334155;">
           <button type="button" class="btn small ghost" data-copy-recipients style="white-space:nowrap; font-weight:600;">複製收件者</button>
         </div>
 
         <!-- 2. 信件主旨 -->
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="width:76px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">主　旨：</span>
-          <input type="text" data-subject-input value="${esc(subject)}" style="flex:1; font-size:13px; font-weight:700; padding:6px 10px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+          <span style="min-width:64px; font-size:12.5px; font-weight:700; color:#475569; flex-shrink:0;">主　旨：</span>
+          <input type="text" data-subject-input value="${esc(subject)}" style="flex:1 1 180px; min-width:0; font-size:13px; font-weight:700; padding:6px 10px; background:#fff; border:1px solid #cbd5e1; border-radius:6px; color:#0f172a;">
           <button type="button" class="btn small ghost" data-copy-subject style="white-space:nowrap; font-weight:600;">複製主旨</button>
         </div>
       </div>
@@ -1250,7 +1276,7 @@ export function openMinutesEmailHelper(meeting) {
       <div style="display:flex; flex-direction:column; gap:6px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
           <span style="font-size:13px; font-weight:700; color:#334155;">會議紀錄信件內文預覽（已自動依大綱與編號排版）：</span>
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button type="button" class="btn small ok-btn" data-copy-rich style="font-weight:700;">
               複製內文（含藍色標題排版）
             </button>

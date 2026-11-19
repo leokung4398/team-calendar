@@ -124,7 +124,8 @@ function renderChatSystem() {
 
   if (!drawerOpen) {
     rootEl.innerHTML = `
-      <button class="chat-fab-btn" data-open-chat title="開啟團隊即時聊天室">
+      <button class="chat-fab-btn" data-open-chat title="開啟團隊即時聊天室" aria-label="開啟團隊即時聊天室">
+        <svg class="chat-fab-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="chat-fab-label">聊天室</span>
         ${unread > 0 ? `<span class="chat-fab-badge">${unread > 99 ? '99+' : unread}</span>` : ''}
       </button>

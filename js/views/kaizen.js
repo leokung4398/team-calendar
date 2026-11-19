@@ -1162,13 +1162,13 @@ function openPrintProposalModal(p) {
   const dtParts = (p.startDate || '2026-06-19').split('-');
   const startMonth = dtParts[1] || '06';
   const startDay = dtParts[2] || '19';
-  const chk = cond => (cond ? '' : '□');
+  const chk = cond => (cond ? '☑' : '□');
 
   openModal(`
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e2e8f0">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 12px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #e2e8f0">
       <div>
         <h3 style="margin:0;font-size:17px;font-weight:800">改善提案登錄表（標準 Word 雙頁格式 1:1 預覽）</h3>
-        <div class="muted tiny">已 100% 還原《2026 上半年改善提案登錄表 By 經營組_孔令淳.docx》第 1 頁登錄表與第 2 頁採分基準表</div>
+        <div class="muted tiny">已 100% 還原《2026 上半年改善提案登錄表 By 經營組_孔令淳.docx》第 1 頁登錄表與第 2 頁採分基準表（手機可左右滑動預覽）</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         <button type="button" class="btn primary sm" data-do-print>列印 ／ 另存為 PDF 送簽</button>
@@ -1176,8 +1176,8 @@ function openPrintProposalModal(p) {
       </div>
     </div>
 
-    <div style="max-height:75vh;overflow-y:auto;background:#e2e8f0;padding:14px;border-radius:10px">
-      <div id="kz-printable-sheet" style="background:#fff;max-width:820px;margin:0 auto;padding:22px 26px;color:#000;font-family:'Microsoft JhengHei','PMingLiU',sans-serif;font-size:12px;line-height:1.45;box-shadow:0 4px 18px rgba(0,0,0,0.12)">
+    <div style="max-height:72dvh;overflow:auto;-webkit-overflow-scrolling:touch;background:#e2e8f0;padding:12px;border-radius:10px">
+      <div id="kz-printable-sheet" style="background:#fff;min-width:740px;max-width:820px;margin:0 auto;padding:22px 26px;color:#000;font-family:'Microsoft JhengHei','PMingLiU',sans-serif;font-size:12px;line-height:1.45;box-shadow:0 4px 18px rgba(0,0,0,0.12)">
         <style>
           #kz-printable-sheet table.kz-doc-tbl { width: 100%; border-collapse: collapse; margin-bottom: 6px; table-layout: fixed; }
           #kz-printable-sheet table.kz-doc-tbl th,
@@ -1468,19 +1468,22 @@ function openPrintProposalModal(p) {
 
 function openKaizenLightboxModal(startIdx = 0) {
   let idx = startIdx;
+  const m = openModal('<div data-kz-lb-host></div>', { xl: true });
   function renderLightbox() {
     const kc = KAIZEN_CARDS[idx] || KAIZEN_CARDS[0];
-    openModal(`
+    const host = m.el.querySelector('[data-kz-lb-host]');
+    if (!host) return;
+    host.innerHTML = `
       <div class="modal-head" style="padding:4px 4px 12px;border-bottom:1px solid #e6decb;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span class="kaizen-badge-pill">${esc(kc.badge)}</span>
           <strong style="font-size:19px;color:#1e3f35;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">${esc(kc.title)}</strong>
           <span class="kaizen-hl-tag">${esc(kc.highlight)}</span>
         </div>
-        <button class="icon-btn" data-close style="font-size:18px">✕</button>
+        <button class="icon-btn" data-close style="font-size:18px" aria-label="關閉">✕</button>
       </div>
-      <div style="background:#141c19;padding:16px;border-radius:14px;text-align:center;position:relative;box-shadow:inset 0 2px 12px rgba(0,0,0,0.4)">
-        <img src="${esc(kc.img)}" alt="${esc(kc.title)}" style="width:100%;max-height:74vh;object-fit:contain;border-radius:10px;display:block;margin:0 auto">
+      <div style="background:#141c19;padding:12px;border-radius:14px;text-align:center;position:relative;box-shadow:inset 0 2px 12px rgba(0,0,0,0.4)">
+        <img src="${esc(kc.img)}" alt="${esc(kc.title)}" style="width:100%;max-height:66dvh;object-fit:contain;border-radius:10px;display:block;margin:0 auto">
       </div>
       <div style="background:#f8f3e8;border:1px solid #e2d4b7;border-left:4px solid #b89446;border-radius:10px;padding:12px 16px;margin-top:12px">
         <div style="font-weight:800;color:#7c5c1a;font-size:13.5px;margin-bottom:5px;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">重點速讀（${esc(kc.highlight)}）</div>
@@ -1488,50 +1491,46 @@ function openKaizenLightboxModal(startIdx = 0) {
           ${kc.points.map(pt => `<li>${pt}</li>`).join('')}
         </ul>
       </div>
-      <div class="modal-foot" style="justify-content:space-between;padding:14px 4px 2px;margin-top:12px">
-        <div style="display:flex;gap:10px;align-items:center">
-          <button type="button" class="btn ghost" data-kz-prev style="padding:8px 16px;font-weight:700">◀ 上一張圖卡</button>
-          <span class="muted" style="font-size:13px;font-weight:700">第 ${idx + 1} / ${KAIZEN_CARDS.length} 張</span>
-          <button type="button" class="btn ghost" data-kz-next style="padding:8px 16px;font-weight:700">下一張圖卡 ▶</button>
+      <div class="modal-foot" style="justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 4px 2px;margin-top:12px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn ghost" data-kz-prev style="padding:7px 12px;font-weight:700">◀ 上一張</button>
+          <span class="muted" style="font-size:13px;font-weight:700">${idx + 1} / ${KAIZEN_CARDS.length}</span>
+          <button type="button" class="btn ghost" data-kz-next style="padding:7px 12px;font-weight:700">下一張 ▶</button>
         </div>
-        <button type="button" class="btn primary" data-close style="padding:8px 22px;font-weight:800">關閉</button>
+        <button type="button" class="btn primary" data-close style="padding:7px 18px;font-weight:800">關閉</button>
       </div>
-    `, { xl: true });
-
-    const prevBtn = document.querySelector('[data-kz-prev]');
-    const nextBtn = document.querySelector('[data-kz-next]');
-    if (prevBtn) {
-      prevBtn.onclick = () => {
-        idx = (idx - 1 + KAIZEN_CARDS.length) % KAIZEN_CARDS.length;
-        renderLightbox();
-      };
-    }
-    if (nextBtn) {
-      nextBtn.onclick = () => {
-        idx = (idx + 1) % KAIZEN_CARDS.length;
-        renderLightbox();
-      };
-    }
+    `;
+    host.querySelector('[data-kz-prev]').onclick = () => {
+      idx = (idx - 1 + KAIZEN_CARDS.length) % KAIZEN_CARDS.length;
+      renderLightbox();
+    };
+    host.querySelector('[data-kz-next]').onclick = () => {
+      idx = (idx + 1) % KAIZEN_CARDS.length;
+      renderLightbox();
+    };
   }
   renderLightbox();
 }
 
 function openVsComparisonLightboxModal(startIdx = 0) {
   let idx = startIdx;
+  const m = openModal('<div data-vs-lb-host></div>', { xl: true });
   function renderVsLightbox() {
     const vc = VS_COMPARISON_CARDS[idx] || VS_COMPARISON_CARDS[0];
-    openModal(`
+    const host = m.el.querySelector('[data-vs-lb-host]');
+    if (!host) return;
+    host.innerHTML = `
       <div class="modal-head" style="padding:4px 4px 12px;border-bottom:1px solid #e6decb;margin-bottom:14px">
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span class="kaizen-badge-pill">${esc(vc.badge)}</span>
           <strong style="font-size:19px;color:#1e3f35;font-family:'Noto Serif TC','Songti TC','PMingLiU',Georgia,serif">${esc(vc.title)}</strong>
         </div>
-        <button class="icon-btn" data-close style="font-size:18px">✕</button>
+        <button class="icon-btn" data-close style="font-size:18px" aria-label="關閉">✕</button>
       </div>
-      <div style="background:#141c19;padding:16px;border-radius:14px;text-align:center;position:relative;box-shadow:inset 0 2px 12px rgba(0,0,0,0.4)">
-        <img src="${esc(vc.img)}" alt="${esc(vc.title)}" style="width:100%;max-height:74vh;object-fit:contain;border-radius:10px;display:block;margin:0 auto">
+      <div style="background:#141c19;padding:12px;border-radius:14px;text-align:center;position:relative;box-shadow:inset 0 2px 12px rgba(0,0,0,0.4)">
+        <img src="${esc(vc.img)}" alt="${esc(vc.title)}" style="width:100%;max-height:66dvh;object-fit:contain;border-radius:10px;display:block;margin:0 auto">
       </div>
-      <div class="vs-summary-pills" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="vs-summary-pills grid2" style="margin-top:12px">
         <div class="vs-sum-row old" style="font-size:13.5px;padding:9px 14px">
           <span class="vs-tag old">2023 現行規定</span>
           <span>${esc(vc.oldSummary)}</span>
@@ -1545,30 +1544,23 @@ function openVsComparisonLightboxModal(startIdx = 0) {
         <div class="vs-why-title" style="font-size:13.5px">為什麼這樣改？（管理效益）</div>
         <div class="vs-why-text" style="font-size:13.5px">${vc.whyChange}</div>
       </div>
-      <div class="modal-foot" style="justify-content:space-between;padding:14px 4px 2px;margin-top:12px">
-        <div style="display:flex;gap:10px;align-items:center">
-          <button type="button" class="btn ghost" data-vs-prev style="padding:8px 16px;font-weight:700">◀ 上一張對比圖卡</button>
-          <span class="muted" style="font-size:13px;font-weight:700">第 ${idx + 1} / ${VS_COMPARISON_CARDS.length} 張</span>
-          <button type="button" class="btn ghost" data-vs-next style="padding:8px 16px;font-weight:700">下一張對比圖卡 ▶</button>
+      <div class="modal-foot" style="justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 4px 2px;margin-top:12px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn ghost" data-vs-prev style="padding:7px 12px;font-weight:700">◀ 上一張</button>
+          <span class="muted" style="font-size:13px;font-weight:700">${idx + 1} / ${VS_COMPARISON_CARDS.length}</span>
+          <button type="button" class="btn ghost" data-vs-next style="padding:7px 12px;font-weight:700">下一張 ▶</button>
         </div>
-        <button type="button" class="btn primary" data-close style="padding:8px 22px;font-weight:800">關閉</button>
+        <button type="button" class="btn primary" data-close style="padding:7px 18px;font-weight:800">關閉</button>
       </div>
-    `, { xl: true });
-
-    const prevBtn = document.querySelector('[data-vs-prev]');
-    const nextBtn = document.querySelector('[data-vs-next]');
-    if (prevBtn) {
-      prevBtn.onclick = () => {
-        idx = (idx - 1 + VS_COMPARISON_CARDS.length) % VS_COMPARISON_CARDS.length;
-        renderVsLightbox();
-      };
-    }
-    if (nextBtn) {
-      nextBtn.onclick = () => {
-        idx = (idx + 1) % VS_COMPARISON_CARDS.length;
-        renderVsLightbox();
-      };
-    }
+    `;
+    host.querySelector('[data-vs-prev]').onclick = () => {
+      idx = (idx - 1 + VS_COMPARISON_CARDS.length) % VS_COMPARISON_CARDS.length;
+      renderVsLightbox();
+    };
+    host.querySelector('[data-vs-next]').onclick = () => {
+      idx = (idx + 1) % VS_COMPARISON_CARDS.length;
+      renderVsLightbox();
+    };
   }
   renderVsLightbox();
 }

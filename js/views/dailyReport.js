@@ -1051,7 +1051,7 @@ export function mountDailyReport(root) {
         const canSeeFieldDetails = isSup || isDesigner || isFieldDeputy(me) || isFieldStaff(me);
         const fieldDoneCount = fieldMembers.filter(u => {
           const st = evaluateMemberReportStatus(u, selectedDate);
-          return st.status === 'submitted' || st.status === 'exempt';
+          return ['submitted', 'typhoon_exempt', 'leave_exempt', 'holiday_exempt'].includes(st.code);
         }).length;
         const fieldBlock = canSeeFieldDetails ? `
           <section class="dr-section" id="dr-field-section">
@@ -1096,30 +1096,6 @@ export function mountDailyReport(root) {
         `;
         return canSeeFieldDetails ? `${fieldBlock}${officeBlock}` : `${officeBlock}${fieldBlock}`;
       })()}
-      ${false ? `
-      <section class="dr-section" id="dr-field-section">
-        <div class="dr-section-head">
-          <h2>外勤品管稽查回報（${fieldMembers.length} 位）</h2>
-          <span class="info-pill-tip" data-tip="外勤回報內容僅代理副理（徐嘉鴻）、外勤代理人（包于巧）與填寫者本人可見；魔王血量與模擬體驗各縣市配額矩陣即時連動">權限保護 ＆ 魔王扣血減壓</span>
-        </div>
-        ${renderFieldRaidBanner(fieldMembers, selectedDate)}
-        <div class="dr-cards-grid">
-          ${fieldMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
-        </div>
-      </section>
-
-      <!-- 內勤 6 位組員每日回報卡片區 -->
-      <section class="dr-section" id="dr-office-section">
-        <div class="dr-section-head">
-          <h2>內勤同仁工作進度（${officeMembers.length} 位）</h2>
-          <span class="info-pill-tip" data-tip="內勤工作進度全體組員皆可公開查看；每月支援外勤模擬體驗日可於填寫時切換『 外勤支援回報』分頁">全員公開</span>
-        </div>
-        <div class="dr-cards-grid">
-          ${officeMembers.map(u => renderMemberCard(u, selectedDate, doc, myId, isSup, isDesigner, canManage)).join('')}
-        </div>
-      </section>
-
-      ` : ''}
       <!-- 代理副理審閱狀態區 -->
       ${supervisors.length ? `
         <section class="dr-section" id="dr-exempt-section">

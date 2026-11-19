@@ -177,7 +177,7 @@ function renderCompactList(cases, expandedIds) {
                   </div>
                   ${c.dueDate ? `<span class="case-due-chip">${esc(c.dueDate.slice(5))}</span>` : ''}
                   <button class="btn sm primary" data-log-case="${esc(c.id)}" title="新增一筆進度紀錄">＋ 記進度</button>
-                  <button class="btn sm ghost" data-edit-case="${esc(c.id)}" title="編輯例案設定"></button>
+                  <button class="btn sm ghost" data-edit-case="${esc(c.id)}" title="編輯例案設定" aria-label="編輯例案設定">編輯</button>
                 </div>
               </div>
 
@@ -191,7 +191,7 @@ function renderCompactList(cases, expandedIds) {
                         ${c.dueDate ? ` ｜ 預計完成日：${esc(c.dueDate)}` : ''}
                       </div>
                     </div>
-                    <div style="display:flex;gap:6px">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
                       <button class="btn sm primary" data-log-case="${esc(c.id)}">＋ 推進進度／寫時間軸</button>
                       <button class="btn sm" data-edit-case="${esc(c.id)}">編輯基本資料</button>
                       ${canDel ? `<button class="btn sm danger" data-del-case="${esc(c.id)}">刪除</button>` : ''}
@@ -232,7 +232,7 @@ function renderKanbanBoard(cases) {
           <div class="case-kanban-col">
             <div class="case-kanban-head" style="border-top:3px solid ${st.color}">
               <span>${st.label}</span>
-              <span class="badge">${colCases.length}</span>
+              <span class="badge inline">${colCases.length}</span>
             </div>
             <div class="case-kanban-body">
               ${colCases.length === 0 ? `<div class="muted" style="font-size:12px;text-align:center;padding:20px 0">無案件</div>` : colCases.map(c => {
@@ -243,10 +243,10 @@ function renderKanbanBoard(cases) {
                   <div class="case-kanban-card">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
                       <strong style="font-size:13.5px;line-height:1.35">${esc(c.title)}</strong>
-                      <button class="icon-btn" data-edit-case="${esc(c.id)}" title="編輯"></button>
+                      <button class="btn sm ghost" data-edit-case="${esc(c.id)}" title="編輯例案" aria-label="編輯例案" style="padding:2px 8px;font-size:11.5px;flex-shrink:0">編輯</button>
                     </div>
                     ${latestLog ? `<div class="muted" style="font-size:12px;margin-top:6px;background:#F8FAFC;padding:6px 8px;border-radius:6px">${esc(latestLog.note)}</div>` : (c.summary ? `<div class="muted" style="font-size:12px;margin-top:4px">${esc(c.summary)}</div>` : '')}
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:8px">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:10px;gap:8px">
                       <div class="case-owners-avatars">${owners.map(u => avatar(u, 22)).join('')}</div>
                       <div class="case-prog-mini">
                         <div class="case-prog-bar"><span style="width:${pct}%;background:${st.color}"></span></div>
@@ -278,63 +278,61 @@ function openCaseFormModal(existing, onDone) {
   };
   const ownerSet = new Set(c.ownerUids || [myUid()]);
 
-  openModal(`
-    <div class="modal-head">
-      <h3>${existing ? '編輯例案' : '新增例案追蹤'}</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
+  const m = openModal({
+    title: existing ? '編輯例案' : '新增例案追蹤',
+    body: `
     <form class="form" id="case-form">
-      <label>案件名稱 <span class="req">*</span>
+      <label class="field"><span>案件名稱 <em>*</em></span>
         <input type="text" name="title" required value="${esc(c.title)}" placeholder="例如：雙北站點 2.0E 電輔車配置優化專案">
       </label>
-      <div class="grid2">
-        <label>目前狀態
+      <div class="row2">
+        <label class="field"><span>目前狀態</span>
           <select name="status">
             ${CASE_STATUSES.map(s => `<option value="${s.id}" ${c.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
           </select>
         </label>
-        <label>優先級
+        <label class="field"><span>優先級</span>
           <select name="priority">
             ${CASE_PRIORITIES.map(p => `<option value="${p.id}" ${c.priority === p.id ? 'selected' : ''}>${p.label}</option>`).join('')}
           </select>
         </label>
       </div>
-      <div class="grid2">
-        <label>目前完成度（<span id="case-pct-val">${c.progress ?? 0}</span>%）
+      <div class="row2">
+        <label class="field"><span>目前完成度（<span id="case-pct-val">${c.progress ?? 0}</span>%）</span>
           <input type="range" name="progress" min="0" max="100" step="5" value="${c.progress ?? 0}" oninput="document.getElementById('case-pct-val').textContent=this.value">
         </label>
-        <label>預計完成日（選填）
+        <label class="field"><span>預計完成日（選填）</span>
           <input type="date" name="dueDate" value="${esc(c.dueDate || '')}">
         </label>
       </div>
-      <label>負責組員（可複選）
-        <div class="chips" style="padding:6px 0">
+      <div class="field"><span>負責組員（可複選）</span>
+        <div class="chip-select" style="padding:4px 0">
           ${users.map(u => `
-            <label class="chip-check">
+            <label class="chip-opt">
               <input type="checkbox" name="owner" value="${esc(u.uid)}" ${ownerSet.has(u.uid) ? 'checked' : ''}>
               <span>${esc(u.displayName)}</span>
             </label>
           `).join('')}
         </div>
-      </label>
-      <label>專案目標／摘要說明
+      </div>
+      <label class="field"><span>專案目標／摘要說明</span>
         <textarea name="summary" rows="2" placeholder="簡述此例案的核心目標或背景…">${esc(c.summary || '')}</textarea>
       </label>
       ${!existing ? `
-        <label>初始進度紀錄（選填，將寫入時間軸第一筆）
+        <label class="field"><span>初始進度紀錄（選填，將寫入時間軸第一筆）</span>
           <input type="text" name="initNote" placeholder="例如：已完成初步需求盤點與跨部門排程">
         </label>
       ` : ''}
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">儲存例案</button>
-      </div>
-    </form>
-  `);
+    </form>`,
+    footer: `<span class="spacer"></span><button type="button" class="btn" data-close>取消</button><button type="submit" form="case-form" class="btn primary" data-case-save>儲存例案</button>`,
+  });
 
-  document.getElementById('case-form').onsubmit = async e => {
+  const caseForm = m.el.querySelector('#case-form');
+  caseForm.onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
+    const btn = m.el.querySelector('[data-case-save]');
+    if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
     const ownerUids = [...f.querySelectorAll('input[name="owner"]:checked')].map(i => i.value);
     const payload = {
       title: f.title.value.trim(),
@@ -357,49 +355,58 @@ function openCaseFormModal(existing, onDone) {
         at: new Date().toISOString(),
       }];
     }
-    await saveCaseItem(payload, existing);
-    closeModal();
-    toast(existing ? '例案已更新' : '已新增例案追蹤');
-    onDone?.();
+    try {
+      await saveCaseItem(payload, existing);
+      m.setClean();
+      m.close();
+      toast(existing ? '例案已更新' : '已新增例案追蹤');
+      onDone?.();
+    } catch (err) {
+      toast('儲存失敗：' + (err.message || err.code), 'error');
+      if (btn) { btn.disabled = false; btn.textContent = '儲存例案'; }
+    }
   };
 }
 
 function openTimelineLogModal(c, onDone) {
-  openModal(`
-    <div class="modal-head">
-      <h3>推進例案進度：${esc(c.title)}</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
+  const m = openModal({
+    title: `推進例案進度：${c.title}`,
+    body: `
     <form class="form" id="tl-form">
-      <div class="grid2">
-        <label>更新狀態
+      <div class="row2">
+        <label class="field"><span>更新狀態</span>
           <select name="status">
             ${CASE_STATUSES.map(s => `<option value="${s.id}" ${c.status === s.id ? 'selected' : ''}>${s.label}</option>`).join('')}
           </select>
         </label>
-        <label>最新完成度（<span id="tl-pct-val">${c.progress ?? 0}</span>%）
+        <label class="field"><span>最新完成度（<span id="tl-pct-val">${c.progress ?? 0}</span>%）</span>
           <input type="range" name="progress" min="0" max="100" step="5" value="${c.progress ?? 0}" oninput="document.getElementById('tl-pct-val').textContent=this.value">
         </label>
       </div>
-      <label>最新進展說明 <span class="req">*</span>
+      <label class="field"><span>最新進展說明 <em>*</em></span>
         <textarea name="note" rows="3" required placeholder="例如：10/20 已完成第二波場站會勘，預計下週提報審查…"></textarea>
       </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">寫入時間軸</button>
-      </div>
-    </form>
-  `);
-  document.getElementById('tl-form').onsubmit = async e => {
+    </form>`,
+    footer: `<span class="spacer"></span><button type="button" class="btn" data-close>取消</button><button type="submit" form="tl-form" class="btn primary" data-tl-save>寫入時間軸</button>`,
+  });
+  m.el.querySelector('#tl-form').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
-    await appendCaseTimeline(c.id, {
-      status: f.status.value,
-      progress: Number(f.progress.value),
-      note: f.note.value.trim(),
-    });
-    closeModal();
-    toast('已寫入最新進度時間軸！');
-    onDone?.();
+    const btn = m.el.querySelector('[data-tl-save]');
+    if (btn) { btn.disabled = true; btn.textContent = '儲存中…'; }
+    try {
+      await appendCaseTimeline(c.id, {
+        status: f.status.value,
+        progress: Number(f.progress.value),
+        note: f.note.value.trim(),
+      });
+      m.setClean();
+      m.close();
+      toast('已寫入最新進度時間軸！');
+      onDone?.();
+    } catch (err) {
+      toast('寫入失敗：' + (err.message || err.code), 'error');
+      if (btn) { btn.disabled = false; btn.textContent = '寫入時間軸'; }
+    }
   };
 }

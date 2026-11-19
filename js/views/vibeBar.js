@@ -431,8 +431,8 @@ function renderExpandedPanel(tab, ctx) {
                         <div class="vibe-topic-meta">由 ${esc(t.authorName)} 策展分享</div>
                       </div>
                       <div style="display:flex;gap:4px;align-items:center;flex-shrink:0">
-                        <button class="btn sm ${liked ? 'primary' : 'ghost'}" data-topic-like="${esc(t.id)}" style="padding:3px 9px;font-size:11.5px">${likes.length}</button>
-                        ${canDel ? `<button class="btn sm ghost" data-topic-del="${esc(t.id)}" style="padding:3px 7px;font-size:11px;color:var(--danger)">✕</button>` : ''}
+                        <button class="btn sm ${liked ? 'primary' : 'ghost'}" data-topic-like="${esc(t.id)}" style="padding:4px 10px;font-size:12px" aria-label="按讚">👍 ${likes.length}</button>
+                        ${canDel ? `<button class="btn sm ghost" data-topic-del="${esc(t.id)}" style="padding:4px 8px;font-size:12px;color:var(--danger)" aria-label="刪除話題">✕</button>` : ''}
                       </div>
                     </li>
                   `;
@@ -522,31 +522,29 @@ function renderExpandedPanel(tab, ctx) {
 }
 
 function openSubmitJokeModal(customJokes, votes, onDone) {
-  openModal(`
-    <div class="modal-head">
-      <h3>投稿團隊笑話</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
+  const m = openModal({
+    title: '投稿團隊笑話',
+    body: `
     <form class="form" id="joke-form">
-      <label>笑話內容 <span class="req">*</span>
+      <label class="field"><span>笑話內容 <em>*</em></span>
         <textarea name="text" rows="4" required placeholder="輸入好笑的笑話、諧音梗或外勤趣事…"></textarea>
       </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">送出投稿</button>
-      </div>
-    </form>
-  `);
-  document.getElementById('joke-form').onsubmit = async e => {
+    </form>`,
+    footer: `<span class="spacer"></span><button type="button" class="btn" data-close>取消</button><button type="submit" form="joke-form" class="btn primary" data-joke-save>送出投稿</button>`,
+  });
+  m.el.querySelector('#joke-form').onsubmit = async e => {
     e.preventDefault();
     const text = e.target.text.value.trim();
     if (!text) return;
+    const btn = m.el.querySelector('[data-joke-save]');
+    if (btn) { btn.disabled = true; btn.textContent = '送出中…'; }
     const nextList = [
       { id: 'cj_' + Date.now().toString(36), text, authorName: state.me?.displayName || '組員', uid: myUid(), at: new Date().toISOString() },
       ...customJokes,
     ];
     await saveVibeDoc('jokes', { list: nextList, votes });
-    closeModal();
+    m.setClean();
+    m.close();
     toast('已新增笑話！');
     currentJokeOffset = 0;
     onDone?.();
@@ -554,32 +552,29 @@ function openSubmitJokeModal(customJokes, votes, onDone) {
 }
 
 function openSubmitTopicModal(sharedTopics, onDone) {
-  openModal(`
-    <div class="modal-head">
-      <h3>分享自行車新聞／市場趨勢話題</h3>
-      <button class="icon-btn" data-close>✕</button>
-    </div>
+  const m = openModal({
+    title: '分享自行車新聞／市場趨勢話題',
+    body: `
     <form class="form" id="topic-form">
-      <label>話題或新聞標題 <span class="req">*</span>
+      <label class="field"><span>話題或新聞標題 <em>*</em></span>
         <input type="text" name="title" required placeholder="例如：台中市宣布新增 200 站 YouBike 2.0E 電輔車規劃">
       </label>
-      <label>相關網址連結（選填）
+      <label class="field"><span>相關網址連結（選填）</span>
         <input type="url" name="url" placeholder="https://...">
       </label>
-      <label>簡短心得或延伸討論（選填）
+      <label class="field"><span>簡短心得或延伸討論（選填）</span>
         <textarea name="note" rows="2" placeholder="這對我們北區/南區場站配置很有參考價值…"></textarea>
       </label>
-      <div class="modal-foot">
-        <button type="button" class="btn" data-close>取消</button>
-        <button type="submit" class="btn primary">發布分享</button>
-      </div>
-    </form>
-  `);
-  document.getElementById('topic-form').onsubmit = async e => {
+    </form>`,
+    footer: `<span class="spacer"></span><button type="button" class="btn" data-close>取消</button><button type="submit" form="topic-form" class="btn primary" data-topic-save>發布分享</button>`,
+  });
+  m.el.querySelector('#topic-form').onsubmit = async e => {
     e.preventDefault();
     const f = e.target;
     const title = f.title.value.trim();
     if (!title) return;
+    const btn = m.el.querySelector('[data-topic-save]');
+    if (btn) { btn.disabled = true; btn.textContent = '發布中…'; }
     const nextList = [
       {
         id: 'tp_' + Date.now().toString(36),
@@ -594,7 +589,8 @@ function openSubmitTopicModal(sharedTopics, onDone) {
       ...sharedTopics,
     ];
     await saveVibeDoc('topics', { list: nextList });
-    closeModal();
+    m.setClean();
+    m.close();
     toast('話題已分享至晨間補給站！');
     onDone?.();
   };

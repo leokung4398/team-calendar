@@ -361,17 +361,12 @@ async function boot() {
       const btn = $('[data-theme-toggle]');
       if (btn) {
         const isEd = next === 'editorial';
-        btn.classList.toggle('is-editorial', isEd);
         const isMaple = next === 'maple';
         btn.classList.toggle('is-editorial', isEd);
         btn.classList.toggle('is-maple', isMaple);
         const labelText = isMaple ? '風格：楓之谷' : (isEd ? '風格：文青誌' : '風格：經典黃');
         btn.innerHTML = `${isMaple ? yb.mapleLeafSvg(15) : '<span class="theme-dot"></span>'}<span>${labelText}</span>`;
         btn.title = isMaple ? '目前為「楓之谷經典混血風格（深海藍視窗 × 菇菇寶貝 × EXP經驗條）」，點擊切換回「經典 YouBike 活力黃」' : '點擊切換全站介面風格（經典黃 ／ 文青誌 ／ 楓之谷）';
-        if (false) { btn.innerHTML = `<span class="theme-dot"></span><span>${isEd ? '風格：文青誌' : '風格：經典黃'}</span>`;
-        btn.title = isEd
-          ? '目前為「文青生活誌風格（森林綠 × 古銅金 × 亞麻米白）」，點擊切換回「經典 YouBike 活力黃」'
-          : '目前為「經典 YouBike 活力黃」，點擊切換為改善提案同款「文青生活誌風格（森林綠 × 古銅金）」'; }
       }
       if (showNotice) {
           current?.update?.({ force: true }); current?.onData?.({ force: true }); if (document.getElementById('kz-island-editor-form')) { import(`./kaizenIslandWidget.js?v=${V}`).then(m => m.openKaizenIslandEditorModal?.(() => { current?.update?.({ force: true }); current?.onData?.({ force: true }); })).catch(() => {}); }
@@ -564,8 +559,7 @@ async function boot() {
         // 開會前 10 分鐘至開始後 5 分鐘內提醒
         if (nowMin >= mStartMin - 10 && nowMin <= mStartMin + 5) {
           remindedMeetings.add(m.id);
-            current?.update?.({ force: true }); current?.onData?.({ force: true }); if (document.getElementById('kz-island-editor-form')) { import(`./kaizenIslandWidget.js?v=${V}`).then(m => m.openKaizenIslandEditorModal?.(() => { current?.update?.({ force: true }); current?.onData?.({ force: true }); })).catch(() => {}); }
-        toast(` 月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
+          toast(`月會即將於 ${m.startTime} 開始！請記得加入 Meet（麥克風靜音、關閉喇叭）`, 'warn');
         }
       }
     };

@@ -350,7 +350,7 @@ export function renderDailyInspectionView(containerEl, zone = 'north', curMonth 
             <button type="button" class="btn icon ghost" data-dlg-close style="font-size:18px;">✕</button>
           </div>
           <div>${promptHtml}</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; pt-3; border-top:1px solid #f1f5f9;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid #f1f5f9;">
             ${currentVal ? `<button type="button" class="btn danger small" data-dlg-clear>清空此日</button>` : '<div></div>'}
             <div style="display:flex; gap:8px;">
               <button type="button" class="btn ghost small" data-dlg-close>取消</button>

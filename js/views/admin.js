@@ -6,7 +6,7 @@ import {
   batchUpdateModulePermission
 } from '../data.js';
 import { APP } from '../config.js';
-import { esc, avatar, toast, confirmDialog, timeAgo } from '../utils.js';
+import { esc, avatar, toast, openModal, confirmDialog, timeAgo } from '../utils.js';
 import { openAchievementsModal } from '../achievementsModal.js?v=20261115v73';
 import { ACHIEVEMENTS } from '../achievementsData.js?v=20261115v73';
 
@@ -153,80 +153,61 @@ export function mountAdmin(el) {
     achieveBtn.onclick = () => openAchievementsModal();
   }
 
-  // 開啟「＋ 新增組員（預先授權建檔）」置中彈窗
+  // 開啟「＋ 新增組員（預先授權建檔）」標準彈窗
   function openAddUserModal() {
-    const root = document.getElementById('modal-root');
-    if (!root) return;
     const domain = APP.allowedDomains?.[0] || 'youbike.com.tw';
-    root.innerHTML = `
-      <div class="modal-backdrop" data-add-user-backdrop>
-        <div class="modal" style="max-width:500px; width:94%;">
-          <div class="modal-head">
-            <h3 style="display:flex; align-items:center; gap:8px; margin:0;">
-              <span></span><span>新增組員（新人入職預先建檔）</span>
-            </h3>
-            <button type="button" class="icon-btn" data-close-add-user aria-label="關閉">✕</button>
+    const m = openModal({
+      title: '新增組員（新人入職預先建檔）',
+      body: `
+        <form class="form" id="add-user-form" data-add-user-form>
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#475569; line-height:1.55; margin-bottom:4px;">
+            <b>防呆自動認領機制</b>：建檔後即自動開通該信箱登入白名單。新進同仁首次以 Google 帳號登入時，系統將<b>自動認領並繼承</b>下方設定的職位、內/外勤工作性質與權限，不會產生重複帳號。
           </div>
-          <form class="form" data-add-user-form style="padding:18px 20px;">
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #f59e0b; border-radius:8px; padding:10px 12px; font-size:12.5px; color:#475569; line-height:1.55; margin-bottom:4px;">
-              <b>防呆自動認領機制</b>：建檔後即自動開通該信箱登入白名單。新進同仁首次以 Google 帳號登入時，系統將<b>自動認領並繼承</b>下方設定的職位、內/外勤工作性質與權限，不會產生重複帳號。
-            </div>
 
-            <div class="row2">
-              <label class="field">
-                <span>組員姓名 <b style="color:#dc2626;">*</b></span>
-                <input type="text" name="displayName" required maxlength="20" placeholder="例：王小明" autofocus>
-              </label>
-              <label class="field">
-                <span>職位名稱</span>
-                <input type="text" name="title" maxlength="30" placeholder="例：經營企劃專員">
-              </label>
-            </div>
-
+          <div class="row2">
             <label class="field">
-              <span>公司 Google 帳號 (Email) <b style="color:#dc2626;">*</b></span>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <input type="text" name="emailInput" required placeholder="可輸入完整信箱或帳號前綴（例：mingwang）" style="flex:1;">
-                <span class="muted small-text" style="white-space:nowrap; background:#f1f5f9; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">@${esc(domain)}</span>
-              </div>
-              <small class="muted" style="font-size:11.5px;">系統會自動轉小寫、去除空白並檢查是否重複。</small>
+              <span>組員姓名 <b style="color:#dc2626;">*</b></span>
+              <input type="text" name="displayName" required maxlength="20" placeholder="例：王小明" autofocus>
             </label>
+            <label class="field">
+              <span>職位名稱</span>
+              <input type="text" name="title" maxlength="30" placeholder="例：經營企劃專員">
+            </label>
+          </div>
 
-            <div class="row2">
-              <label class="field">
-                <span>工作性質（連動每日回報與輪值）</span>
-                <select name="staffType">
-                  <option value="office" selected>內勤同仁（公開進度回報 / 參與月會輪值）</option>
-                  <option value="field">外勤品管（三問縣市回報 / 免月會紀錄輪值）</option>
-                </select>
-              </label>
-              <label class="field">
-                <span>系統權限</span>
-                <select name="role">
-                  <option value="member" selected>組員（一般權限）</option>
-                  <option value="admin">管理員（後台設定權限）</option>
-                </select>
-              </label>
+          <label class="field">
+            <span>公司 Google 帳號 (Email) <b style="color:#dc2626;">*</b></span>
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <input type="text" name="emailInput" required placeholder="完整信箱或帳號前綴（例：mingwang）" style="flex:1 1 160px; min-width:0;">
+              <span class="muted small-text" style="white-space:nowrap; background:#f1f5f9; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">@${esc(domain)}</span>
             </div>
+            <small class="muted" style="font-size:11.5px;">系統會自動轉小寫、去除空白並檢查是否重複。</small>
+          </label>
 
-            <div class="modal-foot" style="padding:12px 0 0; margin-top:8px; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:8px;">
-              <button type="button" class="btn ghost" data-close-add-user>取消</button>
-              <button type="submit" class="btn primary" data-submit-add-user>＋ 確認新增組員</button>
-            </div>
-          </form>
-        </div>
-      </div>`;
-
-    const close = () => { root.innerHTML = ''; };
-    root.querySelectorAll('[data-close-add-user]').forEach(b => { b.onclick = close; });
-    root.querySelector('[data-add-user-backdrop]')?.addEventListener('click', e => {
-      if (e.target.hasAttribute('data-add-user-backdrop')) close();
+          <div class="row2">
+            <label class="field">
+              <span>工作性質（連動每日回報與輪值）</span>
+              <select name="staffType">
+                <option value="office" selected>內勤同仁（公開進度回報 / 參與月會輪值）</option>
+                <option value="field">外勤品管（三問縣市回報 / 免月會紀錄輪值）</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>系統權限</span>
+              <select name="role">
+                <option value="member" selected>組員（一般權限）</option>
+                <option value="admin">管理員（後台設定權限）</option>
+              </select>
+            </label>
+          </div>
+        </form>`,
+      footer: `<span class="spacer"></span><button type="button" class="btn ghost" data-close>取消</button><button type="submit" form="add-user-form" class="btn primary" data-submit-add-user>＋ 確認新增組員</button>`,
     });
 
-    const form = root.querySelector('[data-add-user-form]');
+    const form = m.el.querySelector('[data-add-user-form]');
     form?.addEventListener('submit', async e => {
       e.preventDefault();
-      const submitBtn = form.querySelector('[data-submit-add-user]');
+      const submitBtn = m.el.querySelector('[data-submit-add-user]');
       const displayName = form.displayName.value.trim();
       const title = form.title.value.trim();
       const rawEmail = form.emailInput.value.trim().toLowerCase();
@@ -241,7 +222,8 @@ export function mountAdmin(el) {
       try {
         const created = await createPreseededUser({ displayName, email, title, staffType, role });
         toast(`已新增組員「${created.displayName}」（待首次登入自動啟用）`, 'success');
-        close();
+        m.setClean();
+        m.close();
         render();
       } catch (err) {
         console.error(err);
@@ -704,6 +686,12 @@ export function mountAdmin(el) {
     const batchBtn = e.target.closest('[data-batch-mod]');
     if (!batchBtn) return;
     const mod = batchBtn.dataset.batchMod;
+    const modNames = { simulation: '模擬體驗', dailyReport: '每日回報', bulletin: '採購佈告欄' };
+    const ok = await confirmDialog(`確定要為<b>全體組員</b>一次開通「<b>${esc(modNames[mod] || mod)}</b>」模組權限嗎？`, {
+      title: '批次開通模組權限',
+      okText: '確定全體開通',
+    });
+    if (!ok) return;
     try {
       await batchUpdateModulePermission(mod, true);
       toast('已為全體組員開通該業務模組權限', 'success');

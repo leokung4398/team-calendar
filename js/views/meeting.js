@@ -158,9 +158,6 @@ export function mountMeeting(el) {
           <p class="muted">管理員可點選上方按鈕排定下一次月會時間與紀錄人。</p>
           ${isAdmin() ? '<button class="btn primary" data-new-meeting style="margin-top:12px;">立即排定新月會</button>' : ''}
         </div>`;
-      if (isAdmin()) {
-        q('[data-new-meeting]')?.addEventListener('click', () => openMeetingEditor());
-      }
       return;
     }
 
