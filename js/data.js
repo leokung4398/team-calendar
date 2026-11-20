@@ -797,8 +797,12 @@ export function hasModulePermission(user, moduleKey) {
   // 預設規則（未在矩陣設定前）：
   // simulation (模擬體驗)：預設 true
   // bulletin (採購佈告欄)：預設 false（僅勾選之採購相關同仁可進）
+  // renamer (AI 單據辨識改名)：預設僅採購 Sunny (sunnyting@youbike.com.tw) 為 true，其餘組員預設 false
   if (moduleKey === 'simulation') return true;
   if (moduleKey === 'bulletin') return false;
+  if (moduleKey === 'renamer') {
+    return String(user.email || '').toLowerCase().trim() === 'sunnyting@youbike.com.tw';
+  }
   return true;
 }
 

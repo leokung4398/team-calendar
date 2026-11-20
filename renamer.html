@@ -1,0 +1,3569 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="sakura" data-mode="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 採購單據自動辨識與改名 ｜ 經營 Team 營運協同平台</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* -------------------------------------------------------------
+       主題色彩變數系統 (支援 5 大風格 x 深淺色切換)
+       ------------------------------------------------------------- */
+    :root,
+    [data-theme="sakura"][data-mode="light"] {
+      --bg-gradient-start: #fdf8f9;
+      --bg-gradient-end: #f9eff2;
+      --bg-radial-fallback: #fdf8f9;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(212, 132, 158, 0.25);
+      --primary: #c2597c;
+      --primary-hover: #a84264;
+      --primary-gradient: linear-gradient(135deg, #d87a99 0%, #c2597c 55%, #963958 100%);
+      --btn-gradient: linear-gradient(135deg, #d47091 0%, #bd5275 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #c2597c 0%, #a63e60 100%);
+      --primary-glow: rgba(194, 89, 124, 0.22);
+      --success: #0d9488;
+      --success-bg: rgba(13, 148, 136, 0.1);
+      --success-border: rgba(13, 148, 136, 0.25);
+      --error: #e11d48;
+      --error-bg: rgba(225, 29, 72, 0.08);
+      --error-border: rgba(225, 29, 72, 0.22);
+      --warning: #d97706;
+      --warning-bg: rgba(217, 119, 6, 0.1);
+      --info: #0284c7;
+      --info-bg: rgba(2, 132, 199, 0.1);
+      --text-main: #2d2629;
+      --text-muted: #6e5e65;
+      --text-dark: #9e8c93;
+      --console-bg: rgba(252, 246, 248, 0.9);
+      --console-border: rgba(212, 132, 158, 0.28);
+      --card-shadow: 0 8px 28px -8px rgba(150, 57, 88, 0.1);
+      --sub-card-bg: rgba(250, 242, 245, 0.7);
+      --sub-card-border: rgba(212, 132, 158, 0.2);
+    }
+
+    [data-theme="sakura"][data-mode="dark"] {
+      --bg-gradient-start: #1a0b18;
+      --bg-gradient-end: #2d1124;
+      --bg-radial-fallback: #1a0b18;
+      --card-bg: rgba(45, 17, 36, 0.75);
+      --card-border: rgba(244, 114, 182, 0.25);
+      --primary: #f472b6;
+      --primary-hover: #fbcfe8;
+      --primary-gradient: linear-gradient(135deg, #fbcfe8 0%, #f472b6 50%, #db2777 100%);
+      --btn-gradient: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
+      --primary-glow: rgba(244, 114, 182, 0.4);
+      --success: #34d399;
+      --success-bg: rgba(16, 185, 129, 0.18);
+      --success-border: rgba(16, 185, 129, 0.35);
+      --error: #fb7185;
+      --error-bg: rgba(244, 63, 94, 0.18);
+      --error-border: rgba(244, 63, 94, 0.35);
+      --warning: #fbbf24;
+      --warning-bg: rgba(245, 158, 11, 0.18);
+      --info: #38bdf8;
+      --info-bg: rgba(14, 165, 233, 0.18);
+      --text-main: #fce7f3;
+      --text-muted: #f472b6;
+      --text-dark: #9d174d;
+      --console-bg: rgba(26, 11, 24, 0.85);
+      --console-border: rgba(244, 114, 182, 0.3);
+      --card-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6);
+      --sub-card-bg: rgba(255, 255, 255, 0.05);
+      --sub-card-border: rgba(244, 114, 182, 0.15);
+    }
+
+    /* 方案 A: 旗艦科技深邃暗黑 (Tech Dark) */
+    [data-theme="cyber"][data-mode="dark"],
+    [data-theme="cyber"] {
+      --bg-gradient-start: #0a0e17;
+      --bg-gradient-end: #030712;
+      --bg-radial-fallback: #050b14;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(56, 189, 248, 0.25);
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
+      --btn-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --success-border: rgba(16, 185, 129, 0.3);
+      --error: #f43f5e;
+      --error-bg: rgba(244, 63, 94, 0.15);
+      --error-border: rgba(244, 63, 94, 0.3);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --info: #0ea5e9;
+      --info-bg: rgba(14, 165, 233, 0.15);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+      --console-bg: rgba(3, 7, 18, 0.9);
+      --console-border: rgba(56, 189, 248, 0.3);
+      --card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8);
+      --sub-card-bg: rgba(255, 255, 255, 0.03);
+      --sub-card-border: rgba(255, 255, 255, 0.08);
+    }
+    [data-theme="cyber"][data-mode="light"] {
+      --bg-gradient-start: #e2e8f0;
+      --bg-gradient-end: #f1f5f9;
+      --bg-radial-fallback: #e2e8f0;
+      --card-bg: rgba(248, 250, 252, 0.92);
+      --card-border: rgba(14, 165, 233, 0.35);
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #1e293b 100%);
+      --btn-gradient: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      --primary-glow: rgba(14, 165, 233, 0.25);
+      --success: #059669;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --success-border: rgba(16, 185, 129, 0.3);
+      --error: #e11d48;
+      --error-bg: rgba(244, 63, 94, 0.12);
+      --error-border: rgba(244, 63, 94, 0.3);
+      --warning: #d97706;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --info: #0284c7;
+      --info-bg: rgba(14, 165, 233, 0.12);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dark: #64748b;
+      --console-bg: #0f172a;
+      --console-border: rgba(56, 189, 248, 0.4);
+      --card-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
+      --sub-card-bg: rgba(15, 23, 42, 0.04);
+      --sub-card-border: rgba(14, 165, 233, 0.22);
+    }
+
+    /* 方案 B: 頂級企業 SaaS 白金風 (Linear / Apple 簡約) */
+    [data-theme="saas"][data-mode="light"],
+    [data-theme="saas"] {
+      --bg-gradient-start: #f8fafc;
+      --bg-gradient-end: #ffffff;
+      --bg-radial-fallback: #f8fafc;
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      --btn-gradient: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      --primary-glow: rgba(79, 70, 229, 0.25);
+      --success: #16a34a;
+      --success-bg: rgba(22, 163, 74, 0.1);
+      --success-border: rgba(22, 163, 74, 0.25);
+      --error: #dc2626;
+      --error-bg: rgba(220, 38, 38, 0.1);
+      --error-border: rgba(220, 38, 38, 0.25);
+      --warning: #d97706;
+      --warning-bg: rgba(217, 119, 6, 0.1);
+      --info: #2563eb;
+      --info-bg: rgba(37, 99, 235, 0.1);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-dark: #94a3b8;
+      --console-bg: #f8fafc;
+      --console-border: #e2e8f0;
+      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+      --sub-card-bg: #f8fafc;
+      --sub-card-border: #e2e8f0;
+    }
+    [data-theme="saas"][data-mode="dark"] {
+      --bg-gradient-start: #0f172a;
+      --bg-gradient-end: #020617;
+      --bg-radial-fallback: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.8);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --primary: #818cf8;
+      --primary-hover: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --btn-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      --primary-glow: rgba(129, 140, 248, 0.3);
+      --success: #4ade80;
+      --success-bg: rgba(74, 222, 128, 0.15);
+      --success-border: rgba(74, 222, 128, 0.3);
+      --error: #f87171;
+      --error-bg: rgba(248, 113, 113, 0.15);
+      --error-border: rgba(248, 113, 113, 0.3);
+      --warning: #fbbf24;
+      --warning-bg: rgba(251, 191, 36, 0.15);
+      --info: #60a5fa;
+      --info-bg: rgba(96, 165, 250, 0.15);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #64748b;
+      --console-bg: #0b1120;
+      --console-border: rgba(255, 255, 255, 0.1);
+      --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --sub-card-bg: rgba(255, 255, 255, 0.03);
+      --sub-card-border: rgba(255, 255, 255, 0.08);
+    }
+
+    /* 方案 C: 經典商務金融藍 (Enterprise Navy Blue) */
+    [data-theme="navy"][data-mode="light"],
+    [data-theme="navy"] {
+      --bg-gradient-start: #edf2f7;
+      --bg-gradient-end: #f7fafc;
+      --bg-radial-fallback: #edf2f7;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-border: #cbd5e0;
+      --primary: #1a365d;
+      --primary-hover: #2a4365;
+      --primary-gradient: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+      --btn-gradient: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
+      --primary-glow: rgba(26, 54, 93, 0.25);
+      --success: #276749;
+      --success-bg: rgba(39, 103, 73, 0.1);
+      --success-border: rgba(39, 103, 73, 0.3);
+      --error: #9b2c2c;
+      --error-bg: rgba(155, 44, 44, 0.1);
+      --error-border: rgba(155, 44, 44, 0.3);
+      --warning: #c05621;
+      --warning-bg: rgba(192, 86, 33, 0.1);
+      --info: #2b6cb0;
+      --info-bg: rgba(43, 108, 176, 0.1);
+      --text-main: #1a202c;
+      --text-muted: #4a5568;
+      --text-dark: #718096;
+      --console-bg: #edf2f7;
+      --console-border: #cbd5e0;
+      --card-shadow: 0 8px 24px -4px rgba(26, 54, 93, 0.12);
+      --sub-card-bg: #edf2f7;
+      --sub-card-border: #cbd5e0;
+    }
+    [data-theme="navy"][data-mode="dark"] {
+      --bg-gradient-start: #0a1128;
+      --bg-gradient-end: #000411;
+      --bg-radial-fallback: #0a1128;
+      --card-bg: rgba(16, 26, 60, 0.85);
+      --card-border: rgba(66, 153, 225, 0.25);
+      --primary: #63b3ed;
+      --primary-hover: #4299e1;
+      --primary-gradient: linear-gradient(135deg, #63b3ed 0%, #3182ce 100%);
+      --btn-gradient: linear-gradient(135deg, #2b6cb0 0%, #1a365d 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
+      --primary-glow: rgba(99, 179, 237, 0.35);
+      --success: #48bb78;
+      --success-bg: rgba(72, 187, 120, 0.15);
+      --success-border: rgba(72, 187, 120, 0.3);
+      --error: #f56565;
+      --error-bg: rgba(245, 101, 101, 0.15);
+      --error-border: rgba(245, 101, 101, 0.3);
+      --warning: #ed8936;
+      --warning-bg: rgba(237, 137, 54, 0.15);
+      --info: #4299e1;
+      --info-bg: rgba(66, 153, 225, 0.15);
+      --text-main: #ebf8ff;
+      --text-muted: #bee3f8;
+      --text-dark: #63b3ed;
+      --console-bg: #04091e;
+      --console-border: rgba(66, 153, 225, 0.3);
+      --card-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.7);
+      --sub-card-bg: rgba(255, 255, 255, 0.04);
+      --sub-card-border: rgba(66, 153, 225, 0.15);
+    }
+
+    /* 方案 D: 微軟 Fluent 現代辦公室風 (Modern Office) */
+    [data-theme="fluent"][data-mode="light"],
+    [data-theme="fluent"] {
+      --bg-gradient-start: #f3f4f6;
+      --bg-gradient-end: #f9fafb;
+      --bg-radial-fallback: #f3f4f6;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --card-border: #e5e7eb;
+      --primary: #0078d4;
+      --primary-hover: #106ebe;
+      --primary-gradient: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+      --btn-gradient: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #2b88d8 0%, #0078d4 100%);
+      --primary-glow: rgba(0, 120, 212, 0.25);
+      --success: #107c41;
+      --success-bg: rgba(16, 124, 65, 0.1);
+      --success-border: rgba(16, 124, 65, 0.25);
+      --error: #a80000;
+      --error-bg: rgba(168, 0, 0, 0.1);
+      --error-border: rgba(168, 0, 0, 0.25);
+      --warning: #d83b01;
+      --warning-bg: rgba(216, 59, 1, 0.1);
+      --info: #0078d4;
+      --info-bg: rgba(0, 120, 212, 0.1);
+      --text-main: #242424;
+      --text-muted: #616161;
+      --text-dark: #8a8a8a;
+      --console-bg: #f8f9fa;
+      --console-border: #e5e7eb;
+      --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      --sub-card-bg: #f9fafb;
+      --sub-card-border: #e5e7eb;
+    }
+    [data-theme="fluent"][data-mode="dark"] {
+      --bg-gradient-start: #202020;
+      --bg-gradient-end: #181818;
+      --bg-radial-fallback: #202020;
+      --card-bg: rgba(43, 43, 43, 0.9);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --primary: #2886de;
+      --primary-hover: #4f9fe8;
+      --primary-gradient: linear-gradient(135deg, #2886de 0%, #0078d4 100%);
+      --btn-gradient: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+      --btn-hover-gradient: linear-gradient(135deg, #2886de 0%, #0078d4 100%);
+      --primary-glow: rgba(40, 134, 222, 0.35);
+      --success: #54b054;
+      --success-bg: rgba(84, 176, 84, 0.15);
+      --success-border: rgba(84, 176, 84, 0.3);
+      --error: #f1707b;
+      --error-bg: rgba(241, 112, 123, 0.15);
+      --error-border: rgba(241, 112, 123, 0.3);
+      --warning: #fce100;
+      --warning-bg: rgba(252, 225, 0, 0.15);
+      --info: #4f9fe8;
+      --info-bg: rgba(79, 159, 232, 0.15);
+      --text-main: #ffffff;
+      --text-muted: #d2d2d2;
+      --text-dark: #8a8a8a;
+      --console-bg: #141414;
+      --console-border: rgba(255, 255, 255, 0.12);
+      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      --sub-card-bg: rgba(255, 255, 255, 0.04);
+      --sub-card-border: rgba(255, 255, 255, 0.08);
+    }
+
+    :root {
+      --border-radius-lg: 16px;
+      --border-radius-md: 12px;
+      --border-radius-sm: 8px;
+      --transition-fast: 0.2s ease;
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Nunito', 'Quicksand', 'Outfit', 'Segoe UI', system-ui, sans-serif;
+      background: radial-gradient(circle at 50% 0%, var(--bg-gradient-end) 0%, var(--bg-gradient-start) 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* 頂部一體化專業導覽列 (Unified Top Navbar) */
+    .top-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius-lg);
+      padding: 1rem 1.5rem;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+    }
+
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .brand-title-row h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .local-badge {
+      font-size: 0.75rem;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+      border-radius: 999px;
+      padding: 0.15rem 0.6rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .brand-subtitle {
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 400;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .theme-control-group {
+      display: inline-flex;
+      align-items: center;
+      background: var(--sub-card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 999px;
+      padding: 0.25rem 0.65rem;
+      gap: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .theme-select {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      padding: 0.15rem 0.25rem;
+      border-radius: 6px;
+    }
+    .theme-select option {
+      background: var(--card-bg);
+      color: var(--text-main);
+    }
+
+    .mode-toggle-btn,
+    .nav-pill-btn {
+      background: var(--sub-card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all var(--transition-fast);
+    }
+    .mode-toggle-btn:hover,
+    .nav-pill-btn:hover {
+      background: var(--primary-glow);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Browser Compatibility Alert */
+    .compatibility-banner {
+      display: none;
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
+      color: var(--error);
+      padding: 0.875rem;
+      border-radius: var(--border-radius-md);
+      text-align: center;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    @media (min-width: 992px) {
+      .dashboard-grid {
+        grid-template-columns: 390px 1fr;
+      }
+    }
+
+    /* Cards */
+    .panel-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius-lg);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    /* API Input Panel */
+    .api-config-container {
+      background: var(--sub-card-bg);
+      border: 1px solid var(--sub-card-border);
+      border-radius: var(--border-radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .api-config-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .api-config-header label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .api-config-header a {
+      font-size: 0.8rem;
+      color: var(--info);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .api-config-header a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+
+    .api-input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .api-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--border-radius-sm);
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all var(--transition-fast);
+    }
+
+    .api-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    /* Step Indicators */
+    .step-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+      color: var(--text-main);
+    }
+
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: var(--btn-gradient);
+      color: #ffffff;
+      border-radius: 50%;
+      font-size: 0.875rem;
+      font-weight: 700;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    /* Step 1 Button */
+    .folder-btn {
+      width: 100%;
+      background: var(--btn-gradient);
+      color: white;
+      border: none;
+      padding: 0.875rem 1.5rem;
+      border-radius: var(--border-radius-md);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: all var(--transition-fast);
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .folder-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+      background: var(--btn-hover-gradient);
+    }
+
+    .folder-btn:active {
+      transform: translateY(0);
+    }
+
+    .folder-status {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--sub-card-bg);
+      padding: 0.75rem 1rem;
+      border-radius: var(--border-radius-md);
+      border: 1px dashed var(--card-border);
+      font-size: 0.9rem;
+    }
+
+    .folder-status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--error);
+      box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+    }
+
+    .folder-status.connected .folder-status-indicator {
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+
+    .folder-status.connected {
+      border-style: solid;
+      border-color: rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.03);
+    }
+
+    .folder-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-grow: 1;
+      color: var(--text-muted);
+    }
+
+    .folder-status.connected .folder-name {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* Step 2 Drag Zone (Redesigned for Clean Elegance) */
+    .drag-zone {
+      position: relative;
+      border: 2px dashed var(--card-border);
+      border-radius: var(--border-radius-md);
+      padding: 2.25rem 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      background: var(--sub-card-bg);
+      transition: all var(--transition-normal);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .drag-zone:not(.disabled):hover {
+      border-color: var(--primary);
+      background: var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    .drag-zone.dragover {
+      border-color: var(--success);
+      background: var(--success-bg) !important;
+      transform: scale(0.99);
+    }
+
+    .drag-zone.disabled {
+      cursor: not-allowed;
+      border-color: var(--sub-card-border);
+      background: var(--sub-card-bg);
+    }
+
+    .drag-zone.disabled .drag-zone-icon,
+    .drag-zone.disabled .drag-zone-text {
+      opacity: 0.04;
+      filter: blur(4px);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .drag-zone-icon {
+      width: 42px;
+      height: 42px;
+      color: var(--primary);
+      opacity: 0.85;
+      transition: all var(--transition-fast);
+    }
+
+    .drag-zone:not(.disabled):hover .drag-zone-icon {
+      opacity: 1;
+      transform: translateY(-2px) scale(1.05);
+    }
+
+    .drag-zone-text h3 {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--text-main);
+      margin-bottom: 0.2rem;
+    }
+
+    .drag-zone-text p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Elegant Frosted Lock Overlay (No more ugly dark gray patch or text bleed!) */
+    .drag-lock-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--card-bg);
+      opacity: 1;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: var(--border-radius-md);
+      z-index: 10;
+      transition: opacity var(--transition-normal);
+      padding: 1rem;
+    }
+
+    .drag-lock-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--sub-card-bg);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      margin-bottom: 0.15rem;
+    }
+
+    .drag-zone:not(.disabled) .drag-lock-overlay {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Collapsible Drawer for Console & Rules (Minimalist Layout) */
+    .collapsible-drawer {
+      border: 1px solid var(--sub-card-border);
+      background: var(--sub-card-bg);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .drawer-summary {
+      padding: 0.65rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      list-style: none;
+    }
+    .drawer-summary::-webkit-details-marker {
+      display: none;
+    }
+    .drawer-summary:hover {
+      color: var(--primary);
+    }
+
+    .drawer-body {
+      padding: 0 0.85rem 0.85rem 0.85rem;
+      border-top: 1px solid var(--sub-card-border);
+    }
+
+    .console-box {
+      background: var(--console-bg);
+      border: 1px solid var(--console-border);
+      border-radius: var(--border-radius-sm);
+      padding: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      height: 150px;
+      overflow-y: auto;
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin-top: 0.65rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--card-border) transparent;
+    }
+
+    .console-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    .console-box::-webkit-scrollbar-thumb {
+      background-color: var(--card-border);
+      border-radius: 3px;
+    }
+
+    .console-line {
+      line-height: 1.4;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+
+    .console-line.system { color: var(--primary); font-weight: 600; }
+    .console-line.success { color: var(--success); font-weight: 600; }
+    .console-line.error { color: var(--error); font-weight: 600; }
+    .console-line.warning { color: var(--warning); font-weight: 600; }
+
+    /* Interactive Filter Stats Dashboard */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    @media (min-width: 576px) {
+      .stats-row {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .stat-card {
+      background: var(--sub-card-bg);
+      border: 1px solid var(--sub-card-border);
+      border-radius: var(--border-radius-md);
+      padding: 0.9rem 0.75rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      transition: all var(--transition-fast);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--card-border);
+    }
+
+    .stat-card.active-filter {
+      background: var(--card-bg);
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
+      height: 3px;
+      border-radius: 0 0 3px 3px;
+      opacity: 0.75;
+    }
+
+    .stat-card.total::before { background: var(--primary); }
+    .stat-card.processing::before { background: var(--info); }
+    .stat-card.success::before { background: var(--success); }
+    .stat-card.failed::before { background: var(--error); }
+
+    .stat-value {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Overall Progress Bar */
+    .overall-progress-container {
+      background: var(--sub-card-bg);
+      border-radius: 50px;
+      height: 6px;
+      overflow: hidden;
+      width: 100%;
+      border: 1px solid var(--sub-card-border);
+    }
+
+    .overall-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--btn-gradient);
+      transition: width 0.3s ease;
+    }
+
+    /* List Panel Actions */
+    .panel-header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+
+    .list-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .list-count-badge {
+      font-size: 0.76rem;
+      padding: 0.15rem 0.55rem;
+      background: var(--sub-card-bg);
+      border: 1px solid var(--sub-card-border);
+      border-radius: 20px;
+      color: var(--text-muted);
+    }
+
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .export-btn {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+      padding: 0.38rem 0.75rem;
+      border-radius: var(--border-radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all var(--transition-fast);
+    }
+    .export-btn:hover {
+      background: var(--success);
+      color: #ffffff;
+    }
+
+    .clear-btn {
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid var(--error-border);
+      padding: 0.38rem 0.75rem;
+      border-radius: var(--border-radius-sm);
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all var(--transition-fast);
+    }
+
+    .clear-btn:hover {
+      background: var(--error);
+      color: #ffffff;
+    }
+
+    /* Inline Manual Rename Box for Failed Items */
+    .inline-manual-box {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .inline-input {
+      padding: 0.28rem 0.55rem;
+      font-size: 0.78rem;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      background: var(--card-bg);
+      color: var(--text-main);
+      outline: none;
+      width: 115px;
+      transition: border-color 0.2s;
+    }
+    .inline-input.order-input {
+      width: 145px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .inline-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+
+    .inline-save-btn {
+      background: var(--btn-gradient);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.28rem 0.65rem;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .inline-save-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* File Queue Container */
+    .queue-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 520px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--card-border) transparent;
+    }
+
+    .queue-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .queue-container::-webkit-scrollbar-thumb {
+      background-color: var(--card-border);
+      border-radius: 3px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 4.5rem 2rem;
+      border: 1.5px dashed var(--card-border);
+      background: var(--sub-card-bg);
+      border-radius: var(--border-radius-md);
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      color: var(--primary);
+      opacity: 0.45;
+    }
+
+    /* Queue Item Row */
+    .queue-item {
+      background: var(--sub-card-bg);
+      border: 1px solid var(--sub-card-border);
+      border-radius: var(--border-radius-md);
+      padding: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all var(--transition-fast);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .queue-item:hover {
+      background: var(--card-bg);
+      border-color: var(--primary);
+    }
+
+    /* Left side: Thumbnail preview */
+    .item-preview {
+      width: 50px;
+      height: 50px;
+      border-radius: var(--border-radius-sm);
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid var(--sub-card-border);
+      cursor: zoom-in;
+      position: relative;
+    }
+
+    .item-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--transition-fast);
+    }
+
+    .item-preview:hover img {
+      transform: scale(1.1);
+    }
+
+    /* Middle side: details */
+    .item-info {
+      flex-grow: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .item-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-size {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Statuses and Results */
+    .item-status-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+      flex-shrink: 0;
+    }
+
+    /* Status Badge */
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 50px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .status-badge.waiting {
+      background: var(--sub-card-bg);
+      color: var(--text-muted);
+      border: 1px solid var(--sub-card-border);
+    }
+
+    .status-badge.processing {
+      background: var(--info-bg);
+      color: var(--info);
+      border: 1px solid var(--card-border);
+    }
+
+    .status-badge.success {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+
+    .status-badge.failed {
+      background: var(--error-bg);
+      color: var(--error);
+      border: 1px solid var(--error-border);
+    }
+
+    /* Target number badge */
+    .result-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.15rem 0.4rem;
+      background: var(--sub-card-bg);
+      border-radius: var(--border-radius-sm);
+      border: 1px solid var(--sub-card-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .result-badge.success {
+      color: var(--success);
+      background: var(--success-bg);
+      border-color: var(--success-border);
+    }
+
+    .result-badge.failed {
+      color: var(--error);
+      background: var(--error-bg);
+      border-color: var(--error-border);
+    }
+
+    /* Row item progress bar (absolute bottom border style) */
+    .item-progress-track {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+    }
+
+    .item-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.2s ease;
+    }
+
+    .queue-item.processing .item-progress-fill {
+      background: var(--info);
+      box-shadow: 0 0 8px var(--primary-glow);
+    }
+
+    /* Spinner Animation */
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      animation: rotate 1s linear infinite;
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Modal for Image Preview */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      position: relative;
+      max-width: 90%;
+      max-height: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .modal-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: var(--border-radius-md);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.1);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition-fast);
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .modal-caption {
+      margin-top: 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Floating Notifications Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 1000;
+    }
+
+    .toast {
+      padding: 12px 18px;
+      border-radius: var(--border-radius-md);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: white;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: all 0.3s ease;
+    }
+
+    @keyframes toastIn {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .toast.success { background: #059669; border-left: 4px solid #34d399; }
+    .toast.error { background: #e11d48; border-left: 4px solid #fb7185; }
+    .toast.warning { background: #d97706; border-left: 4px solid #fbbf24; }
+    .toast.info { background: #2563eb; border-left: 4px solid #60a5fa; }
+
+    /* Instructions Panel */
+    .instructions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      padding-left: 1.2rem;
+    }
+
+    .instructions-list li {
+      line-height: 1.5;
+    }
+
+    .instructions-list strong {
+      color: var(--text-main);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    footer a:hover {
+      color: var(--primary);
+    }
+
+    /* Manual Modal Styles */
+    .glass-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .glass-modal.show {
+      display: flex;
+      opacity: 1;
+    }
+    .glass-modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(16px);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+      color: var(--text-main);
+    }
+    .glass-modal.show .glass-modal-content {
+      transform: translateY(0);
+    }
+    .glass-modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .glass-modal-close:hover {
+      color: var(--primary);
+    }
+    .manual-btn {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--primary);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+      transition: all 0.2s;
+    }
+    .manual-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .manual-step {
+      margin-bottom: 1.5rem;
+    }
+    .manual-step h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.25rem;
+      color: var(--primary);
+    }
+    .manual-step p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    /* Sakura Snow Effect */
+    .sakura-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+    .sakura {
+      position: absolute;
+      top: -20px;
+      background: #ffb7c5;
+      border-radius: 100% 0 100% 0;
+      opacity: 0.8;
+      box-shadow: 0 0 4px rgba(255,183,197,0.8);
+      animation: fall linear infinite, sway ease-in-out infinite alternate;
+    }
+    @keyframes fall {
+      to { top: 110vh; }
+    }
+    @keyframes sway {
+      from { transform: translateX(0) rotate(0deg); }
+      to { transform: translateX(100px) rotate(45deg); }
+    }
+
+    /* 內嵌模式微調 (?embed=1) */
+    body.embed-mode {
+      padding: 0.75rem 0.75rem 1.25rem;
+    }
+
+    /* 企業雲端身分與權限驗證遮罩 (Firebase Auth + Firestore Vault Gate) */
+    .auth-gate-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 5000;
+      background: radial-gradient(circle at 50% 0%, var(--bg-gradient-end) 0%, var(--bg-gradient-start) 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      transition: opacity 0.25s ease;
+    }
+    .auth-gate-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .auth-gate-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .auth-gate-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--sub-card-bg);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+    .auth-gate-btn {
+      width: 100%;
+      padding: 0.8rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background: var(--btn-gradient);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 14px var(--primary-glow);
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      text-decoration: none;
+    }
+    .auth-gate-btn:hover {
+      transform: translateY(-1px);
+      opacity: 0.95;
+    }
+    .user-chip {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.3rem 0.65rem;
+      border-radius: 50px;
+      background: var(--sub-card-bg);
+      border: 1px solid var(--sub-card-border);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .vault-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .vault-field label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .vault-textarea, .vault-input {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+      background: var(--sub-card-bg);
+      color: var(--text-main);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+    }
+    .vault-textarea:focus, .vault-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 企業雲端身分與業務模組權限守門員 (未授權或未登入時完全隔離畫面與金鑰) -->
+  <div id="authOverlay" class="auth-gate-overlay">
+    <div class="auth-gate-card" id="authGateCard">
+      <div class="auth-gate-badge">🛡️</div>
+      <h2 style="font-size: 1.25rem; color: var(--text-main);">驗證企業授權身分中…</h2>
+      <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">正在連線至經營 Team 營運協同平台，確認您的 <code>@youbike.com.tw</code> 帳號與採購單據辨識權限。</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- 頂部一體化專業導覽列 (Unified Top Navbar) -->
+    <nav class="top-navbar">
+      <div class="brand-group">
+        <div class="brand-title-row">
+          <h1>AI 採購單據自動辨識與改名</h1>
+          <span class="local-badge" id="vaultStatusBadge">🛡️ 雲端金鑰保護版</span>
+          <span id="authUserBadge" class="user-chip" style="display: none;"></span>
+        </div>
+        <div class="brand-subtitle">Gemini 3.8 Flash 極速主力 ＋ Gemini 4 深度救援 ｜ Firebase 雲端權限鎖定 ｜ 本機安全直存</div>
+      </div>
+
+      <div class="nav-actions">
+        <div class="theme-control-group">
+          <label for="themeSelect">🎨 風格：</label>
+          <select id="themeSelect" class="theme-select">
+            <option value="sakura">🌸 日系櫻花祭 (Morandi Sakura)</option>
+            <option value="saas">✨ 企業 SaaS 白金 (Linear / Apple)</option>
+            <option value="cyber">⚡ 旗艦科技暗黑 (Cyber Dark)</option>
+            <option value="navy">🏛️ 商務金融深藍 (Enterprise Navy)</option>
+            <option value="fluent">💼 微軟現代辦公 (Office Fluent)</option>
+          </select>
+        </div>
+        <button id="modeToggleBtn" class="mode-toggle-btn" title="切換深色 / 淺色模式">
+          <span id="modeIcon">🌙</span> <span id="modeText">切換深色</span>
+        </button>
+        <button id="vaultConfigBtn" class="nav-pill-btn" style="display: none;" title="管理雲端 Firestore 中的 Gemini 金鑰池與通知設定">🔑 金鑰池設定</button>
+        <button id="manualBtn" class="nav-pill-btn">📖 操作說明</button>
+        <a id="backToPlatformBtn" href="./#/today" class="nav-pill-btn" style="text-decoration: none;">← 返回協同平台</a>
+      </div>
+    </nav>
+
+    <!-- Browser Incompatibility Warning -->
+    <div id="compatAlert" class="compatibility-banner">
+      ⚠️ 您的瀏覽器不支援 File System Access API！請改用較新版的 Google Chrome 或 Microsoft Edge 瀏覽器開啟本網頁。
+    </div>
+
+    <div class="dashboard-grid">
+      
+      <!-- LEFT COLUMN: Controllers -->
+      <div class="panel-card">
+        
+        <!-- API Configuration Panel (隱藏並綁死金鑰) -->
+        <div class="api-config-container" style="display: none;">
+          <div class="api-config-header">
+            <label for="apiKeyInput">Gemini API 金鑰設定</label>
+          </div>
+          <div class="api-input-wrapper">
+            <input type="password" id="apiKeyInput" class="api-input" value="">
+          </div>
+        </div>
+
+        <!-- Step 1 Section -->
+        <div class="step-title">
+          <span class="step-badge">1</span>
+          <h2>選擇存檔路徑</h2>
+        </div>
+        <button id="selectDirBtn" class="folder-btn">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          選擇存檔資料夾
+        </button>
+        <div id="dirStatus" class="folder-status">
+          <span class="folder-status-indicator"></span>
+          <span id="folderName" class="folder-name">尚未選擇存檔資料夾</span>
+        </div>
+
+        <!-- Step 2 Section -->
+        <div class="step-title" style="margin-top: 0.25rem;">
+          <span class="step-badge">2</span>
+          <h2>拖放照片辨識</h2>
+        </div>
+        
+        <!-- 複數單號與二段深度救援選項 -->
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.25rem; padding-left: 0.25rem;">
+          <div class="checkbox-container" style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); font-size: 0.85rem;">
+            <input type="checkbox" id="allowMultipleOrders" style="accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;">
+            <label for="allowMultipleOrders" style="cursor: pointer; user-select: none;">允許複數單號命名 (合併多個打勾單號)</label>
+          </div>
+          <div class="checkbox-container" style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-main); font-size: 0.85rem;" title="平時使用最省額度的 3.8 Flash 極速辨識；僅在抓不到單號時自動升級高解析與第 4 代/深度思考救援">
+            <input type="checkbox" id="enableDeepRescue" checked style="accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;">
+            <label for="enableDeepRescue" style="cursor: pointer; user-select: none;">啟用 AI 二段深度救援 <span style="font-size: 0.75rem; color: var(--text-muted);">(難辨潦草字自動深讀)</span></label>
+          </div>
+        </div>
+        
+        <!-- Drag zone (disabled by default, now with clean frosted lock overlay) -->
+        <div id="dragZone" class="drag-zone disabled">
+          <div class="drag-lock-overlay" id="dragLockOverlay">
+            <div class="drag-lock-badge">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </div>
+            <span style="font-size: 0.9rem; color: var(--text-main); font-weight: 600;">請先完成「步驟 1」選擇資料夾</span>
+            <span style="font-size: 0.78rem; color: var(--text-muted);">授權存檔位置後，此拖曳區將自動解鎖</span>
+          </div>
+
+          <svg class="drag-zone-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+          </svg>
+          <div class="drag-zone-text">
+            <h3 id="dragZoneText">點擊選取 或 將照片拖曳至此</h3>
+            <p>支援 JPG, PNG, WEBP 等常見格式（支援多張批次匯入）</p>
+          </div>
+          <input type="file" id="fileInput" multiple accept="image/*" disabled style="display: none;">
+        </div>
+
+        <!-- 收納式抽屜 1: 後台執行日誌 (預設收合，保持畫面極簡文雅) -->
+        <details class="collapsible-drawer">
+          <summary class="drawer-summary">
+            <span>💻 系統執行日誌 <small id="consoleLatestHint" style="font-weight: 400; opacity: 0.8; margin-left: 4px;">(就緒)</small></span>
+            <span style="font-size: 0.75rem;">展開 ▾</span>
+          </summary>
+          <div class="drawer-body">
+            <div style="display: flex; justify-content: flex-end; margin-top: 0.4rem;">
+              <span id="clearConsoleBtn" style="cursor: pointer; text-decoration: underline; font-size: 0.74rem; color: var(--text-muted);" onclick="clearConsole()">清除日誌</span>
+            </div>
+            <div id="consoleBox" class="console-box">
+              <div class="console-line system">[系統] 企業雲端版待命中：金鑰受 Firebase 安全規則保護，前端原始碼 100% 零機密暴露。</div>
+              <div class="console-line info">[系統] 請先點擊「步驟 1：選擇存檔資料夾」即可開始拖曳照片辨識！</div>
+            </div>
+          </div>
+        </details>
+
+        <!-- 收納式抽屜 2: 系統辨識規則說明 -->
+        <details class="collapsible-drawer">
+          <summary class="drawer-summary">
+            <span>📌 系統辨識與命名規則</span>
+            <span style="font-size: 0.75rem;">展開 ▾</span>
+          </summary>
+          <div class="drawer-body" style="padding-top: 0.65rem;">
+            <ul class="instructions-list">
+              <li><strong>雙引擎省額度架構</strong>：第一線採用最新 <strong>Gemini 3.8 Flash</strong>（強制 JSON Schema 鎖定）極速衝量；遇極潦草字或印章遮擋未抓到單號時，自動啟動 <strong>Gemini 4 Hydrogen / 深度視覺推理</strong> 搭配 3200px 原圖高解析二段救援！</li>
+              <li><strong>智慧防撞名</strong>：若遇同單號多張照片，自動加上 <code>_2</code>、<code>_3</code> 絕不覆蓋原檔。</li>
+              <li><strong>人工確認快修</strong>：無法辨識之照片除了自動備份至 <code>需要人工確認</code> 資料夾外，亦可直接於右側列表手動輸入單號一鍵改名！</li>
+            </ul>
+          </div>
+        </details>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Dashboard & Queue -->
+      <div class="panel-card">
+        
+        <!-- Stats Row (Clickable Filters!) -->
+        <div class="stats-row">
+          <div class="stat-card total active-filter" id="filterCard-all" onclick="setQueueFilter('all')" title="點擊顯示全部照片">
+            <span id="statTotal" class="stat-value">0</span>
+            <span class="stat-label">全部照片</span>
+          </div>
+          <div class="stat-card processing" id="filterCard-processing" onclick="setQueueFilter('processing')" title="點擊篩選處理中/排隊中照片">
+            <span id="statProcessed" class="stat-value">0</span>
+            <span class="stat-label">已處理完成</span>
+          </div>
+          <div class="stat-card success" id="filterCard-success" onclick="setQueueFilter('success')" title="點擊只看辨識成功的照片">
+            <span id="statSuccess" class="stat-value" style="color: var(--success);">0</span>
+            <span class="stat-label">✓ 辨識成功</span>
+          </div>
+          <div class="stat-card failed" id="filterCard-failed" onclick="setQueueFilter('failed')" title="點擊只看需要人工確認的照片">
+            <span id="statFailed" class="stat-value" style="color: var(--error);">0</span>
+            <span class="stat-label">✎ 需人工確認</span>
+          </div>
+        </div>
+
+        <!-- Queue Status Progress Bar -->
+        <div class="overall-progress-container">
+          <div id="overallProgressBar" class="overall-progress-bar"></div>
+        </div>
+
+        <!-- Queue Section -->
+        <div>
+          <div class="panel-header-actions">
+            <div class="list-title">
+              照片處理進度列表
+              <span id="queueCount" class="list-count-badge">共 0 張</span>
+              <span id="activeFilterBadge" style="font-size: 0.75rem; color: var(--primary); font-weight: 500; display: none;">(篩選中)</span>
+            </div>
+            <div class="action-btn-group">
+              <button id="exportCsvBtn" class="export-btn" style="display: none;" onclick="exportQueueToCsv()" title="匯出今日辨識結果為 Excel CSV 報表">
+                📊 匯出對帳明細 (CSV)
+              </button>
+              <button id="clearQueueBtn" class="clear-btn" style="display: none;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                清空列表
+              </button>
+            </div>
+          </div>
+
+          <!-- Queue List -->
+          <div id="emptyState" class="empty-state">
+            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+            </svg>
+            <div style="font-weight: 600; color: var(--text-main);">目前尚無待處理的單據照片</div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 420px; line-height: 1.5;">請先點擊左側「1. 選擇存檔資料夾」，接著將出貨單或報價單照片拖曳至左側框內，系統將自動為您辨識廠商與單號並完成歸檔。</p>
+          </div>
+          <div id="queueContainer" class="queue-container">
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <footer>
+      <span>本地端安全運作：照片及存檔行為均在瀏覽器中獨立執行。Gemini API 請求經由 HTTPS 安全傳輸，絕不儲存於外部伺服器。</span>
+    </footer>
+  </div>
+
+  <!-- Manual Modal -->
+  <div id="manualModal" class="glass-modal">
+    <div class="glass-modal-content">
+      <button class="glass-modal-close" id="manualCloseBtn">&times;</button>
+      <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">📖 操作說明</h2>
+      
+      <div class="manual-step" style="display: none;">
+        <h3>第一步：輸入金鑰🔑</h3>
+        <p>請於上方輸入專屬的 Gemini API Key。</p>
+      </div>
+      <div class="manual-step">
+        <h3>第一步：授權存檔📂</h3>
+        <p>點擊「選取儲存資料夾」，授權瀏覽器將改名後的照片存入你指定的本地資料夾。</p>
+      </div>
+      <div class="manual-step">
+        <h3>第二步：批次匯入🖼️</h3>
+        <p>直接將一張或多張出貨單照片「拖曳」到下方虛線框內，或點擊選取。</p>
+      </div>
+      <div class="manual-step">
+        <h3>第三步：自動運行⚡</h3>
+        <p>系統將排隊進行 AI 辨識，成功會自動改名存檔，失敗或無法辨識的會幫你分類到「人工確認區」。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 雲端金鑰池保險箱設定 Modal (僅管理員與採購 Sunny 可見與操作) -->
+  <div id="vaultModal" class="glass-modal">
+    <div class="glass-modal-content" style="max-width: 540px;">
+      <button class="glass-modal-close" id="vaultCloseBtn">&times;</button>
+      <h2 style="margin-bottom: 0.5rem; font-size: 1.35rem;">🔑 雲端金鑰池與通知設定</h2>
+      <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 1.1rem; line-height: 1.5;">
+        金鑰安全加密存放於 Firebase Firestore (<code>renamerVault/secrets</code>)，受企業白名單與模組權限雙重保護，GitHub 公開原始碼 <strong>100% 零暴露</strong>。
+      </p>
+
+      <div id="vaultCurrentStatus" style="padding: 0.65rem 0.85rem; border-radius: 8px; background: var(--sub-card-bg); border: 1px solid var(--sub-card-border); font-size: 0.82rem; margin-bottom: 1rem; color: var(--text-main);">
+        尚未載入雲端金鑰狀態
+      </div>
+
+      <div class="vault-field">
+        <label for="vaultKeysInput">Gemini API 金鑰清單（每行 1 把，留空代表維持現有金鑰不變）</label>
+        <textarea id="vaultKeysInput" class="vault-textarea" rows="4" placeholder="貼上 1 至多把 Gemini API Key（每行一把，系統將自動圓桌輪替分流）"></textarea>
+      </div>
+
+      <div class="vault-field">
+        <label for="vaultWebhookInput">Discord 異常通知 Webhook URL（選填，留空維持現有設定）</label>
+        <input type="password" id="vaultWebhookInput" class="vault-input" placeholder="https://discord.com/api/webhooks/...（選填）">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.2rem;">
+        <button type="button" class="nav-pill-btn" id="vaultCancelBtn">取消</button>
+        <button type="button" class="auth-gate-btn" id="vaultSaveBtn" style="width: auto; padding: 0.55rem 1.25rem; font-size: 0.88rem;">💾 儲存至雲端保險箱</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Preview Modal -->
+  <div id="previewModal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal()">&times;</span>
+      <img id="modalImg" src="" alt="圖片放大預覽">
+      <div id="modalCaption" class="modal-caption"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script>
+    // -------------------------------------------------------------
+    // 雲端安全金鑰池（執行期由通過驗證的 Firebase Firestore 載入記憶體，原始碼 0 金鑰）
+    // -------------------------------------------------------------
+    window.__cloudGeminiKeys = [];
+    window.__cloudDiscordWebhook = '';
+
+    // -------------------------------------------------------------
+    // 遠端錯誤監控 (Discord Webhook - 動態由雲端設定載入)
+    // -------------------------------------------------------------
+    async function sendDiscordError(message) {
+      const webhookUrl = window.__cloudDiscordWebhook || '';
+      if (!webhookUrl || !webhookUrl.startsWith('https://')) return;
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: message,
+            username: "圖片辨識防呆小幫手",
+            avatar_url: "https://cdn-icons-png.flaticon.com/512/1055/1055685.png"
+          })
+        });
+      } catch (e) {
+        console.error('Discord Webhook 發送失敗', e);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    // 主題與深淺色切換器 (Theme & Mode Switcher)
+    // -------------------------------------------------------------
+    // 各風格專屬代表色溫（切換下拉選單時自動套用最佳招牌模式，仍可手動切換深淺）
+    const THEME_DEFAULT_MODE = {
+      sakura: 'light', // 日系櫻花祭：莫蘭迪霧粉淺色
+      saas: 'light',   // 企業 SaaS 白金：極簡純白淺色
+      cyber: 'dark',   // 旗艦科技暗黑：深邃賽博暗黑
+      navy: 'dark',    // 商務金融深藍：華爾街深藍夜色
+      fluent: 'light'  // 微軟現代辦公：清爽日常淺色
+    };
+
+    function initThemeSwitcher() {
+      const themeSelect = document.getElementById('themeSelect');
+      const modeToggleBtn = document.getElementById('modeToggleBtn');
+
+      // 讀取歷史偏好或預設 (預設：日系櫻花祭 + 淺色模式)
+      const savedTheme = localStorage.getItem('renamer_theme') || 'sakura';
+      const savedMode = localStorage.getItem('renamer_mode') || THEME_DEFAULT_MODE[savedTheme] || 'light';
+
+      applyTheme(savedTheme, savedMode);
+
+      if (themeSelect) {
+        themeSelect.value = savedTheme;
+        themeSelect.addEventListener('change', (e) => {
+          const newTheme = e.target.value;
+          // 切換風格時，自動切換至該風格最具代表性的深/淺色模式（例如「旗艦科技暗黑」直接進入暗黑模式）
+          const signatureMode = THEME_DEFAULT_MODE[newTheme] || 'light';
+          applyTheme(newTheme, signatureMode);
+        });
+      }
+
+      if (modeToggleBtn) {
+        modeToggleBtn.addEventListener('click', () => {
+          const currentMode = document.documentElement.getAttribute('data-mode') || 'light';
+          const newMode = currentMode === 'dark' ? 'light' : 'dark';
+          const currentTheme = document.documentElement.getAttribute('data-theme') || 'sakura';
+          applyTheme(currentTheme, newMode);
+        });
+      }
+    }
+
+    function applyTheme(theme, mode) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-mode', mode);
+      localStorage.setItem('renamer_theme', theme);
+      localStorage.setItem('renamer_mode', mode);
+
+      const modeIcon = document.getElementById('modeIcon');
+      const modeText = document.getElementById('modeText');
+      if (modeIcon && modeText) {
+        if (mode === 'dark') {
+          modeIcon.textContent = '☀️';
+          modeText.textContent = '切換淺色';
+        } else {
+          modeIcon.textContent = '🌙';
+          modeText.textContent = '切換深色';
+        }
+      }
+
+      // 如果非櫻花主題，停止並隱藏櫻花花瓣
+      if (theme !== 'sakura') {
+        stopSakura();
+      } else if (isProcessing) {
+        startSakura();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Sakura Festival Effect (僅在櫻花祭主題下生效)
+    // -------------------------------------------------------------
+    let sakuraInterval = null;
+    function startSakura() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme !== 'sakura') return; // 非櫻花主題不啟動花瓣
+      if (document.getElementById('sakuraContainer')) return;
+      const container = document.createElement('div');
+      container.id = 'sakuraContainer';
+      container.className = 'sakura-container';
+      document.body.appendChild(container);
+
+      sakuraInterval = setInterval(() => {
+        const sakura = document.createElement('div');
+        sakura.className = 'sakura';
+        const size = Math.random() * 8 + 8; // 8px to 16px
+        sakura.style.width = size + 'px';
+        sakura.style.height = size + 'px';
+        sakura.style.left = Math.random() * 100 + 'vw';
+        sakura.style.animationDuration = (Math.random() * 3 + 4) + 's, ' + (Math.random() * 2 + 3) + 's';
+        
+        container.appendChild(sakura);
+        
+        // Remove after it falls (approx 8 seconds)
+        setTimeout(() => {
+          if(sakura.parentNode) sakura.remove();
+        }, 8000);
+      }, 300);
+    }
+    function stopSakura() {
+      if (sakuraInterval) {
+        clearInterval(sakuraInterval);
+        sakuraInterval = null;
+      }
+      const container = document.getElementById('sakuraContainer');
+      if(container) {
+        container.style.transition = 'opacity 1s';
+        container.style.opacity = '0';
+        setTimeout(() => {
+          if (container.parentNode) container.remove();
+        }, 1000);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 全域變數定義
+    // -------------------------------------------------------------
+    let dirHandle = null;            // 使用者選擇的資料夾控制權
+    let fileQueue = [];             // 待處理與處理中的檔案隊列
+    let isProcessing = false;        // 是否正在循序執行 OCR 辨識
+    let globalIdCounter = 0;         // 檔案唯一的識別碼計數器
+    let activeItemId = null;         // 當前正在處理的檔案 ID
+    let currentKeyIndex = 0;         // 紀錄目前使用到第幾把金鑰
+
+    // -------------------------------------------------------------
+    // 初始化檢查與事件綁定
+    // -------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      // 0. 內嵌模式偵測 (?embed=1 時隱藏「返回協同平台」按鈕並緊湊邊距)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('embed') === '1') {
+        document.body.classList.add('embed-mode');
+        const backBtn = document.getElementById('backToPlatformBtn');
+        if (backBtn) backBtn.style.display = 'none';
+      }
+
+      // 1. 初始化主題切換器
+      initThemeSwitcher();
+
+      // 頁面關閉防呆：處理中若要重新整理或關閉分頁，彈出警告避免中斷
+      window.addEventListener('beforeunload', (e) => {
+        if (isProcessing) {
+          e.preventDefault();
+          e.returnValue = '目前尚有照片正在辨識存檔中，確定要離開嗎？';
+          return e.returnValue;
+        }
+      });
+
+      // 2. 檢查瀏覽器相容性
+      if (!('showDirectoryPicker' in window)) {
+        document.getElementById('compatAlert').style.display = 'block';
+        document.getElementById('selectDirBtn').disabled = true;
+        document.getElementById('selectDirBtn').style.opacity = '0.5';
+        document.getElementById('selectDirBtn').style.cursor = 'not-allowed';
+        addConsoleLine('瀏覽器不支援 File System Access API。請換成桌面版 Chrome 或 Edge！', 'error');
+      }
+
+      // 3. 綁定按鈕與事件
+      document.getElementById('selectDirBtn').addEventListener('click', selectDirectory);
+      
+      const dragZone = document.getElementById('dragZone');
+      
+      // 操作說明 Modal 邏輯
+      const manualBtn = document.getElementById('manualBtn');
+      const manualModal = document.getElementById('manualModal');
+      const manualCloseBtn = document.getElementById('manualCloseBtn');
+
+      manualBtn.addEventListener('click', () => {
+        manualModal.classList.add('show');
+      });
+
+      manualCloseBtn.addEventListener('click', () => {
+        manualModal.classList.remove('show');
+      });
+
+      manualModal.addEventListener('click', (e) => {
+        if (e.target === manualModal) {
+          manualModal.classList.remove('show');
+        }
+      });
+
+      // 點擊拖曳區可以開啟檔案選擇器
+      dragZone.addEventListener('click', () => {
+        if (!dirHandle) {
+          showToast('warning', '請先點擊步驟一選擇存檔資料夾！');
+          return;
+        }
+        document.getElementById('fileInput').click();
+      });
+
+      document.getElementById('fileInput').addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+          addFilesToQueue(files);
+        }
+        e.target.value = ''; // 重設選擇器
+      });
+
+      // 拖曳相關事件
+      dragZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        if (!dirHandle) return;
+        dragZone.classList.add('dragover');
+      });
+
+      dragZone.addEventListener('dragleave', () => {
+        dragZone.classList.remove('dragover');
+      });
+
+      dragZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragZone.classList.remove('dragover');
+        
+        if (!dirHandle) {
+          showToast('warning', '請先選擇存檔資料夾！');
+          return;
+        }
+
+        const files = [];
+        const isImageFile = (f) => {
+          if (!f) return false;
+          if (f.type && f.type.startsWith('image/')) return true;
+          return /\.(jpe?g|png|webp|bmp|gif|heic|heif)$/i.test(f.name || '');
+        };
+
+        if (e.dataTransfer.items) {
+          for (let i = 0; i < e.dataTransfer.items.length; i++) {
+            if (e.dataTransfer.items[i].kind === 'file') {
+              const file = e.dataTransfer.items[i].getAsFile();
+              if (isImageFile(file)) {
+                files.push(file);
+              }
+            }
+          }
+        } else {
+          for (let i = 0; i < e.dataTransfer.files.length; i++) {
+            const file = e.dataTransfer.files[i];
+            if (isImageFile(file)) {
+              files.push(file);
+            }
+          }
+        }
+
+        if (files.length > 0) {
+          addFilesToQueue(files);
+        } else {
+          showToast('info', '請拖曳有效的圖檔。');
+        }
+      });
+
+      document.getElementById('clearQueueBtn').addEventListener('click', clearQueue);
+    });
+
+    // -------------------------------------------------------------
+    // 資料夾選擇邏輯
+    // -------------------------------------------------------------
+    async function selectDirectory() {
+      try {
+        addConsoleLine('[系統] 正在喚起瀏覽器資料夾選擇器...', 'system');
+        dirHandle = await window.showDirectoryPicker({
+          mode: 'readwrite'
+        });
+
+        const dirStatus = document.getElementById('dirStatus');
+        const folderNameEl = document.getElementById('folderName');
+        const dragZone = document.getElementById('dragZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dirStatus.classList.add('connected');
+        folderNameEl.innerText = `已連接：/${dirHandle.name}`;
+        
+        // 啟用拖曳區
+        dragZone.classList.remove('disabled');
+        fileInput.disabled = false;
+        
+        showToast('success', `成功連接資料夾: ${dirHandle.name}`);
+        addConsoleLine(`[系統] 成功連接至本機資料夾「${dirHandle.name}」。拖曳照片區已開啟！`, 'success');
+      } catch (err) {
+        console.error(err);
+        if (err.name === 'AbortError') {
+          addConsoleLine('[系統] 使用者取消了資料夾選取。', 'warning');
+          showToast('info', '已取消選擇資料夾。');
+        } else if (err.name === 'SecurityError') {
+          addConsoleLine('[系統] 內嵌框架受瀏覽器安全限制無法選取本機資料夾，正在為您開啟獨立全螢幕視窗...', 'warning');
+          showToast('warning', '瀏覽器安全政策要求於獨立分頁授權本機資料夾，正為您開啟獨立視窗！');
+          window.open('./renamer.html', '_blank', 'noopener');
+        } else {
+          addConsoleLine(`[系統] 連接資料夾失敗: ${err.message}`, 'error');
+          showToast('error', `連接失敗: ${err.message}`);
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 隊列管理邏輯
+    // -------------------------------------------------------------
+    function addFilesToQueue(files) {
+      const newItems = files.map(file => {
+        globalIdCounter++;
+        return {
+          id: globalIdCounter,
+          file: file,
+          name: file.name,
+          size: file.size,
+          status: 'waiting', // waiting, processing, success, failed
+          ocrResult: '',
+          newName: '',
+          errorMsg: '',
+          progress: 0,
+          thumbnailUrl: URL.createObjectURL(file)
+        };
+      });
+
+      fileQueue.push(...newItems);
+      showToast('info', `已加入 ${newItems.length} 張照片至處理清單。`);
+      addConsoleLine(`[系統] 載入 ${newItems.length} 張照片至隊列中，準備處理。`, 'system');
+      
+      renderQueue();
+      updateStats();
+
+      // 啟動循序處理（若已在處理中，while 迴圈會自動接續處理新加入的照片）
+      if (!isProcessing) {
+        processQueue();
+      }
+    }
+
+    // 清空隊列
+    function clearQueue() {
+      if (isProcessing) {
+        if (!confirm('目前正在進行辨識處理，確定要清空並中斷嗎？')) {
+          return;
+        }
+      }
+      
+      fileQueue.forEach(item => {
+        if (item.thumbnailUrl) {
+          URL.revokeObjectURL(item.thumbnailUrl);
+        }
+      });
+      
+      fileQueue = [];
+      isProcessing = false;
+      activeItemId = null;
+      globalIdCounter = 0;
+      
+      renderQueue();
+      updateStats();
+      showToast('info', '處理隊列已成功清空。');
+      addConsoleLine('[系統] 清除所有隊列檔案。', 'system');
+    }
+
+    let currentQueueFilter = 'all'; // all, processing, success, failed
+
+    // 切換佇列篩選器
+    function setQueueFilter(filterType) {
+      currentQueueFilter = filterType;
+      ['all', 'processing', 'success', 'failed'].forEach(t => {
+        const card = document.getElementById(`filterCard-${t}`);
+        if (card) {
+          if (t === filterType) card.classList.add('active-filter');
+          else card.classList.remove('active-filter');
+        }
+      });
+
+      const badge = document.getElementById('activeFilterBadge');
+      if (badge) {
+        if (filterType === 'all') {
+          badge.style.display = 'none';
+        } else {
+          const mapText = {
+            processing: '(篩選：已處理完成)',
+            success: '(篩選：僅顯示成功)',
+            failed: '(篩選：需人工確認)'
+          };
+          badge.innerText = mapText[filterType] || '';
+          badge.style.display = 'inline';
+        }
+      }
+      renderQueue();
+    }
+
+    // 單筆重新辨識
+    function retryItem(id) {
+      const item = fileQueue.find(i => i.id === id);
+      if (!item || item.status === 'processing') return;
+      item.status = 'waiting';
+      item.errorMsg = '';
+      item.rescuedBy = '';
+      item.stageHint = '';
+      item.progress = 0;
+      renderQueue();
+      updateStats();
+      addConsoleLine(`[系統] 已將「${item.name}」重新排入辨識佇列。`, 'system');
+      if (!isProcessing) {
+        processQueue();
+      }
+    }
+
+    // 失敗項目：直接在網頁上手動輸入廠商與單號並存檔 (免開檔案總管！)
+    async function manualSaveItem(id) {
+      const item = fileQueue.find(i => i.id === id);
+      if (!item || !dirHandle) return;
+
+      const compInput = document.getElementById(`manual-comp-${id}`);
+      const orderInput = document.getElementById(`manual-order-${id}`);
+      if (!orderInput) return;
+
+      let rawCompany = (compInput && compInput.value.trim()) ? compInput.value.trim() : (item.company || '未知公司');
+      rawCompany = rawCompany.replace(/[\\/:*?"<>|]/g, '').replace(/\.+$/, '').trim() || '未知公司';
+
+      let rawOrder = orderInput.value.trim();
+      if (!rawOrder) {
+        showToast('warning', '請輸入單號後再點擊存檔！');
+        orderInput.focus();
+        return;
+      }
+      // 去除不合法的檔名字元
+      const safeOrder = rawOrder.replace(/[\\/:*?"<>|]/g, '').trim();
+
+      try {
+        const ext = getFileExtension(item.name);
+        const baseFileName = `${rawCompany} ${safeOrder}`;
+        const newFileName = await getUniqueFileName(dirHandle, baseFileName, ext);
+
+        // 1. 直接在根目錄寫入改名後的檔案
+        const fileHandle = await dirHandle.getFileHandle(newFileName, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(item.file);
+        await writable.close();
+
+        // 2. 如果之前有備份在「需要人工確認」子資料夾，自動嘗試清理移除，保持資料夾乾淨
+        if (item.failedBackupName) {
+          try {
+            const failSubDir = await dirHandle.getDirectoryHandle('需要人工確認', { create: false });
+            await failSubDir.removeEntry(item.failedBackupName);
+            addConsoleLine(`[人工快修] 已自動從「需要人工確認」移除已修復之備份檔: ${item.failedBackupName}`, 'system');
+          } catch (removeErr) {
+            // 若移除失敗或檔案已不在則忽略
+          }
+        }
+
+        // 3. 更新項目狀態為成功
+        item.company = rawCompany;
+        item.ocrResult = safeOrder;
+        item.newName = newFileName;
+        item.status = 'success';
+        item.engineUsed = '人工手動快修';
+        item.rescuedBy = '';
+        item.errorMsg = '';
+        item.progress = 100;
+        item.processedTime = new Date().toLocaleTimeString();
+
+        renderQueue();
+        updateStats();
+        showToast('success', `手動改名存檔成功：${newFileName}`);
+        addConsoleLine(`[人工快修] 手動改名存檔完成：${newFileName}`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('error', `手動存檔失敗: ${err.message}`);
+      }
+    }
+
+    // 匯出今日辨識對帳明細 (CSV 支援 Excel 直接開啟不亂碼)
+    function exportQueueToCsv() {
+      if (fileQueue.length === 0) {
+        showToast('info', '目前列表中沒有任何紀錄可匯出。');
+        return;
+      }
+
+      const headers = ['序號', '原始檔名', '辨識狀態', '辨識引擎', '廠商/公司名稱', '擷取單號', '另存新檔名', '處理時間', '備註/錯誤原因'];
+      const rows = fileQueue.map((item, idx) => {
+        const statusMap = {
+          success: '成功',
+          failed: '需人工確認',
+          processing: '處理中',
+          waiting: '排隊中'
+        };
+        const cols = [
+          idx + 1,
+          item.name || '',
+          statusMap[item.status] || item.status,
+          item.engineUsed || '',
+          item.company || '',
+          item.ocrResult || '',
+          item.newName || '',
+          item.processedTime || '',
+          item.errorMsg || ''
+        ];
+        return cols.map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+      });
+
+      // 加入 UTF-8 BOM (\uFEFF) 讓 Microsoft Excel 直接雙擊開啟時中文 100% 不亂碼
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.setAttribute('download', `採購單據辨識明細_${dateStr}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast('success', '已匯出 CSV 報表！可直接用 Excel 開啟。');
+      addConsoleLine('[系統] 已匯出今日單據辨識對帳明細 (CSV)。', 'success');
+    }
+
+    // HTML 字元跳脫防禦 (防止特殊檔名破壞 DOM)
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // -------------------------------------------------------------
+    // UI 渲染方法
+    // -------------------------------------------------------------
+    function renderQueue() {
+      const container = document.getElementById('queueContainer');
+      const emptyState = document.getElementById('emptyState');
+      const clearBtn = document.getElementById('clearQueueBtn');
+      const exportBtn = document.getElementById('exportCsvBtn');
+      const queueCount = document.getElementById('queueCount');
+
+      if (fileQueue.length === 0) {
+        container.innerHTML = '';
+        emptyState.style.display = 'flex';
+        clearBtn.style.display = 'none';
+        if (exportBtn) exportBtn.style.display = 'none';
+        queueCount.innerText = '共 0 張';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      clearBtn.style.display = 'flex';
+      if (exportBtn) exportBtn.style.display = 'flex';
+
+      const filteredItems = fileQueue.filter(item => {
+        if (currentQueueFilter === 'all') return true;
+        if (currentQueueFilter === 'processing') return item.status === 'success' || item.status === 'failed';
+        return item.status === currentQueueFilter;
+      });
+
+      queueCount.innerText = currentQueueFilter === 'all'
+        ? `共 ${fileQueue.length} 張`
+        : `顯示 ${filteredItems.length} / 共 ${fileQueue.length} 張`;
+
+      if (filteredItems.length === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.88rem;">目前此篩選分類下沒有照片（點擊上方「全部照片」可檢視完整列表）</div>`;
+        return;
+      }
+
+      const html = filteredItems.map(item => getQueueItemHtml(item)).join('');
+      container.innerHTML = html;
+    }
+
+    function getQueueItemHtml(item) {
+      let statusBadgeHtml = '';
+      let resultBadgeHtml = '';
+      let manualEditHtml = '';
+      let rowClass = '';
+      const safeName = escapeHtml(item.name);
+      const safeNewName = escapeHtml(item.newName);
+      const safeErrorMsg = escapeHtml(item.errorMsg);
+      const safeOcrResult = escapeHtml(item.ocrResult);
+      const safeCompany = escapeHtml(item.company && item.company !== '未知公司' ? item.company : '');
+
+      switch (item.status) {
+        case 'waiting':
+          statusBadgeHtml = `<span class="status-badge waiting">排隊中</span>`;
+          resultBadgeHtml = `<span class="result-badge">等待分析...</span>`;
+          break;
+        case 'processing':
+          statusBadgeHtml = `<span class="status-badge processing"><span class="spinner"></span> ${escapeHtml(item.stageHint || '辨識中')}</span>`;
+          resultBadgeHtml = `<span class="result-badge">${item.stageHint ? '深度重掃中...' : '3.8 Flash 解析中...'}</span>`;
+          rowClass = 'processing';
+          break;
+        case 'success':
+          statusBadgeHtml = item.rescuedBy
+            ? `<span class="status-badge success" title="由第二階段 ${escapeHtml(item.rescuedBy)} 成功救回單號！">✓ 成功 · 二段救援</span>`
+            : `<span class="status-badge success">✓ 成功</span>`;
+          resultBadgeHtml = `<span class="result-badge success" title="點擊複製單號" onclick="copyText('${safeOcrResult}')" style="cursor: pointer;">
+            ${safeOcrResult} 
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-left: 2px; display: inline;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+            </svg>
+          </span>`;
+          break;
+        case 'failed':
+          statusBadgeHtml = `<span class="status-badge failed" title="${safeErrorMsg}">✎ 需人工確認</span>`;
+          resultBadgeHtml = `<span class="result-badge failed" title="點擊讓 AI 重新辨識此照片" onclick="retryItem(${item.id})" style="cursor: pointer;">↻ AI 重試</span>`;
+          manualEditHtml = `
+            <div class="inline-manual-box">
+              <input type="text" id="manual-comp-${item.id}" class="inline-input" placeholder="廠商名稱 (選填)" value="${safeCompany}" onkeydown="if(event.key==='Enter') manualSaveItem(${item.id})">
+              <input type="text" id="manual-order-${item.id}" class="inline-input order-input" placeholder="輸入單號 (如 3410-...)" onkeydown="if(event.key==='Enter') manualSaveItem(${item.id})">
+              <button type="button" class="inline-save-btn" onclick="manualSaveItem(${item.id})">✓ 直接改名存檔</button>
+            </div>
+          `;
+          break;
+      }
+
+      const sizeStr = formatBytes(item.size);
+
+      return `
+        <div class="queue-item ${rowClass}" id="queue-item-${item.id}">
+          <div class="item-preview" onclick="openModalById(${item.id})" title="點擊放大檢視原圖">
+            <img src="${item.thumbnailUrl}" alt="預覽圖">
+          </div>
+          <div class="item-info">
+            <div class="item-name" title="${safeName}">${safeName}</div>
+            <div class="item-size">大小: ${sizeStr} ${item.newName ? `→ <span style="color: var(--primary); font-weight: 600;">${safeNewName}</span>` : ''}</div>
+            ${item.errorMsg ? `<div style="font-size: 0.75rem; color: var(--error); margin-top: 2px;">${safeErrorMsg}</div>` : ''}
+            ${manualEditHtml}
+          </div>
+          <div class="item-status-col">
+            ${statusBadgeHtml}
+            ${resultBadgeHtml}
+          </div>
+          <div class="item-progress-track">
+            <div class="item-progress-fill" id="item-progress-${item.id}" style="width: ${item.progress}%"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQueueItem(id) {
+      const item = fileQueue.find(i => i.id === id);
+      if (!item) return;
+
+      // 如果正在使用分類篩選，單筆狀態改變時直接重繪列表以確保篩選準確
+      if (currentQueueFilter !== 'all') {
+        renderQueue();
+        return;
+      }
+
+      const element = document.getElementById(`queue-item-${id}`);
+      if (element) {
+        const temp = document.createElement('div');
+        temp.innerHTML = getQueueItemHtml(item);
+        const newElement = temp.firstElementChild;
+        element.replaceWith(newElement);
+      } else {
+        renderQueue();
+      }
+    }
+
+    function updateStats() {
+      const total = fileQueue.length;
+      const success = fileQueue.filter(i => i.status === 'success').length;
+      const failed = fileQueue.filter(i => i.status === 'failed').length;
+      const processed = success + failed;
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statProcessed').innerText = processed;
+      document.getElementById('statSuccess').innerText = success;
+      document.getElementById('statFailed').innerText = failed;
+
+      const exportBtn = document.getElementById('exportCsvBtn');
+      if (exportBtn) {
+        exportBtn.style.display = total > 0 ? 'flex' : 'none';
+      }
+
+      const overallBar = document.getElementById('overallProgressBar');
+      if (total > 0) {
+        const percent = Math.round((processed / total) * 100);
+        overallBar.style.width = `${percent}%`;
+      } else {
+        overallBar.style.width = '0%';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 智慧防重名機制：檢查目標資料夾是否已有同名檔案，若有則自動加 _2, _3
+    // -------------------------------------------------------------
+    async function getUniqueFileName(targetDirHandle, baseName, ext) {
+      let candidate = `${baseName}${ext}`;
+      let counter = 2;
+      while (true) {
+        try {
+          // 若檔案存在，getFileHandle({ create: false }) 會成功，代表撞名了
+          await targetDirHandle.getFileHandle(candidate, { create: false });
+          candidate = `${baseName}_${counter}${ext}`;
+          counter++;
+        } catch (err) {
+          if (err.name === 'NotFoundError') {
+            // 檔案不存在，可以安全使用此檔名！
+            return candidate;
+          }
+          // 其他權限或未知錯誤則直接回傳原名交由後續寫入處理
+          return candidate;
+        }
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Gemini API 核心處理與動態佇列執行（Dynamic Queue Execution）
+    // -------------------------------------------------------------
+    async function processQueue() {
+      if (isProcessing) return;
+
+      // 從執行期記憶體讀取已通過 Firebase 權限驗證的金鑰池（絕不落盤至 localStorage 或暴露於 HTML）
+      const keysArray = Array.isArray(window.__cloudGeminiKeys)
+        ? window.__cloudGeminiKeys.map(k => String(k || '').trim()).filter(Boolean)
+        : [];
+
+      if (keysArray.length === 0) {
+        showToast('warning', '雲端保險箱尚未設定 Gemini API 金鑰！請點擊右上角「🔑 金鑰池設定」完成初次綁定。');
+        addConsoleLine('[提醒] 雲端金鑰池目前為空，請由管理員或採購 Sunny 點擊「🔑 金鑰池設定」貼入金鑰。', 'warning');
+        const vaultModal = document.getElementById('vaultModal');
+        if (vaultModal && document.getElementById('vaultConfigBtn')?.style.display !== 'none') {
+          vaultModal.classList.add('show');
+        }
+        return;
+      }
+
+      isProcessing = true;
+      addConsoleLine('[系統] 啟動雙引擎佇列：第一線 Gemini 3.8 Flash 極速解析 ＋ 第二線自動深度救援...', 'system');
+
+      try {
+        startSakura(); // 開始飄落櫻花 (僅在櫻花主題生效)
+        
+        // 採用動態 while 迴圈：即使在辨識途中再拖曳新照片進來，也會無縫接續處理不漏單！
+        while (isProcessing) {
+          const item = fileQueue.find(i => i.status === 'waiting');
+          if (!item) break; // 所有 waiting 項目均已處理完畢
+
+          const totalItems = fileQueue.length;
+          const currentIdx = fileQueue.filter(i => i.status === 'success' || i.status === 'failed').length + 1;
+          showToast('info', `處理進度：${currentIdx} / ${totalItems} 張...`);
+          addConsoleLine(`[進度] 處理進度：${currentIdx} / ${totalItems} 張...`, 'system');
+
+          activeItemId = item.id;
+          await processItem(item, keysArray);
+          
+          // 動態節流：依金鑰池數量自動調整間隔（3把Key具備 45 RPM，僅需 2 秒安全間隔）
+          const hasNext = fileQueue.some(i => i.status === 'waiting');
+          if (hasNext && isProcessing) {
+            const delayMs = keysArray.length >= 3 ? 2000 : 4000;
+            addConsoleLine(`[節流] 智慧負載平衡，安全間隔 ${delayMs / 1000} 秒...`, 'system');
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+          }
+        }
+      } catch (err) {
+        if (err.message !== 'QUOTA_EXHAUSTED' && err.message !== 'KEY_INVALID') console.error(err);
+        if (err.message === 'QUOTA_EXHAUSTED' || err.message === 'KEY_INVALID') {
+          alert('警告：所有 API 金鑰的免費額度均已用盡或失效！\n\n系統已停止後續的照片處理。');
+          addConsoleLine('[嚴重錯誤] 金鑰池全數耗盡或失效，已中止剩餘佇列處理。', 'error');
+          sendDiscordError('🚨 **【嚴重警告】所有 API 金鑰每日額度均已耗盡或失效！** 🚨\n請檢查金鑰狀態或新增更多金鑰至池中。');
+        } else {
+          addConsoleLine(`[系統] 佇列執行異常: ${err.message}`, 'error');
+          sendDiscordError(`⚠️ **【系統異常】處理佇列時發生未預期錯誤:**\n${err.message}`);
+        }
+      } finally {
+        stopSakura(); // 停止飄落櫻花
+        activeItemId = null;
+        isProcessing = false;
+        updateStats();
+
+        // 完工統計提示
+        if (fileQueue.length > 0) {
+          const failedCount = fileQueue.filter(i => i.status === 'failed').length;
+          const totalCount = fileQueue.length;
+          
+          if (failedCount > 0) {
+            addConsoleLine(`[系統] 所有照片處理完畢。成功: ${totalCount - failedCount} 張，失敗: ${failedCount} 張。`, 'warning');
+            showToast('warning', `處理完畢！有 ${failedCount} 張需人工確認`);
+            
+            // 整理失敗名單並發送 Discord 報表
+            const failedItems = fileQueue.filter(i => i.status === 'failed');
+            let errorDetails = failedItems.map(i => `- **${i.name}**: ${i.errorMsg}`).join('\n');
+            if (errorDetails.length > 1500) {
+              errorDetails = errorDetails.substring(0, 1500) + '\n... (以下省略)';
+            }
+            sendDiscordError(`⚠️ **【批次處理完畢 - 部分失敗】** ⚠️\n本次共處理 ${totalCount} 張照片，其中 **${failedCount} 張辨識失敗**。\n\n**失敗清單與原因：**\n${errorDetails}`);
+          } else {
+            addConsoleLine(`[系統] 所有照片處理完畢！成功率 100% (${totalCount}/${totalCount})`, 'success');
+            showToast('success', `🎉 全部處理完畢！共 ${totalCount} 張 100% 成功`);
+          }
+        }
+      }
+    }
+
+    // 統一呼叫 Gemini 多模態結構化視覺 API（支援強制 JSON Schema 與思考層級控制）
+    async function callGeminiVisionModel({ apiKey, modelId, thinkingLevel = 'LOW', promptText, mimeType, base64Data, timeoutMs = 32000 }) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`;
+
+      const generationConfig = {
+        temperature: 0.1,
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: 'OBJECT',
+          properties: {
+            company: {
+              type: 'STRING',
+              description: '單據上的公司、廠商或工廠名稱；若無法辨識請填 未知公司'
+            },
+            orderNumber: {
+              type: 'STRING',
+              description: '開頭為 3310- 或 3410- 的單號（若有多筆打勾且允許複數則以底線 _ 連接）；若找不到請填 NOT_FOUND'
+            }
+          },
+          required: ['company', 'orderNumber']
+        }
+      };
+
+      if (thinkingLevel) {
+        generationConfig.thinkingConfig = { thinkingLevel: thinkingLevel };
+      }
+
+      const payload = {
+        contents: [
+          {
+            parts: [
+              { text: promptText },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        ],
+        generationConfig: generationConfig
+      };
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+      let response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+      } catch (fetchErr) {
+        if (fetchErr.name === 'AbortError') {
+          throw new Error('TIMEOUT_ERROR');
+        }
+        throw fetchErr;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (!response.ok) {
+        let errorData = {};
+        try {
+          errorData = await response.json();
+        } catch (e) {}
+
+        if (response.status === 401 || response.status === 403) {
+          const errMsgLower = (errorData.error?.message || '').toLowerCase();
+          // 若是特定進階模型權限限制而非金鑰本身失效，回傳 MODEL_RESTRICTED 以便平滑降級
+          if (response.status === 403 && (errMsgLower.includes('model') || errMsgLower.includes('tier') || errMsgLower.includes('billing'))) {
+            throw new Error('MODEL_RESTRICTED');
+          }
+          throw new Error('KEY_INVALID');
+        }
+
+        if (response.status === 503) {
+          throw new Error('RATE_LIMIT_EXCEEDED');
+        }
+
+        if (response.status === 429) {
+          const msg = (errorData.error?.message || '').toLowerCase();
+          if (msg.includes('per day') || msg.includes('quota exceeded')) {
+            throw new Error('QUOTA_EXHAUSTED');
+          }
+          throw new Error('RATE_LIMIT_EXCEEDED');
+        }
+        throw new Error(errorData.error?.message || `API 伺服器回傳異常錯誤: ${response.status}`);
+      }
+
+      const resJson = await response.json();
+      const parts = resJson.candidates?.[0]?.content?.parts || [];
+      // 優先取非 thought 的最終結構化 JSON 文字區塊，確保相容所有深度思考模型
+      const nonThoughtPart = [...parts].reverse().find(p => !p.thought && typeof p.text === 'string');
+      return nonThoughtPart?.text || parts[0]?.text || '{}';
+    }
+
+    // 解析並淨化 AI 回傳之廠商名稱與 3310-/3410- 單號
+    function parseVisionResult(responseText) {
+      let parsedData = { company: '未知公司', orderNumber: 'NOT_FOUND' };
+      try {
+        const rawJson = String(responseText || '{}').replace(/```json/gi, '').replace(/```/g, '').trim();
+        parsedData = JSON.parse(rawJson);
+      } catch (e) {
+        console.warn('JSON 解析失敗，嘗試從原始文字直接正則救援擷取', e);
+        parsedData.orderNumber = String(responseText || '');
+      }
+
+      let rawCompany = (parsedData.company && parsedData.company !== '未知公司') ? String(parsedData.company).trim() : '未知公司';
+      // 去除公司名稱中不合法的 Windows 檔案字元與結尾句點 (防止存檔失敗)
+      rawCompany = rawCompany.replace(/[\\/:*?"<>|]/g, '').replace(/\.+$/, '').trim() || '未知公司';
+
+      let rawOrder = String(parsedData.orderNumber || 'NOT_FOUND');
+
+      // 對單號進行防呆與淨化 (轉大寫並去除所有空白與換行，去除 markdown 符號)
+      let cleanOrder = rawOrder.toUpperCase().trim().replace(/\s+/g, '').replace(/[*`'"]/g, '');
+      // 修正連字號 (保留底線 '_' 以支援複數單號分隔，僅將破折號與波浪號轉為 '-')
+      cleanOrder = cleanOrder.replace(/[—~－ー]/g, '-');
+      // 前綴防呆
+      cleanOrder = cleanOrder.replace(/J?3419/g, '3410').replace(/J?3319/g, '3310');
+      // 字母轉數字容錯校正
+      cleanOrder = cleanOrder.replace(/[ODQ]/g, '0');
+      cleanOrder = cleanOrder.replace(/[ILJ|\])]/g, '1');
+      cleanOrder = cleanOrder.replace(/Z/g, '2');
+      cleanOrder = cleanOrder.replace(/S/g, '5');
+      cleanOrder = cleanOrder.replace(/[Bb]/g, '6');
+      cleanOrder = cleanOrder.replace(/G/g, '9');
+
+      const regex = /(3310|3410)-([A-Za-z0-9]+)/g;
+      const matches = [...cleanOrder.matchAll(regex)];
+      const uniqueMatches = (cleanOrder !== 'NOT_FOUND' && matches.length > 0)
+        ? [...new Set(matches.map(m => m[0]))]
+        : [];
+
+      return { rawCompany, cleanOrder, uniqueMatches };
+    }
+
+    // 處理單一圖片項目 (支援多把金鑰圓桌輪替 Round-Robin、3.8 Flash 極速主力 ＋ 4 Hydrogen / 深度思考二段救援)
+    async function processItem(item, keysArray, retryCount = 0, triedKeysCount = 0) {
+      if (currentKeyIndex >= keysArray.length) {
+        currentKeyIndex = 0;
+      }
+      // 取出當前金鑰，並推進指標以達成多金鑰平均分攤負載 (Round-Robin)
+      const activeKeyIdx = currentKeyIndex;
+      const currentApiKey = keysArray[activeKeyIdx];
+      currentKeyIndex = (currentKeyIndex + 1) % keysArray.length;
+
+      if (retryCount === 0 && triedKeysCount === 0) {
+        item.status = 'processing';
+        item.stageHint = '';
+        item.rescuedBy = '';
+        item.progress = 10;
+        renderQueueItem(item.id);
+        updateStats();
+        addConsoleLine(`[開始] 處理檔案: ${item.name} (使用金鑰 #${activeKeyIdx + 1})`, 'system');
+      }
+
+      try {
+        // 1. 第一階段影像預處理：2200px 輕量最佳化（加速傳輸、省 Token 額度）
+        addConsoleLine(`[檔案] 正在進行影像最佳化編碼...`, 'system');
+        const { base64Data, mimeType } = await optimizeImageForApi(item.file, 2200, 0.88);
+        
+        item.progress = 35;
+        let progressFill = document.getElementById(`item-progress-${item.id}`);
+        if (progressFill) progressFill.style.width = '35%';
+        
+        addConsoleLine(`[第一線] 送交 Gemini 3.8 Flash (極速低延遲模式) 解析中...`, 'system');
+
+        const allowMultiple = document.getElementById('allowMultipleOrders').checked;
+        const promptInstruction = allowMultiple 
+          ? "【重要規則】：照片中可能有多個手寫單號，請特別注意前方是否有「打勾 (V)」的記號。使用者已允許「複數單號命名」，如果有『多個打勾』的單號，請將它們全部提取出來，並使用底線 '_' 連接（例如：3410-123_3410-456）做為 orderNumber。若都沒有打勾，則把所有單號用底線連接。"
+          : "【重要規則】：照片中可能有多個手寫單號，請特別注意前方是否有「打勾 (V)」的記號。如果有打勾，請【絕對優先】選擇有打勾的單號。即使有多個打勾的單號，也請只選擇最明確的【一個】做為 orderNumber。";
+
+        const primaryPrompt = `這是一張報價單/出貨單的照片。請找出該單據的「公司或工廠名稱」以及開頭為 '3310-' 或 '3410-' 的連續數字單號。\n${promptInstruction}\n請嚴格依照 JSON Schema 回傳 'company' 與 'orderNumber'。如果找不到公司名稱，請填入 '未知公司'；如果找不到單號，orderNumber 請填入 'NOT_FOUND'。`;
+
+        // 2. 第一線呼叫：Gemini 3.8 Flash (thinkingLevel: LOW，速度最快、免費額度最寬鬆)
+        const stage1Text = await callGeminiVisionModel({
+          apiKey: currentApiKey,
+          modelId: 'gemini-3.8-flash',
+          thinkingLevel: 'LOW',
+          promptText: primaryPrompt,
+          mimeType: mimeType,
+          base64Data: base64Data,
+          timeoutMs: 32000
+        });
+
+        console.log(`[除錯][第一線 3.8-Flash] ${item.file.name} 回傳:`, stage1Text);
+        let { rawCompany, cleanOrder, uniqueMatches } = parseVisionResult(stage1Text);
+        let finalEngineUsed = 'Gemini 3.8 Flash';
+        let rescuedEngineLabel = '';
+
+        item.progress = 70;
+        progressFill = document.getElementById(`item-progress-${item.id}`);
+        if (progressFill) progressFill.style.width = '70%';
+
+        // 3. 智慧二段深度救援：僅當第一線「抓不到有效單號」且使用者啟用救援時觸發（平時不浪費免費額度！）
+        const enableDeepRescueEl = document.getElementById('enableDeepRescue');
+        const enableDeepRescue = enableDeepRescueEl ? enableDeepRescueEl.checked : true;
+
+        if (uniqueMatches.length === 0 && enableDeepRescue) {
+          addConsoleLine(`[二段救援] 第一線未檢出單號，啟動 3200px 超清重編碼 ＋ 深度視覺救援...`, 'warning');
+          item.stageHint = '二段深讀中';
+          item.progress = 75;
+          renderQueueItem(item.id);
+
+          // 重新以 3200px 高解析度與 0.94 高畫質編碼，讓淡墨水筆跡、角落小字與印章重疊處更清晰
+          const hiResImg = await optimizeImageForApi(item.file, 3200, 0.94);
+          const rescuePrompt = `【高難度單據深度救援模式】\n前次快速掃描未能找到單號。請仔細放大檢視整張單據的所有角落、表頭、備註欄、手寫潦草筆跡、鉛筆/原子筆淡字，以及被紅藍印章覆蓋的區域，尋找開頭為 '3310-' 或 '3410-'（或手寫誤寫近似如 3419- / 3319-）的連續數字單號，並同時確認廠商/公司名稱。\n${promptInstruction}\n請務必仔細辨認黏連的手寫數字後回傳 JSON（包含 'company' 與 'orderNumber'；若確實完全不存在單號才填 'NOT_FOUND'）。`;
+
+          // 取下一把金鑰分攤每分鐘 RPM 負載
+          const rescueKeyIdx = currentKeyIndex % keysArray.length;
+          const rescueApiKey = keysArray[rescueKeyIdx];
+          currentKeyIndex = (currentKeyIndex + 1) % keysArray.length;
+
+          let stage2Result = null;
+
+          // 3A. 優先嘗試第 4 代 Gemini 4 Hydrogen (設 16 秒防塞車快速保護)
+          try {
+            addConsoleLine(`[二段救援] 嘗試呼叫第 4 代 Gemini 4 Hydrogen (金鑰 #${rescueKeyIdx + 1})...`, 'system');
+            const h2Text = await callGeminiVisionModel({
+              apiKey: rescueApiKey,
+              modelId: 'gemini-4-hydrogen',
+              thinkingLevel: 'LOW',
+              promptText: rescuePrompt,
+              mimeType: hiResImg.mimeType,
+              base64Data: hiResImg.base64Data,
+              timeoutMs: 16000
+            });
+            console.log(`[除錯][二段 4-Hydrogen] ${item.file.name} 回傳:`, h2Text);
+            stage2Result = parseVisionResult(h2Text);
+            if (stage2Result.uniqueMatches.length > 0) {
+              rescuedEngineLabel = 'Gemini 4 Hydrogen';
+              finalEngineUsed = 'Gemini 4 Hydrogen (二段救援)';
+            }
+          } catch (h2Err) {
+            addConsoleLine(`[二段分流] Gemini 4 Hydrogen 免費通道忙碌，無縫切換 3.8 Flash 深度思考模式...`, 'system');
+          }
+
+          // 3B. 若 4 Hydrogen 免費通道忙碌塞車或仍未檢出，無縫切換 Gemini 3.8 Flash (HIGH 深度視覺推理模式)
+          if (!stage2Result || stage2Result.uniqueMatches.length === 0) {
+            try {
+              const flashHighKeyIdx = currentKeyIndex % keysArray.length;
+              const flashHighKey = keysArray[flashHighKeyIdx];
+              currentKeyIndex = (currentKeyIndex + 1) % keysArray.length;
+
+              const fhText = await callGeminiVisionModel({
+                apiKey: flashHighKey,
+                modelId: 'gemini-3.8-flash',
+                thinkingLevel: 'HIGH',
+                promptText: rescuePrompt,
+                mimeType: hiResImg.mimeType,
+                base64Data: hiResImg.base64Data,
+                timeoutMs: 32000
+              });
+              console.log(`[除錯][二段 3.8-Flash HIGH] ${item.file.name} 回傳:`, fhText);
+              const fhParsed = parseVisionResult(fhText);
+              if (fhParsed.uniqueMatches.length > 0) {
+                stage2Result = fhParsed;
+                rescuedEngineLabel = '3.8 Flash 深度思考';
+                finalEngineUsed = 'Gemini 3.8 Flash HIGH (二段救援)';
+              } else if (!stage2Result) {
+                stage2Result = fhParsed;
+              }
+            } catch (fhErr) {
+              console.warn('[二段救援] 深度思考重掃發生例外，保留第一線結果:', fhErr);
+            }
+          }
+
+          // 合併第一線與第二線的最佳辨識成果（不遺失第一線已抓到的廠商名稱）
+          if (stage2Result) {
+            if (stage2Result.rawCompany && stage2Result.rawCompany !== '未知公司') {
+              rawCompany = stage2Result.rawCompany;
+            }
+            if (stage2Result.uniqueMatches.length > 0) {
+              cleanOrder = stage2Result.cleanOrder;
+              uniqueMatches = stage2Result.uniqueMatches;
+              addConsoleLine(`[救援成功] 由 ${rescuedEngineLabel} 成功救回單號！`, 'success');
+            }
+          }
+        }
+
+        item.stageHint = '';
+        console.log(`[最終解析結果] 引擎: ${finalEngineUsed}, 公司: ${rawCompany}, 淨化後單號: ${cleanOrder}`);
+        addConsoleLine(`[API] 解析完成 (引擎: ${finalEngineUsed}, 公司: ${rawCompany})`, 'system');
+
+        // 4. 判斷最終單號結果並執行本機存檔
+        if (uniqueMatches.length > 0) {
+          const targetCode = allowMultiple 
+            ? uniqueMatches.join('_') 
+            : uniqueMatches[0];
+            
+          item.ocrResult = targetCode;
+          item.company = rawCompany;
+          item.engineUsed = finalEngineUsed;
+          item.rescuedBy = rescuedEngineLabel;
+          item.processedTime = new Date().toLocaleTimeString();
+          
+          // 取得新檔名（加入防撞名自動編號機制，避免同單號多頁照片互相覆蓋！）
+          const ext = getFileExtension(item.name);
+          const baseFileName = `${rawCompany} ${targetCode}`;
+          const newFileName = await getUniqueFileName(dirHandle, baseFileName, ext);
+          item.newName = newFileName;
+
+          addConsoleLine(`[比對成功] 公司: ${rawCompany}, 單號: ${targetCode} → 存檔名：${newFileName}`, 'success');
+
+          // 5. 寫入到本機選定的資料夾 (寫入原始無損檔案 item.file)
+          const fileHandle = await dirHandle.getFileHandle(newFileName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(item.file);
+          await writable.close();
+
+          item.status = 'success';
+          item.progress = 100;
+          addConsoleLine(`[存檔成功] 已安全寫入: ${newFileName}`, 'success');
+        } else {
+          // 辨識失敗 (仍保留已辨識出的公司名稱，方便使用者手動補單號時不用重打公司名！)
+          item.company = rawCompany;
+          item.engineUsed = enableDeepRescue ? '雙引擎深讀未檢出' : 'Gemini 3.8 Flash';
+          item.rescuedBy = '';
+          item.status = 'failed';
+          item.progress = 100;
+          item.processedTime = new Date().toLocaleTimeString();
+          item.errorMsg = `無法比對到單號 (結果: "${cleanOrder.substring(0, 30)}")`;
+          addConsoleLine(`[比對失敗] 經深度解析仍無有效單號，移至「需要人工確認」資料夾。`, 'warning');
+
+          const failSubDir = await dirHandle.getDirectoryHandle('需要人工確認', { create: true });
+          const ext = getFileExtension(item.name);
+          const baseOrigName = item.name.replace(/\.[^.]+$/, '');
+          const safeFailName = await getUniqueFileName(failSubDir, baseOrigName, ext);
+          item.failedBackupName = safeFailName;
+          const fileHandle = await failSubDir.getFileHandle(safeFailName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(item.file);
+          await writable.close();
+          
+          addConsoleLine(`[備份存檔] 已歸檔至 /需要人工確認/${safeFailName}`, 'warning');
+        }
+      } catch (err) {
+        item.stageHint = '';
+        if (err.message !== 'RATE_LIMIT_EXCEEDED' && err.message !== 'TIMEOUT_ERROR') {
+          console.error(err);
+        }
+        
+        if (err.message === 'KEY_INVALID' || err.message === 'QUOTA_EXHAUSTED') {
+          const reason = err.message === 'KEY_INVALID' ? '金鑰驗證失效(401/403)' : '免費額度耗盡(429)';
+          if (triedKeysCount < keysArray.length - 1) {
+            const rotMsg = `金鑰 #${activeKeyIdx + 1} ${reason}，已自動切換下一把金鑰繼續處理...`;
+            addConsoleLine(`[自動輪替] ${rotMsg}`, 'warning');
+            showToast('warning', rotMsg);
+            sendDiscordError(`🔄 **【金鑰自動輪替】**\n偵測到金鑰 #${activeKeyIdx + 1} 因【${reason}】無法使用，系統已自動切換至下一把金鑰繼續作業。`);
+            return await processItem(item, keysArray, retryCount, triedKeysCount + 1);
+          } else {
+            item.status = 'failed';
+            item.progress = 100;
+            item.errorMsg = err.message === 'KEY_INVALID' ? '所有金鑰均失效' : '所有金鑰每日免費額度均已耗盡';
+            renderQueueItem(item.id);
+            updateStats();
+            throw err;
+          }
+        }
+
+        if ((err.message === 'RATE_LIMIT_EXCEEDED' || err.message === 'TIMEOUT_ERROR') && retryCount < 2) {
+          const warnType = err.message === 'TIMEOUT_ERROR' ? '網路請求超時 (32s)' : 'API 瞬時速率限制 (429/503)';
+          // 如果有多把 Key，遇到單把 429 可以先換下一把試試，只需短暫等待 4 秒
+          const waitSec = keysArray.length > 1 ? 4 : 15;
+          addConsoleLine(`[警告] 遇到${warnType}，自動切換金鑰並等待 ${waitSec} 秒後重試... (${retryCount + 1}/2)`, 'warning');
+          await new Promise(resolve => setTimeout(resolve, waitSec * 1000));
+          return await processItem(item, keysArray, retryCount + 1, triedKeysCount);
+        }
+
+        item.status = 'failed';
+        item.progress = 100;
+        item.processedTime = new Date().toLocaleTimeString();
+        item.errorMsg = err.message || '辨識或檔案存取異常 (請按 F12 看 Console)';
+        addConsoleLine(`[錯誤] 處理 ${item.name} 失敗: ${item.errorMsg}`, 'error');
+
+        // 例外備份
+        try {
+          const failSubDir = await dirHandle.getDirectoryHandle('需要人工確認', { create: true });
+          const ext = getFileExtension(item.name);
+          const baseOrigName = item.name.replace(/\.[^.]+$/, '');
+          const safeFailName = await getUniqueFileName(failSubDir, baseOrigName, ext);
+          item.failedBackupName = safeFailName;
+          const fileHandle = await failSubDir.getFileHandle(safeFailName, { create: true });
+          const writable = await fileHandle.createWritable();
+          await writable.write(item.file);
+          await writable.close();
+          addConsoleLine(`[例外處置] 已將出錯的原檔案備份至 /需要人工確認/${safeFailName}`, 'warning');
+        } catch (e) {
+          addConsoleLine(`[重大錯誤] 無法將檔案寫入人工確認資料夾: ${e.message}`, 'error');
+        }
+      }
+
+      renderQueueItem(item.id);
+      updateStats();
+    }
+
+    // -------------------------------------------------------------
+    // 輔助工具方法 (Utility Helpers)
+    // -------------------------------------------------------------
+    
+    // 智慧影像最佳化：可指定最大邊長與 JPEG 畫質（第一線預設 2200px 省額度加速；二段救援升級 3200px 高清深讀）
+    function optimizeImageForApi(file, maxDimension = 2200, jpegQuality = 0.88) {
+      return new Promise((resolve, reject) => {
+        const MAX_DIMENSION = maxDimension;
+        // 若檔案小於 1.5MB（或高解析救援模式下小於 4MB）且是一般常見格式，直接原圖無損轉 Base64
+        const directPassBytes = maxDimension >= 3000 ? (4 * 1024 * 1024) : (1.5 * 1024 * 1024);
+        if (file.size <= directPassBytes && (file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'image/webp')) {
+          fileToBase64(file).then(b64 => resolve({ base64Data: b64, mimeType: file.type || 'image/jpeg' })).catch(reject);
+          return;
+        }
+
+        const img = new Image();
+        const objUrl = URL.createObjectURL(file);
+        img.onload = () => {
+          URL.revokeObjectURL(objUrl);
+          try {
+            let { width, height } = img;
+            if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+              const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+            const base64Str = dataUrl.split(',')[1];
+            resolve({ base64Data: base64Str, mimeType: 'image/jpeg' });
+          } catch (canvasErr) {
+            fileToBase64(file).then(b64 => resolve({ base64Data: b64, mimeType: file.type || 'image/jpeg' })).catch(reject);
+          }
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(objUrl);
+          fileToBase64(file).then(b64 => resolve({ base64Data: b64, mimeType: file.type || 'image/jpeg' })).catch(reject);
+        };
+        img.src = objUrl;
+      });
+    }
+
+    // 將 File 檔案轉為 Base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64Str = reader.result.split(',')[1];
+          resolve(base64Str);
+        };
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // 格式化檔案大小
+    function formatBytes(bytes, decimals = 2) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    // 取得檔案副檔名
+    function getFileExtension(filename) {
+      const match = filename.match(/\.[^.]+$/);
+      return match ? match[0].toLowerCase() : '.jpg';
+    }
+
+    // 輸出到後台 Console 日誌 (限制最多保留 300 行避免長時間運行 DOM 膨脹)
+    function addConsoleLine(text, type = 'system') {
+      const consoleBox = document.getElementById('consoleBox');
+      const line = document.createElement('div');
+      line.className = `console-line ${type}`;
+      
+      const time = new Date().toLocaleTimeString();
+      line.innerText = `[${time}] ${text}`;
+      
+      consoleBox.appendChild(line);
+      while (consoleBox.children.length > 300) {
+        consoleBox.removeChild(consoleBox.firstChild);
+      }
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+
+      // 同步更新折疊抽屜標題上的簡短狀態提示
+      const hintEl = document.getElementById('consoleLatestHint');
+      if (hintEl) {
+        const shortText = text.replace(/^\[.*?\]\s*/, '');
+        hintEl.innerText = `(${shortText.length > 18 ? shortText.substring(0, 18) + '...' : shortText})`;
+      }
+    }
+
+    function clearConsole() {
+      const consoleBox = document.getElementById('consoleBox');
+      consoleBox.innerHTML = '<div class="console-line system">[系統] 日誌已清空。</div>';
+    }
+
+    // 吐司通知 UI
+    function showToast(type, message) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      let icon = '';
+      if (type === 'success') icon = '✓';
+      else if (type === 'error') icon = '✗';
+      else if (type === 'warning') icon = '⚠️';
+      else icon = 'ℹ';
+
+      toast.innerHTML = `<span>${icon}</span> <span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // 複製單號到剪貼簿
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('success', `單號 ${text} 已複製！`);
+      } catch (err) {
+        showToast('error', '複製失敗');
+      }
+    }
+
+    // -------------------------------------------------------------
+    // Lightbox 燈箱預覽邏輯
+    // -------------------------------------------------------------
+    function openModalById(id) {
+      const item = fileQueue.find(i => i.id === id);
+      if (!item) return;
+      openModal(item.thumbnailUrl, item.newName || item.name);
+    }
+
+    function openModal(url, filename) {
+      const modal = document.getElementById('previewModal');
+      const modalImg = document.getElementById('modalImg');
+      const modalCaption = document.getElementById('modalCaption');
+      
+      modalImg.src = url;
+      modalCaption.innerText = filename;
+      modal.classList.add('show');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('previewModal');
+      modal.classList.remove('show');
+    }
+
+    document.getElementById('previewModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('previewModal')) {
+        closeModal();
+      }
+    });
+  </script>
+
+  <!-- 企業 Firebase SSO 與 Firestore 金鑰保險箱串接模組 -->
+  <script type="module">
+    const authOverlay = document.getElementById('authOverlay');
+    const authGateCard = document.getElementById('authGateCard');
+    const vaultStatusBadge = document.getElementById('vaultStatusBadge');
+    const authUserBadge = document.getElementById('authUserBadge');
+    const vaultConfigBtn = document.getElementById('vaultConfigBtn');
+    const vaultModal = document.getElementById('vaultModal');
+    const vaultCloseBtn = document.getElementById('vaultCloseBtn');
+    const vaultCancelBtn = document.getElementById('vaultCancelBtn');
+    const vaultSaveBtn = document.getElementById('vaultSaveBtn');
+    const vaultCurrentStatus = document.getElementById('vaultCurrentStatus');
+    const vaultKeysInput = document.getElementById('vaultKeysInput');
+    const vaultWebhookInput = document.getElementById('vaultWebhookInput');
+
+    function maskSecretKey(k) {
+      const s = String(k || '').trim();
+      if (s.length <= 10) return '******';
+      return s.slice(0, 6) + '••••••' + s.slice(-4);
+    }
+
+    function refreshVaultUiSummary() {
+      const keys = window.__cloudGeminiKeys || [];
+      const hasWebhook = Boolean(window.__cloudDiscordWebhook);
+      if (vaultStatusBadge) {
+        vaultStatusBadge.textContent = keys.length > 0
+          ? `🛡️ 雲端已掛載 ${keys.length} 把金鑰`
+          : '⚠️ 尚未設定雲端金鑰';
+      }
+      if (vaultCurrentStatus) {
+        if (keys.length > 0) {
+          const maskedList = keys.map((k, idx) => `#${idx + 1}: ${maskSecretKey(k)}`).join(' ｜ ');
+          vaultCurrentStatus.innerHTML = `✅ 目前雲端已安全儲存 <strong>${keys.length} 把</strong> Gemini 金鑰（${escapeHtml(maskedList)}）<br>🔔 Discord 異常通知：<strong>${hasWebhook ? '已啟用綁定' : '未設定'}</strong>`;
+        } else {
+          vaultCurrentStatus.innerHTML = `⚠️ 雲端保險箱目前尚無金鑰，請於下方貼入至少 1 把 Gemini API Key 後點擊儲存。`;
+        }
+      }
+    }
+
+    (async function initFirebaseCloudGate() {
+      if (location.protocol === 'file:') {
+        authGateCard.innerHTML = `
+          <div class="auth-gate-badge">📂</div>
+          <h2 style="font-size: 1.2rem; color: var(--text-main);">此為「雲端平台整合版 (renamer.html)」</h2>
+          <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.55;">
+            為了確保 GitHub 公開程式碼 100% 不含任何金鑰，本檔案需放置於「經營 Team 營運協同平台」專案根目錄，透過企業網站或本機伺服器開啟以驗證 Firebase 權限。<br><br>
+            👉 若要在電腦單機直接點擊開啟，請改開同資料夾下的 <code>AutoRenamer_Local.html</code>。
+          </p>
+        `;
+        return;
+      }
+
+      try {
+        const [{ auth, db, provider }, { APP }] = await Promise.all([
+          import('./js/firebase.js'),
+          import('./js/config.js'),
+        ]);
+        const { onAuthStateChanged, signInWithPopup, signOut } = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js');
+        const { doc, getDoc, setDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js');
+
+        const G = (APP && APP.groupId) ? APP.groupId : 'default';
+        const allowedDomain = (APP && APP.allowedDomains && APP.allowedDomains[0]) ? APP.allowedDomains[0] : 'youbike.com.tw';
+
+        function renderLoginPrompt(errMsg = '') {
+          authOverlay.classList.remove('hidden');
+          authGateCard.innerHTML = `
+            <div class="auth-gate-badge">🔐</div>
+            <h2 style="font-size: 1.25rem; color: var(--text-main);">請登入經營 Team 企業帳號</h2>
+            <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5;">
+              本單據辨識工具受企業權限保護，請使用 <strong>@${escapeHtml(allowedDomain)}</strong> 帳號驗證身分以自動掛載雲端金鑰池。
+            </p>
+            ${errMsg ? `<div style="font-size: 0.8rem; color: var(--error); background: var(--error-bg); border: 1px solid var(--error-border); padding: 0.5rem 0.75rem; border-radius: 8px; width: 100%;">${escapeHtml(errMsg)}</div>` : ''}
+            <button type="button" id="gateLoginBtn" class="auth-gate-btn">
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="">
+              使用 YouBike 公司帳號登入
+            </button>
+            <a href="./#/today" style="font-size: 0.82rem; color: var(--text-muted); text-decoration: none; margin-top: 0.25rem;">← 返回經營 Team 營運協同平台</a>
+          `;
+          document.getElementById('gateLoginBtn')?.addEventListener('click', async () => {
+            try {
+              provider.setCustomParameters({ hd: allowedDomain, prompt: 'select_account' });
+              await signInWithPopup(auth, provider);
+            } catch (e) {
+              if (e?.code !== 'auth/popup-closed-by-user' && e?.code !== 'auth/cancelled-popup-request') {
+                renderLoginPrompt('登入失敗：' + (e?.code || e?.message || '請稍後再試'));
+              }
+            }
+          });
+        }
+
+        function renderAccessDenied(emailStr, reasonText) {
+          authOverlay.classList.remove('hidden');
+          authGateCard.innerHTML = `
+            <div class="auth-gate-badge">🚫</div>
+            <h2 style="font-size: 1.25rem; color: var(--text-main);">尚未開通此模組存取權限</h2>
+            <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.55;">
+              目前登入帳號：<code>${escapeHtml(emailStr)}</code><br>
+              ${escapeHtml(reasonText)}
+            </p>
+            <a href="./#/today" class="auth-gate-btn">返回今日動態</a>
+          `;
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) {
+            window.__cloudGeminiKeys = [];
+            window.__cloudDiscordWebhook = '';
+            renderLoginPrompt();
+            return;
+          }
+
+          const email = String(user.email || '').toLowerCase().trim();
+          if (!email.endsWith('@' + allowedDomain)) {
+            await signOut(auth).catch(() => {});
+            renderLoginPrompt(`請改用 @${allowedDomain} 公司信箱登入（目前為 ${email}）`);
+            return;
+          }
+
+          try {
+            // 並行讀取個人檔案與業務模組權限矩陣
+            const [userSnap, permSnap] = await Promise.all([
+              getDoc(doc(db, 'users', user.uid)),
+              getDoc(doc(db, 'groups', G, 'settings', 'permissions')).catch(() => null),
+            ]);
+
+            const userData = userSnap.exists() ? userSnap.data() : null;
+            if (userData && userData.active === false) {
+              renderAccessDenied(email, '此帳號目前已停用，如有疑問請洽系統管理員。');
+              return;
+            }
+
+            const isSysAdmin = (
+              email === 'leokung@youbike.com.tw' ||
+              email === 'jhsu@youbike.com.tw' ||
+              userData?.role === 'admin'
+            );
+            const isSunny = (email === 'sunnyting@youbike.com.tw');
+
+            const permMap = (permSnap && permSnap.exists()) ? permSnap.data() : {};
+            const explicitRenamerPerm = permMap?.[user.uid]?.renamer;
+
+            // 權限判定：系統管理員全通；一般成員優先讀取後台權限矩陣 renamer 開關，若未設定則預設僅開放採購 Sunny (sunnyting@youbike.com.tw)
+            const canAccess = isSysAdmin || (typeof explicitRenamerPerm === 'boolean' ? explicitRenamerPerm : isSunny);
+
+            if (!canAccess) {
+              renderAccessDenied(
+                email,
+                '「AI 採購單據辨識」目前獨立設定為採購授權同仁專屬使用。如需開通權限，請聯絡管理員於「管理 → 業務模組權限矩陣」勾選授權。'
+              );
+              return;
+            }
+
+            // 通過驗證：讀取雲端專屬保險箱 groups/{G}/renamerVault/secrets
+            const vaultRef = doc(db, 'groups', G, 'renamerVault', 'secrets');
+            let vaultData = {};
+            try {
+              const vaultSnap = await getDoc(vaultRef);
+              if (vaultSnap.exists()) {
+                vaultData = vaultSnap.data() || {};
+              }
+            } catch (vaultErr) {
+              console.warn('讀取 renamerVault/secrets 提醒:', vaultErr);
+              addConsoleLine(`[雲端提醒] 尚未讀取到雲端金鑰保險箱 (${vaultErr.code || vaultErr.message})，請確認已部署最新 firestore.rules 並完成初次金鑰儲存。`, 'warning');
+            }
+
+            window.__cloudGeminiKeys = Array.isArray(vaultData.keys)
+              ? vaultData.keys.map(k => String(k || '').trim()).filter(Boolean)
+              : [];
+            window.__cloudDiscordWebhook = String(vaultData.discordWebhookUrl || '').trim();
+
+            // 更新頂部使用者徽章與金鑰狀態
+            const displayLabel = userData?.displayName || user.displayName || email.split('@')[0];
+            if (authUserBadge) {
+              authUserBadge.textContent = `👤 ${displayLabel}`;
+              authUserBadge.style.display = 'inline-flex';
+            }
+            refreshVaultUiSummary();
+
+            // 僅管理員與金鑰擁有者 Sunny 可開啟「🔑 金鑰池設定」
+            const canManageVault = isSysAdmin || isSunny;
+            if (vaultConfigBtn) {
+              vaultConfigBtn.style.display = canManageVault ? 'inline-flex' : 'none';
+              vaultConfigBtn.onclick = () => {
+                vaultKeysInput.value = '';
+                vaultWebhookInput.value = '';
+                refreshVaultUiSummary();
+                vaultModal.classList.add('show');
+              };
+            }
+
+            const closeVault = () => vaultModal.classList.remove('show');
+            if (vaultCloseBtn) vaultCloseBtn.onclick = closeVault;
+            if (vaultCancelBtn) vaultCancelBtn.onclick = closeVault;
+            if (vaultModal) {
+              vaultModal.onclick = (ev) => { if (ev.target === vaultModal) closeVault(); };
+            }
+
+            if (vaultSaveBtn && canManageVault) {
+              vaultSaveBtn.onclick = async () => {
+                const rawLines = vaultKeysInput.value
+                  .split(/[\r\n,]+/)
+                  .map(s => s.trim())
+                  .filter(Boolean);
+                const nextKeys = rawLines.length > 0 ? rawLines : window.__cloudGeminiKeys;
+                const rawWebhook = vaultWebhookInput.value.trim();
+                const nextWebhook = rawWebhook ? rawWebhook : window.__cloudDiscordWebhook;
+
+                if (!nextKeys || nextKeys.length === 0) {
+                  showToast('warning', '請至少輸入 1 把有效的 Gemini API Key！');
+                  return;
+                }
+
+                vaultSaveBtn.disabled = true;
+                vaultSaveBtn.textContent = '儲存中...';
+                try {
+                  await setDoc(vaultRef, {
+                    keys: nextKeys,
+                    discordWebhookUrl: nextWebhook || '',
+                    updatedBy: email,
+                    updatedAt: serverTimestamp(),
+                  }, { merge: true });
+
+                  window.__cloudGeminiKeys = nextKeys;
+                  window.__cloudDiscordWebhook = nextWebhook || '';
+                  vaultKeysInput.value = '';
+                  vaultWebhookInput.value = '';
+                  refreshVaultUiSummary();
+                  closeVault();
+                  showToast('success', `已安全儲存 ${nextKeys.length} 把金鑰至雲端保險箱！`);
+                  addConsoleLine(`[雲端金鑰] 已同步更新雲端保險箱（共 ${nextKeys.length} 把金鑰）。`, 'success');
+                } catch (saveErr) {
+                  console.error(saveErr);
+                  showToast('error', '雲端儲存失敗：' + (saveErr.code || saveErr.message));
+                } finally {
+                  vaultSaveBtn.disabled = false;
+                  vaultSaveBtn.textContent = '💾 儲存至雲端保險箱';
+                }
+              };
+            }
+
+            // 解鎖主畫面！
+            authOverlay.classList.add('hidden');
+            addConsoleLine(`[企業驗證通過] 歡迎 ${displayLabel}！已自雲端安全掛載 ${window.__cloudGeminiKeys.length} 把 Gemini 金鑰。`, 'success');
+          } catch (err) {
+            console.error(err);
+            renderLoginPrompt('權限驗證時發生錯誤：' + (err.code || err.message));
+          }
+        });
+      } catch (bootErr) {
+        console.error(bootErr);
+        authGateCard.innerHTML = `
+          <div class="auth-gate-badge">⚠️</div>
+          <h2 style="font-size: 1.2rem; color: var(--text-main);">找不到平台 Firebase 設定模組</h2>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.55;">
+            請確認 <code>renamer.html</code> 已放置於「經營 Team 營運協同平台」根目錄（與 <code>index.html</code>、<code>js/firebase.js</code> 同層）後再開啟。
+          </p>
+        `;
+      }
+    })();
+  </script>
+</body>
+</html>

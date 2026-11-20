@@ -115,6 +115,9 @@ export function mountAdmin(el) {
             <b>採購佈告欄</b>：<span class="muted">採購 Team 專案管理、公告資訊、文件清單與業務後台</span>
           </div>
           <div style="display:flex; align-items:center; gap:6px;">
+            <b>單據改名</b>：<span class="muted">AI 採購單據自動辨識與改名（預設僅採購 Sunny 與管理員開通）</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
             <b>管理員 (全通)</b>：<span class="muted">擁有所有業務模組最高控管與修改權限</span>
           </div>
         </div>
@@ -590,6 +593,12 @@ export function mountAdmin(el) {
               <button type="button" class="btn small ghost" data-batch-mod="bulletin" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
             </div>
           </th>
+          <th style="text-align:center; min-width:130px;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+              <span>單據改名</span>
+              <button type="button" class="btn small ghost" data-batch-mod="renamer" style="font-size:11px; padding:1px 8px; height:22px;">全體開通</button>
+            </div>
+          </th>
           <th style="min-width:190px;">權限說明狀態</th>
         </tr>
       </thead>
@@ -599,8 +608,9 @@ export function mountAdmin(el) {
           const canSim = hasModulePermission(u, 'simulation');
           const canDaily = hasModulePermission(u, 'dailyReport');
           const canBulletin = hasModulePermission(u, 'bulletin');
+          const canRenamer = hasModulePermission(u, 'renamer');
           const isSelf = u.uid === me;
-          const activeModCount = [canSim, canDaily, canBulletin].filter(Boolean).length;
+          const activeModCount = [canSim, canDaily, canBulletin, canRenamer].filter(Boolean).length;
 
           return `
             <tr data-perm-uid="${esc(u.uid)}">
@@ -646,11 +656,19 @@ export function mountAdmin(el) {
                   <span class="perm-check-custom"></span>
                 </label>
               </td>
+              <td style="text-align:center;">
+                <label class="perm-check-wrap ${isUserAdmin ? 'disabled' : ''}">
+                  <input type="checkbox" data-perm-mod="renamer"
+                    ${canRenamer ? 'checked' : ''}
+                    ${isUserAdmin ? 'disabled title="管理員預設擁有全模組權限"' : ''}>
+                  <span class="perm-check-custom"></span>
+                </label>
+              </td>
               <td>
                 ${isUserAdmin ?
                   '<span class="perm-status-note note-admin">全通權限（管理員最高權限）</span>' :
-                  `<span class="perm-status-note ${activeModCount === 3 ? 'note-all' : (activeModCount > 0 ? 'note-partial' : 'note-none')}">
-                    ${activeModCount === 3 ? '全業務模組已開通' : (activeModCount > 0 ? `已開通 ${activeModCount} 項業務模組` : '未開通業務模組')}
+                  `<span class="perm-status-note ${activeModCount === 4 ? 'note-all' : (activeModCount > 0 ? 'note-partial' : 'note-none')}">
+                    ${activeModCount === 4 ? '全業務模組已開通' : (activeModCount > 0 ? `已開通 ${activeModCount} 項業務模組` : '未開通業務模組')}
                   </span>`
                 }
               </td>
@@ -688,7 +706,7 @@ export function mountAdmin(el) {
     const batchBtn = e.target.closest('[data-batch-mod]');
     if (!batchBtn) return;
     const mod = batchBtn.dataset.batchMod;
-    const modNames = { simulation: '模擬體驗', dailyReport: '每日回報', bulletin: '採購佈告欄' };
+    const modNames = { simulation: '模擬體驗', dailyReport: '每日回報', bulletin: '採購佈告欄', renamer: '單據改名' };
     const ok = await confirmDialog(`確定要為<b>全體組員</b>一次開通「<b>${esc(modNames[mod] || mod)}</b>」模組權限嗎？`, {
       title: '批次開通模組權限',
       okText: '確定全體開通',

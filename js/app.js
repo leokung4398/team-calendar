@@ -175,7 +175,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261120v76';
+    const V = '20261120v77';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -207,6 +207,7 @@ async function boot() {
       simulation: { label: '模擬體驗', mount: lazyMount('./views/simulation.js', 'mountSimulation'), permission: 'simulation' },
       dailyReport: { label: '每日回報', mount: mountDailyReport, permission: 'dailyReport' },
       bulletin: { label: '採購佈告欄', mount: lazyMount('./views/bulletin.js', 'mountBulletin'), permission: 'bulletin' },
+      renamer: { label: '單據改名', mount: lazyMount('./views/renamer.js', 'mountRenamer'), permission: 'renamer' },
       tools: { label: '實用小工具', mount: lazyMount('./views/tools.js', 'mountTools'), inMoreMenu: true },
       wishes: { label: '許願池', mount: lazyMount('./views/feedback.js', 'mountWishes'), inMoreMenu: true },
       vents: { label: '意見箱(抱怨箱)', mount: lazyMount('./views/feedback.js', 'mountVents'), inMoreMenu: true },
@@ -277,6 +278,7 @@ async function boot() {
       const canDaily = d.hasModulePermission(d.state.me, 'dailyReport');
       const canSim = d.hasModulePermission(d.state.me, 'simulation');
       const canBul = d.hasModulePermission(d.state.me, 'bulletin');
+      const canRenamer = d.hasModulePermission(d.state.me, 'renamer');
       const canKaizen = d.isAdmin() || d.isFieldDeputy?.(d.state.me);
       const curTheme = getCurrentTheme();
       const items = [
@@ -284,6 +286,7 @@ async function boot() {
         { key: 'cases', icon: '📌', label: '例案追蹤', sub: '長期專案時間軸' },
         ...(canSim ? [{ key: 'simulation', icon: '🛵', label: '模擬體驗', sub: '排班配額與巡檢' }] : []),
         ...(canBul ? [{ key: 'bulletin', icon: '📰', label: '採購佈告欄', sub: '採購週報與交期' }] : []),
+        ...(canRenamer ? [{ key: 'renamer', icon: '🧾', label: '單據改名', sub: 'AI 採購單據辨識' }] : []),
         { key: 'tools', icon: '🧰', label: '實用小工具', sub: 'YouBike/天氣/雙鐵' },
         { key: 'wishes', icon: '⛲', label: '許願池＆樹洞', sub: '投幣許願 / 匿名樹洞' },
         ...(canKaizen ? [{ key: 'kaizen', icon: '🏝️', label: '改善提案', sub: '3D 建造島與辦法' }] : []),
@@ -390,6 +393,7 @@ async function boot() {
         d.hasModulePermission(d.state.me, 'simulation') ? '1' : '0',
         d.hasModulePermission(d.state.me, 'dailyReport') ? '1' : '0',
         d.hasModulePermission(d.state.me, 'bulletin') ? '1' : '0',
+        d.hasModulePermission(d.state.me, 'renamer') ? '1' : '0',
       ].join('|');
       if (!force && permSig === lastTabsSig) return;
       lastTabsSig = permSig;
