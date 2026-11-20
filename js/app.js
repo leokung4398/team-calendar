@@ -175,7 +175,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261120v77';
+    const V = '20261120v78';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -207,7 +207,7 @@ async function boot() {
       simulation: { label: '模擬體驗', mount: lazyMount('./views/simulation.js', 'mountSimulation'), permission: 'simulation' },
       dailyReport: { label: '每日回報', mount: mountDailyReport, permission: 'dailyReport' },
       bulletin: { label: '採購佈告欄', mount: lazyMount('./views/bulletin.js', 'mountBulletin'), permission: 'bulletin' },
-      renamer: { label: '單據改名', mount: lazyMount('./views/renamer.js', 'mountRenamer'), permission: 'renamer' },
+      renamer: { label: '單據改名', mount: lazyMount('./views/renamer.js', 'mountRenamer'), inMoreMenu: true, permission: 'renamer' },
       tools: { label: '實用小工具', mount: lazyMount('./views/tools.js', 'mountTools'), inMoreMenu: true },
       wishes: { label: '許願池', mount: lazyMount('./views/feedback.js', 'mountWishes'), inMoreMenu: true },
       vents: { label: '意見箱(抱怨箱)', mount: lazyMount('./views/feedback.js', 'mountVents'), inMoreMenu: true },
@@ -398,7 +398,7 @@ async function boot() {
       if (!force && permSig === lastTabsSig) return;
       lastTabsSig = permSig;
 
-      const moreKeys = ['tools', 'wishes', 'vents', 'kaizen'];
+      const moreKeys = ['tools', 'wishes', 'vents', 'kaizen', 'renamer'];
       const isMoreActive = moreKeys.includes(currentRoute);
       const activeMoreLabel = isMoreActive ? routes[currentRoute]?.label : '百寶箱';
 
@@ -420,6 +420,7 @@ async function boot() {
           <div class="nav-more-menu">
             <a href="#/tools" class="${currentRoute === 'tools' ? 'active' : ''}">實用小工具 <small>天氣/台鐵高鐵/試算</small></a>
             <a href="#/${currentRoute === 'vents' ? 'vents' : 'wishes'}" class="${(currentRoute === 'wishes' || currentRoute === 'vents') ? 'active' : ''}">許願池 ＆ 解憂樹洞 <small>投幣許願 / 100%匿名樹洞</small></a>
+            ${d.hasModulePermission(d.state.me, 'renamer') ? `<a href="#/renamer" class="${currentRoute === 'renamer' ? 'active' : ''}">AI 單據辨識改名 <small>採購單據自動辨識與重新命名</small></a>` : ''}
             ${(d.isAdmin() || d.isFieldDeputy?.(d.state.me)) ? `<a href="#/kaizen" class="${currentRoute === 'kaizen' ? 'active' : ''}">改善提案 <small>未來城市建造島 · 圖卡與對照</small></a>` : ''}
           </div>
         </div>
