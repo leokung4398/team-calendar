@@ -1,349 +1,177 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="sakura" data-mode="light">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 採購單據自動辨識與改名 ｜ 經營 Team 營運協同平台</title>
-  <!-- Google Fonts -->
+  <script>
+    (function() {
+      try {
+        var t = '';
+        if (window.parent && window.parent !== window) {
+          try { t = window.parent.document.documentElement.getAttribute('data-theme') || ''; } catch (e) {}
+        }
+        if (!t) t = localStorage.getItem('yb_ui_theme') || 'classic';
+        if (t !== 'editorial' && t !== 'maple') t = 'classic';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'classic');
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
   
   <style>
     /* -------------------------------------------------------------
-       主題色彩變數系統 (支援 5 大風格 x 深淺色切換)
+       經營 Team 營運協同平台統一視覺設計系統（經典活力黃 / 文青生活誌 / 楓之谷）
        ------------------------------------------------------------- */
     :root,
-    [data-theme="sakura"][data-mode="light"] {
-      --bg-gradient-start: #fdf8f9;
-      --bg-gradient-end: #f9eff2;
-      --bg-radial-fallback: #fdf8f9;
-      --card-bg: rgba(255, 255, 255, 0.92);
-      --card-border: rgba(212, 132, 158, 0.25);
-      --primary: #c2597c;
-      --primary-hover: #a84264;
-      --primary-gradient: linear-gradient(135deg, #d87a99 0%, #c2597c 55%, #963958 100%);
-      --btn-gradient: linear-gradient(135deg, #d47091 0%, #bd5275 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #c2597c 0%, #a63e60 100%);
-      --primary-glow: rgba(194, 89, 124, 0.22);
-      --success: #0d9488;
-      --success-bg: rgba(13, 148, 136, 0.1);
-      --success-border: rgba(13, 148, 136, 0.25);
-      --error: #e11d48;
-      --error-bg: rgba(225, 29, 72, 0.08);
-      --error-border: rgba(225, 29, 72, 0.22);
-      --warning: #d97706;
-      --warning-bg: rgba(217, 119, 6, 0.1);
-      --info: #0284c7;
-      --info-bg: rgba(2, 132, 199, 0.1);
-      --text-main: #2d2629;
-      --text-muted: #6e5e65;
-      --text-dark: #9e8c93;
-      --console-bg: rgba(252, 246, 248, 0.9);
-      --console-border: rgba(212, 132, 158, 0.28);
-      --card-shadow: 0 8px 28px -8px rgba(150, 57, 88, 0.1);
-      --sub-card-bg: rgba(250, 242, 245, 0.7);
-      --sub-card-border: rgba(212, 132, 158, 0.2);
-    }
-
-    [data-theme="sakura"][data-mode="dark"] {
-      --bg-gradient-start: #1a0b18;
-      --bg-gradient-end: #2d1124;
-      --bg-radial-fallback: #1a0b18;
-      --card-bg: rgba(45, 17, 36, 0.75);
-      --card-border: rgba(244, 114, 182, 0.25);
-      --primary: #f472b6;
-      --primary-hover: #fbcfe8;
-      --primary-gradient: linear-gradient(135deg, #fbcfe8 0%, #f472b6 50%, #db2777 100%);
-      --btn-gradient: linear-gradient(135deg, #db2777 0%, #be185d 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #f472b6 0%, #db2777 100%);
-      --primary-glow: rgba(244, 114, 182, 0.4);
-      --success: #34d399;
-      --success-bg: rgba(16, 185, 129, 0.18);
-      --success-border: rgba(16, 185, 129, 0.35);
-      --error: #fb7185;
-      --error-bg: rgba(244, 63, 94, 0.18);
-      --error-border: rgba(244, 63, 94, 0.35);
-      --warning: #fbbf24;
-      --warning-bg: rgba(245, 158, 11, 0.18);
-      --info: #38bdf8;
-      --info-bg: rgba(14, 165, 233, 0.18);
-      --text-main: #fce7f3;
-      --text-muted: #f472b6;
-      --text-dark: #9d174d;
-      --console-bg: rgba(26, 11, 24, 0.85);
-      --console-border: rgba(244, 114, 182, 0.3);
-      --card-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.6);
-      --sub-card-bg: rgba(255, 255, 255, 0.05);
-      --sub-card-border: rgba(244, 114, 182, 0.15);
-    }
-
-    /* 方案 A: 旗艦科技深邃暗黑 (Tech Dark) */
-    [data-theme="cyber"][data-mode="dark"],
-    [data-theme="cyber"] {
-      --bg-gradient-start: #0a0e17;
-      --bg-gradient-end: #030712;
-      --bg-radial-fallback: #050b14;
-      --card-bg: rgba(15, 23, 42, 0.85);
-      --card-border: rgba(56, 189, 248, 0.25);
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
-      --btn-gradient: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-      --primary-glow: rgba(56, 189, 248, 0.4);
-      --success: #10b981;
-      --success-bg: rgba(16, 185, 129, 0.15);
-      --success-border: rgba(16, 185, 129, 0.3);
-      --error: #f43f5e;
-      --error-bg: rgba(244, 63, 94, 0.15);
-      --error-border: rgba(244, 63, 94, 0.3);
-      --warning: #f59e0b;
-      --warning-bg: rgba(245, 158, 11, 0.15);
-      --info: #0ea5e9;
-      --info-bg: rgba(14, 165, 233, 0.15);
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dark: #64748b;
-      --console-bg: rgba(3, 7, 18, 0.9);
-      --console-border: rgba(56, 189, 248, 0.3);
-      --card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.8);
-      --sub-card-bg: rgba(255, 255, 255, 0.03);
-      --sub-card-border: rgba(255, 255, 255, 0.08);
-    }
-    [data-theme="cyber"][data-mode="light"] {
-      --bg-gradient-start: #e2e8f0;
-      --bg-gradient-end: #f1f5f9;
-      --bg-radial-fallback: #e2e8f0;
-      --card-bg: rgba(248, 250, 252, 0.92);
-      --card-border: rgba(14, 165, 233, 0.35);
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --primary-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #1e293b 100%);
-      --btn-gradient: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-      --primary-glow: rgba(14, 165, 233, 0.25);
-      --success: #059669;
-      --success-bg: rgba(16, 185, 129, 0.12);
-      --success-border: rgba(16, 185, 129, 0.3);
-      --error: #e11d48;
-      --error-bg: rgba(244, 63, 94, 0.12);
-      --error-border: rgba(244, 63, 94, 0.3);
-      --warning: #d97706;
-      --warning-bg: rgba(245, 158, 11, 0.12);
-      --info: #0284c7;
-      --info-bg: rgba(14, 165, 233, 0.12);
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-dark: #64748b;
-      --console-bg: #0f172a;
-      --console-border: rgba(56, 189, 248, 0.4);
-      --card-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.15);
-      --sub-card-bg: rgba(15, 23, 42, 0.04);
-      --sub-card-border: rgba(14, 165, 233, 0.22);
-    }
-
-    /* 方案 B: 頂級企業 SaaS 白金風 (Linear / Apple 簡約) */
-    [data-theme="saas"][data-mode="light"],
-    [data-theme="saas"] {
-      --bg-gradient-start: #f8fafc;
-      --bg-gradient-end: #ffffff;
-      --bg-radial-fallback: #f8fafc;
+    html[data-theme="classic"] {
+      --bg: #f6f6f3;
+      --bg-image: none;
       --card-bg: #ffffff;
       --card-border: #e2e8f0;
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
-      --btn-gradient: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      --primary-glow: rgba(79, 70, 229, 0.25);
-      --success: #16a34a;
-      --success-bg: rgba(22, 163, 74, 0.1);
-      --success-border: rgba(22, 163, 74, 0.25);
+      --card-border-width: 1px;
+      --card-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 16px rgba(15, 23, 42, 0.05);
+      --sub-card-bg: #f8fafc;
+      --sub-card-border: #e2e8f0;
+      --primary: #8f5b00;
+      --primary-hover: #714700;
+      --accent: #ffc400;
+      --primary-glow: rgba(255, 196, 0, 0.28);
+      --title-color: #1e293b;
+      --btn-bg: #ffc400;
+      --btn-hover-bg: #f5ac00;
+      --btn-border: #f5ac00;
+      --btn-text: #2b2b2b;
+      --btn-shadow: 0 2px 6px rgba(245, 172, 0, 0.22);
+      --pill-bg: #ffffff;
+      --pill-border: #e2e8f0;
+      --pill-text: #1e293b;
+      --pill-hover-bg: #fff8d6;
+      --pill-hover-border: #f5ac00;
+      --badge-bg: #ffc400;
+      --badge-text: #2b2b2b;
+      --success: #15803d;
+      --success-bg: rgba(21, 128, 61, 0.1);
+      --success-border: rgba(21, 128, 61, 0.25);
       --error: #dc2626;
-      --error-bg: rgba(220, 38, 38, 0.1);
-      --error-border: rgba(220, 38, 38, 0.25);
-      --warning: #d97706;
+      --error-bg: rgba(220, 38, 38, 0.08);
+      --error-border: rgba(220, 38, 38, 0.24);
+      --warning: #b45309;
       --warning-bg: rgba(217, 119, 6, 0.1);
-      --info: #2563eb;
-      --info-bg: rgba(37, 99, 235, 0.1);
-      --text-main: #0f172a;
-      --text-muted: #64748b;
+      --info: #0369a1;
+      --info-bg: rgba(2, 132, 199, 0.1);
+      --text-main: #1e293b;
+      --text-muted: #526075;
       --text-dark: #94a3b8;
       --console-bg: #f8fafc;
       --console-border: #e2e8f0;
-      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
-      --sub-card-bg: #f8fafc;
-      --sub-card-border: #e2e8f0;
-    }
-    [data-theme="saas"][data-mode="dark"] {
-      --bg-gradient-start: #0f172a;
-      --bg-gradient-end: #020617;
-      --bg-radial-fallback: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.8);
-      --card-border: rgba(255, 255, 255, 0.1);
-      --primary: #818cf8;
-      --primary-hover: #6366f1;
-      --primary-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-      --btn-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
-      --primary-glow: rgba(129, 140, 248, 0.3);
-      --success: #4ade80;
-      --success-bg: rgba(74, 222, 128, 0.15);
-      --success-border: rgba(74, 222, 128, 0.3);
-      --error: #f87171;
-      --error-bg: rgba(248, 113, 113, 0.15);
-      --error-border: rgba(248, 113, 113, 0.3);
-      --warning: #fbbf24;
-      --warning-bg: rgba(251, 191, 36, 0.15);
-      --info: #60a5fa;
-      --info-bg: rgba(96, 165, 250, 0.15);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dark: #64748b;
-      --console-bg: #0b1120;
-      --console-border: rgba(255, 255, 255, 0.1);
-      --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-      --sub-card-bg: rgba(255, 255, 255, 0.03);
-      --sub-card-border: rgba(255, 255, 255, 0.08);
-    }
-
-    /* 方案 C: 經典商務金融藍 (Enterprise Navy Blue) */
-    [data-theme="navy"][data-mode="light"],
-    [data-theme="navy"] {
-      --bg-gradient-start: #edf2f7;
-      --bg-gradient-end: #f7fafc;
-      --bg-radial-fallback: #edf2f7;
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --card-border: #cbd5e0;
-      --primary: #1a365d;
-      --primary-hover: #2a4365;
-      --primary-gradient: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
-      --btn-gradient: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #2b6cb0 0%, #3182ce 100%);
-      --primary-glow: rgba(26, 54, 93, 0.25);
-      --success: #276749;
-      --success-bg: rgba(39, 103, 73, 0.1);
-      --success-border: rgba(39, 103, 73, 0.3);
-      --error: #9b2c2c;
-      --error-bg: rgba(155, 44, 44, 0.1);
-      --error-border: rgba(155, 44, 44, 0.3);
-      --warning: #c05621;
-      --warning-bg: rgba(192, 86, 33, 0.1);
-      --info: #2b6cb0;
-      --info-bg: rgba(43, 108, 176, 0.1);
-      --text-main: #1a202c;
-      --text-muted: #4a5568;
-      --text-dark: #718096;
-      --console-bg: #edf2f7;
-      --console-border: #cbd5e0;
-      --card-shadow: 0 8px 24px -4px rgba(26, 54, 93, 0.12);
-      --sub-card-bg: #edf2f7;
-      --sub-card-border: #cbd5e0;
-    }
-    [data-theme="navy"][data-mode="dark"] {
-      --bg-gradient-start: #0a1128;
-      --bg-gradient-end: #000411;
-      --bg-radial-fallback: #0a1128;
-      --card-bg: rgba(16, 26, 60, 0.85);
-      --card-border: rgba(66, 153, 225, 0.25);
-      --primary: #63b3ed;
-      --primary-hover: #4299e1;
-      --primary-gradient: linear-gradient(135deg, #63b3ed 0%, #3182ce 100%);
-      --btn-gradient: linear-gradient(135deg, #2b6cb0 0%, #1a365d 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
-      --primary-glow: rgba(99, 179, 237, 0.35);
-      --success: #48bb78;
-      --success-bg: rgba(72, 187, 120, 0.15);
-      --success-border: rgba(72, 187, 120, 0.3);
-      --error: #f56565;
-      --error-bg: rgba(245, 101, 101, 0.15);
-      --error-border: rgba(245, 101, 101, 0.3);
-      --warning: #ed8936;
-      --warning-bg: rgba(237, 137, 54, 0.15);
-      --info: #4299e1;
-      --info-bg: rgba(66, 153, 225, 0.15);
-      --text-main: #ebf8ff;
-      --text-muted: #bee3f8;
-      --text-dark: #63b3ed;
-      --console-bg: #04091e;
-      --console-border: rgba(66, 153, 225, 0.3);
-      --card-shadow: 0 12px 35px -8px rgba(0, 0, 0, 0.7);
-      --sub-card-bg: rgba(255, 255, 255, 0.04);
-      --sub-card-border: rgba(66, 153, 225, 0.15);
-    }
-
-    /* 方案 D: 微軟 Fluent 現代辦公室風 (Modern Office) */
-    [data-theme="fluent"][data-mode="light"],
-    [data-theme="fluent"] {
-      --bg-gradient-start: #f3f4f6;
-      --bg-gradient-end: #f9fafb;
-      --bg-radial-fallback: #f3f4f6;
-      --card-bg: rgba(255, 255, 255, 0.95);
-      --card-border: #e5e7eb;
-      --primary: #0078d4;
-      --primary-hover: #106ebe;
-      --primary-gradient: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
-      --btn-gradient: linear-gradient(135deg, #0078d4 0%, #106ebe 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #2b88d8 0%, #0078d4 100%);
-      --primary-glow: rgba(0, 120, 212, 0.25);
-      --success: #107c41;
-      --success-bg: rgba(16, 124, 65, 0.1);
-      --success-border: rgba(16, 124, 65, 0.25);
-      --error: #a80000;
-      --error-bg: rgba(168, 0, 0, 0.1);
-      --error-border: rgba(168, 0, 0, 0.25);
-      --warning: #d83b01;
-      --warning-bg: rgba(216, 59, 1, 0.1);
-      --info: #0078d4;
-      --info-bg: rgba(0, 120, 212, 0.1);
-      --text-main: #242424;
-      --text-muted: #616161;
-      --text-dark: #8a8a8a;
-      --console-bg: #f8f9fa;
-      --console-border: #e5e7eb;
-      --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      --sub-card-bg: #f9fafb;
-      --sub-card-border: #e5e7eb;
-    }
-    [data-theme="fluent"][data-mode="dark"] {
-      --bg-gradient-start: #202020;
-      --bg-gradient-end: #181818;
-      --bg-radial-fallback: #202020;
-      --card-bg: rgba(43, 43, 43, 0.9);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --primary: #2886de;
-      --primary-hover: #4f9fe8;
-      --primary-gradient: linear-gradient(135deg, #2886de 0%, #0078d4 100%);
-      --btn-gradient: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
-      --btn-hover-gradient: linear-gradient(135deg, #2886de 0%, #0078d4 100%);
-      --primary-glow: rgba(40, 134, 222, 0.35);
-      --success: #54b054;
-      --success-bg: rgba(84, 176, 84, 0.15);
-      --success-border: rgba(84, 176, 84, 0.3);
-      --error: #f1707b;
-      --error-bg: rgba(241, 112, 123, 0.15);
-      --error-border: rgba(241, 112, 123, 0.3);
-      --warning: #fce100;
-      --warning-bg: rgba(252, 225, 0, 0.15);
-      --info: #4f9fe8;
-      --info-bg: rgba(79, 159, 232, 0.15);
-      --text-main: #ffffff;
-      --text-muted: #d2d2d2;
-      --text-dark: #8a8a8a;
-      --console-bg: #141414;
-      --console-border: rgba(255, 255, 255, 0.12);
-      --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-      --sub-card-bg: rgba(255, 255, 255, 0.04);
-      --sub-card-border: rgba(255, 255, 255, 0.08);
-    }
-
-    :root {
-      --border-radius-lg: 16px;
-      --border-radius-md: 12px;
+      --border-radius-lg: 12px;
+      --border-radius-md: 10px;
       --border-radius-sm: 8px;
-      --transition-fast: 0.2s ease;
-      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-fast: 0.15s ease;
+      --transition-normal: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-sans: "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-heading: var(--font-sans);
+    }
+
+    /* 風格二：文青生活誌 × 微縮工藝 (Editorial Gazette) */
+    html[data-theme="editorial"] {
+      --bg: #f4efe6;
+      --bg-image:
+        radial-gradient(circle at 15% 10%, rgba(200, 155, 60, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 85% 85%, rgba(30, 63, 53, 0.05) 0%, transparent 45%);
+      --card-bg: linear-gradient(180deg, #fffdf9 0%, #faf6ee 100%);
+      --card-border: #dfd5c5;
+      --card-border-width: 1px;
+      --card-shadow: 0 6px 22px rgba(28, 41, 36, 0.055), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      --sub-card-bg: #f5efe3;
+      --sub-card-border: #dcd2c0;
+      --primary: #1e3f35;
+      --primary-hover: #152e27;
+      --accent: #b89446;
+      --primary-glow: rgba(184, 148, 70, 0.22);
+      --title-color: #1e3f35;
+      --btn-bg: linear-gradient(135deg, #1e3f35 0%, #295245 100%);
+      --btn-hover-bg: linear-gradient(135deg, #163028 0%, #1e3f35 100%);
+      --btn-border: #b89446;
+      --btn-text: #f8f1df;
+      --btn-shadow: 0 2px 8px rgba(30, 63, 53, 0.2);
+      --pill-bg: #fffdf9;
+      --pill-border: #d5c8b2;
+      --pill-text: #26352f;
+      --pill-hover-bg: #f3ede2;
+      --pill-hover-border: #b89446;
+      --badge-bg: #1e3f35;
+      --badge-text: #f8f1df;
+      --success: #1e563f;
+      --success-bg: rgba(30, 86, 63, 0.1);
+      --success-border: rgba(30, 86, 63, 0.25);
+      --error: #b9382c;
+      --error-bg: rgba(185, 56, 44, 0.08);
+      --error-border: rgba(185, 56, 44, 0.25);
+      --warning: #8f5b14;
+      --warning-bg: rgba(184, 148, 70, 0.14);
+      --info: #1e3f35;
+      --info-bg: rgba(30, 63, 53, 0.08);
+      --text-main: #1c2924;
+      --text-muted: #6e6558;
+      --text-dark: #8c8273;
+      --console-bg: #faf6ee;
+      --console-border: #dfd5c5;
+      --font-heading: "Noto Serif TC", "Songti TC", "PMingLiU", Georgia, "Noto Sans TC", serif;
+    }
+
+    /* 風格三：《楓之谷 MapleStory》經典藍框 × 菇菇寶貝混血風格 */
+    html[data-theme="maple"] {
+      --bg: #eef4fc;
+      --bg-image:
+        radial-gradient(circle at 12% 8%, rgba(255, 204, 0, 0.13) 0%, transparent 40%),
+        radial-gradient(circle at 88% 14%, rgba(0, 102, 204, 0.10) 0%, transparent 42%),
+        radial-gradient(circle at 50% 92%, rgba(85, 221, 34, 0.08) 0%, transparent 45%),
+        linear-gradient(180deg, #e8f1fc 0%, #f6f3ea 48%, #eef5e8 100%);
+      --card-bg: linear-gradient(180deg, #ffffff 0%, #fffbf0 100%);
+      --card-border: #3b76b8;
+      --card-border-width: 2px;
+      --card-shadow: 0 4px 0 rgba(19, 58, 107, 0.16), 0 10px 24px rgba(0, 43, 92, 0.08), inset 0 1px 0 #ffffff;
+      --sub-card-bg: #f7faff;
+      --sub-card-border: #c7d4e6;
+      --primary: #004085;
+      --primary-hover: #002d5e;
+      --accent: #ff6600;
+      --primary-glow: rgba(255, 136, 0, 0.22);
+      --title-color: #003b7a;
+      --btn-bg: linear-gradient(180deg, #d95204 0%, #b83700 100%);
+      --btn-hover-bg: linear-gradient(180deg, #ea5c08 0%, #c93f00 100%);
+      --btn-border: #ffe066;
+      --btn-text: #ffffff;
+      --btn-shadow: 0 3px 0 #7a2300, 0 4px 10px rgba(184, 55, 0, 0.25);
+      --pill-bg: linear-gradient(180deg, #ffffff 0%, #eef4fb 100%);
+      --pill-border: #4a7ebb;
+      --pill-text: #0f294a;
+      --pill-hover-bg: linear-gradient(180deg, #fffdf5 0%, #ffefc2 100%);
+      --pill-hover-border: #ff8800;
+      --badge-bg: linear-gradient(180deg, #ff8811 0%, #e65100 100%);
+      --badge-text: #ffffff;
+      --success: #248a15;
+      --success-bg: rgba(46, 168, 28, 0.11);
+      --success-border: rgba(46, 168, 28, 0.3);
+      --error: #dc2626;
+      --error-bg: rgba(229, 37, 33, 0.09);
+      --error-border: rgba(229, 37, 33, 0.28);
+      --warning: #b45309;
+      --warning-bg: rgba(245, 158, 11, 0.15);
+      --info: #005bb5;
+      --info-bg: rgba(0, 91, 181, 0.1);
+      --text-main: #1e2430;
+      --text-muted: #5a6578;
+      --text-dark: #7c899e;
+      --console-bg: #f4f8fd;
+      --console-border: #b8cce4;
+      --border-radius-lg: 14px;
     }
 
     * {
@@ -353,41 +181,51 @@
     }
 
     body {
-      font-family: 'Nunito', 'Quicksand', 'Outfit', 'Segoe UI', system-ui, sans-serif;
-      background: radial-gradient(circle at 50% 0%, var(--bg-gradient-end) 0%, var(--bg-gradient-start) 100%);
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      background-image: var(--bg-image);
       color: var(--text-main);
+      font-size: 15px;
+      line-height: 1.5;
       min-height: 100vh;
-      padding: 1.5rem 1rem;
+      padding: 1.25rem 1rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       overflow-x: hidden;
-      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    h1, h2, h3 {
+      font-family: var(--font-heading);
     }
 
     .container {
       width: 100%;
-      max-width: 1280px;
+      max-width: 1440px;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1rem;
     }
 
-    /* 頂部一體化專業導覽列 (Unified Top Navbar) */
+    /* 頂部狀態與操作列（與協同平台一致） */
     .top-navbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
       flex-wrap: wrap;
       background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
+      border: var(--card-border-width) solid var(--card-border);
       border-radius: var(--border-radius-lg);
-      padding: 1rem 1.5rem;
+      padding: 0.85rem 1.25rem;
       box-shadow: var(--card-shadow);
-      transition: all 0.3s ease;
+    }
+
+    html[data-theme="maple"] .top-navbar {
+      background: linear-gradient(180deg, #004e9e 0%, #00336b 100%);
+      border-color: #002b5c;
+      border-bottom: 3px solid #ffcc00;
+      box-shadow: 0 4px 14px rgba(0, 32, 74, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.3);
     }
 
     .brand-group {
@@ -399,37 +237,50 @@
     .brand-title-row {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
+      gap: 0.55rem;
       flex-wrap: wrap;
     }
 
     .brand-title-row h1 {
-      font-size: 1.45rem;
-      font-weight: 700;
-      background: var(--primary-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.02em;
+      font-size: 1.28rem;
+      font-weight: 800;
+      color: var(--title-color);
+      letter-spacing: 0.01em;
       margin: 0;
     }
 
+    html[data-theme="maple"] .brand-title-row h1 {
+      color: #fff9db;
+      text-shadow: 0 2px 0 #001f42;
+    }
+
+    html[data-theme="maple"] .brand-subtitle {
+      color: #dbeafe;
+    }
+
     .local-badge {
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       background: var(--success-bg);
       color: var(--success);
       border: 1px solid var(--success-border);
       border-radius: 999px;
-      padding: 0.15rem 0.6rem;
-      font-weight: 600;
+      padding: 0.18rem 0.65rem;
+      font-weight: 700;
       display: inline-flex;
       align-items: center;
       gap: 0.25rem;
     }
 
+    html[data-theme="maple"] .local-badge {
+      background: rgba(16, 185, 129, 0.22);
+      color: #a7f3d0;
+      border-color: rgba(110, 231, 183, 0.5);
+    }
+
     .brand-subtitle {
       color: var(--text-muted);
-      font-size: 0.84rem;
-      font-weight: 400;
+      font-size: 0.82rem;
+      font-weight: 500;
     }
 
     .nav-actions {
@@ -439,54 +290,41 @@
       flex-wrap: wrap;
     }
 
-    .theme-control-group {
-      display: inline-flex;
-      align-items: center;
-      background: var(--sub-card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 999px;
-      padding: 0.25rem 0.65rem;
-      gap: 0.35rem;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-    }
-
-    .theme-select {
-      background: transparent;
-      border: none;
-      color: var(--text-main);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      outline: none;
-      padding: 0.15rem 0.25rem;
-      border-radius: 6px;
-    }
-    .theme-select option {
-      background: var(--card-bg);
-      color: var(--text-main);
-    }
-
-    .mode-toggle-btn,
     .nav-pill-btn {
-      background: var(--sub-card-bg);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      border-radius: 999px;
-      padding: 0.35rem 0.85rem;
-      font-size: 0.82rem;
+      background: var(--pill-bg);
+      border: 1px solid var(--pill-border);
+      color: var(--pill-text);
+      border-radius: 8px;
+      padding: 0.38rem 0.82rem;
+      font-size: 0.84rem;
       font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
       transition: all var(--transition-fast);
     }
-    .mode-toggle-btn:hover,
     .nav-pill-btn:hover {
-      background: var(--primary-glow);
-      border-color: var(--primary);
+      background: var(--pill-hover-bg);
+      border-color: var(--pill-hover-border);
       color: var(--primary);
+    }
+
+    html[data-theme="maple"] .top-navbar .nav-pill-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1.5px solid rgba(191, 219, 254, 0.6);
+      color: #f8fafc;
+    }
+    html[data-theme="maple"] .top-navbar .nav-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.26);
+      border-color: #ffcc00;
+      color: #ffffff;
+    }
+    html[data-theme="maple"] .top-navbar .user-chip {
+      background: rgba(0, 26, 58, 0.55);
+      border-color: rgba(147, 197, 253, 0.45);
+      color: #fff9db;
     }
 
     /* Browser Compatibility Alert */
@@ -519,18 +357,15 @@
     /* Cards */
     .panel-card {
       background: var(--card-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--card-border);
+      border: var(--card-border-width) solid var(--card-border);
       border-radius: var(--border-radius-lg);
-      padding: 1.5rem;
+      padding: 1.35rem 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1.15rem;
       box-shadow: var(--card-shadow);
       position: relative;
       overflow: hidden;
-      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     /* API Input Panel */
@@ -596,53 +431,62 @@
 
     /* Step Indicators */
     .step-title {
-      font-size: 1.2rem;
-      font-weight: 600;
+      font-size: 1.08rem;
+      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
       border-bottom: 1px solid var(--card-border);
-      padding-bottom: 0.75rem;
-      color: var(--text-main);
+      padding-bottom: 0.7rem;
+      color: var(--title-color);
+    }
+
+    html[data-theme="maple"] .step-title {
+      background: linear-gradient(180deg, #005bb5 0%, #003875 100%);
+      color: #fff9db;
+      padding: 0.55rem 0.85rem;
+      border-radius: 9px;
+      border-bottom: 2px solid #ffcc00;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     }
 
     .step-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: var(--btn-gradient);
-      color: #ffffff;
+      width: 26px;
+      height: 26px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
       border-radius: 50%;
-      font-size: 0.875rem;
-      font-weight: 700;
-      box-shadow: 0 0 10px var(--primary-glow);
+      font-size: 0.85rem;
+      font-weight: 800;
+      flex-shrink: 0;
     }
 
     /* Step 1 Button */
     .folder-btn {
       width: 100%;
-      background: var(--btn-gradient);
-      color: white;
-      border: none;
-      padding: 0.875rem 1.5rem;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1.5px solid var(--btn-border);
+      padding: 0.8rem 1.4rem;
       border-radius: var(--border-radius-md);
-      font-size: 1rem;
-      font-weight: 600;
+      font-size: 0.98rem;
+      font-weight: 700;
+      font-family: inherit;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
       transition: all var(--transition-fast);
-      box-shadow: 0 4px 15px var(--primary-glow);
+      box-shadow: var(--btn-shadow);
     }
 
     .folder-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px var(--primary-glow);
-      background: var(--btn-hover-gradient);
+      transform: translateY(-1px);
+      background: var(--btn-hover-bg);
     }
 
     .folder-btn:active {
@@ -949,8 +793,11 @@
     .overall-progress-bar {
       height: 100%;
       width: 0%;
-      background: var(--btn-gradient);
+      background: var(--accent);
       transition: width 0.3s ease;
+    }
+    html[data-theme="maple"] .overall-progress-bar {
+      background: linear-gradient(90deg, #ff8800 0%, #ffd000 60%, #ffe866 100%);
     }
 
     /* List Panel Actions */
@@ -1055,18 +902,19 @@
     }
 
     .inline-save-btn {
-      background: var(--btn-gradient);
-      color: #ffffff;
-      border: none;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--btn-border);
       border-radius: 6px;
       padding: 0.28rem 0.65rem;
       font-size: 0.76rem;
-      font-weight: 600;
+      font-weight: 700;
+      font-family: inherit;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: background 0.15s ease;
     }
     .inline-save-btn:hover {
-      opacity: 0.9;
+      background: var(--btn-hover-bg);
     }
 
     /* File Queue Container */
@@ -1499,35 +1347,17 @@
       color: var(--text-muted);
       line-height: 1.4;
     }
-    /* Sakura Snow Effect */
-    .sakura-container {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 9999;
-    }
-    .sakura {
-      position: absolute;
-      top: -20px;
-      background: #ffb7c5;
-      border-radius: 100% 0 100% 0;
-      opacity: 0.8;
-      box-shadow: 0 0 4px rgba(255,183,197,0.8);
-      animation: fall linear infinite, sway ease-in-out infinite alternate;
-    }
-    @keyframes fall {
-      to { top: 110vh; }
-    }
-    @keyframes sway {
-      from { transform: translateX(0) rotate(0deg); }
-      to { transform: translateX(100px) rotate(45deg); }
-    }
-
-    /* 內嵌模式微調 (?embed=1) */
+    /* 內嵌模式微調 (?embed=1：已由協同平台外框提供主標題，內部收納為精簡狀態工具列並無縫融合背景) */
     body.embed-mode {
-      padding: 0.75rem 0.75rem 1.25rem;
+      padding: 0.15rem 0.15rem 1rem;
+    }
+    body.embed-mode .brand-title-row h1,
+    body.embed-mode #platformThemeBtn,
+    body.embed-mode #backToPlatformBtn {
+      display: none !important;
+    }
+    body.embed-mode .top-navbar {
+      padding: 0.65rem 1rem;
     }
 
     /* 企業雲端身分與權限驗證遮罩 (Firebase Auth + Firestore Vault Gate) */
@@ -1535,7 +1365,8 @@
       position: fixed;
       inset: 0;
       z-index: 5000;
-      background: radial-gradient(circle at 50% 0%, var(--bg-gradient-end) 0%, var(--bg-gradient-start) 100%);
+      background-color: var(--bg);
+      background-image: var(--bg-image);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -1548,10 +1379,10 @@
     }
     .auth-gate-card {
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      border: var(--card-border-width) solid var(--card-border);
       box-shadow: var(--card-shadow);
-      border-radius: 20px;
-      padding: 2.25rem 2rem;
+      border-radius: 16px;
+      padding: 2rem 1.85rem;
       max-width: 440px;
       width: 100%;
       text-align: center;
@@ -1563,7 +1394,7 @@
     .auth-gate-badge {
       width: 54px;
       height: 54px;
-      border-radius: 16px;
+      border-radius: 14px;
       background: var(--sub-card-bg);
       border: 1px solid var(--card-border);
       display: flex;
@@ -1573,25 +1404,26 @@
     }
     .auth-gate-btn {
       width: 100%;
-      padding: 0.8rem 1.2rem;
-      border-radius: 10px;
-      border: none;
-      background: var(--btn-gradient);
-      color: #ffffff;
-      font-size: 0.95rem;
-      font-weight: 600;
+      padding: 0.75rem 1.2rem;
+      border-radius: 9px;
+      border: 1.5px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      font-size: 0.94rem;
+      font-weight: 700;
+      font-family: inherit;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
-      box-shadow: 0 4px 14px var(--primary-glow);
-      transition: transform 0.15s ease, opacity 0.15s ease;
+      box-shadow: var(--btn-shadow);
+      transition: transform 0.12s ease, background 0.15s ease;
       text-decoration: none;
     }
     .auth-gate-btn:hover {
       transform: translateY(-1px);
-      opacity: 0.95;
+      background: var(--btn-hover-bg);
     }
     .user-chip {
       font-size: 0.78rem;
@@ -1658,21 +1490,9 @@
       </div>
 
       <div class="nav-actions">
-        <div class="theme-control-group">
-          <label for="themeSelect">🎨 風格：</label>
-          <select id="themeSelect" class="theme-select">
-            <option value="sakura">🌸 日系櫻花祭 (Morandi Sakura)</option>
-            <option value="saas">✨ 企業 SaaS 白金 (Linear / Apple)</option>
-            <option value="cyber">⚡ 旗艦科技暗黑 (Cyber Dark)</option>
-            <option value="navy">🏛️ 商務金融深藍 (Enterprise Navy)</option>
-            <option value="fluent">💼 微軟現代辦公 (Office Fluent)</option>
-          </select>
-        </div>
-        <button id="modeToggleBtn" class="mode-toggle-btn" title="切換深色 / 淺色模式">
-          <span id="modeIcon">🌙</span> <span id="modeText">切換深色</span>
-        </button>
-        <button id="vaultConfigBtn" class="nav-pill-btn" style="display: none;" title="管理雲端 Firestore 中的 Gemini 金鑰池與通知設定">🔑 金鑰池設定</button>
-        <button id="manualBtn" class="nav-pill-btn">📖 操作說明</button>
+        <button id="platformThemeBtn" type="button" class="nav-pill-btn" title="一鍵切換全站介面風格（經典活力黃 / 文青生活誌 / 楓之谷）">🎨 經典活力黃</button>
+        <button id="vaultConfigBtn" type="button" class="nav-pill-btn" style="display: none;" title="管理雲端 Firestore 中的 Gemini 金鑰池與通知設定">🔑 金鑰池設定</button>
+        <button id="manualBtn" type="button" class="nav-pill-btn">📖 操作說明</button>
         <a id="backToPlatformBtn" href="./#/today" class="nav-pill-btn" style="text-decoration: none;">← 返回協同平台</a>
       </div>
     </nav>
@@ -1954,116 +1774,70 @@
     }
 
     // -------------------------------------------------------------
+    // 與「經營 Team 營運協同平台」全站主題即時同步 (classic / editorial / maple)
     // -------------------------------------------------------------
-    // 主題與深淺色切換器 (Theme & Mode Switcher)
-    // -------------------------------------------------------------
-    // 各風格專屬代表色溫（切換下拉選單時自動套用最佳招牌模式，仍可手動切換深淺）
-    const THEME_DEFAULT_MODE = {
-      sakura: 'light', // 日系櫻花祭：莫蘭迪霧粉淺色
-      saas: 'light',   // 企業 SaaS 白金：極簡純白淺色
-      cyber: 'dark',   // 旗艦科技暗黑：深邃賽博暗黑
-      navy: 'dark',    // 商務金融深藍：華爾街深藍夜色
-      fluent: 'light'  // 微軟現代辦公：清爽日常淺色
+    const PLATFORM_THEME_KEY = 'yb_ui_theme';
+    const PLATFORM_THEME_LABELS = {
+      classic: '🎨 經典活力黃',
+      editorial: '📖 文青生活誌',
+      maple: '🍁 楓之谷'
     };
 
+    function normalizePlatformTheme(raw) {
+      return (raw === 'editorial' || raw === 'maple') ? raw : 'classic';
+    }
+
+    function applyPlatformTheme(theme, persist = false) {
+      const normalized = normalizePlatformTheme(theme);
+      document.documentElement.setAttribute('data-theme', normalized);
+      if (persist) {
+        try { localStorage.setItem(PLATFORM_THEME_KEY, normalized); } catch (e) {}
+      }
+      const btn = document.getElementById('platformThemeBtn');
+      if (btn) {
+        btn.textContent = PLATFORM_THEME_LABELS[normalized] || PLATFORM_THEME_LABELS.classic;
+      }
+    }
+
     function initThemeSwitcher() {
-      const themeSelect = document.getElementById('themeSelect');
-      const modeToggleBtn = document.getElementById('modeToggleBtn');
-
-      // 讀取歷史偏好或預設 (預設：日系櫻花祭 + 淺色模式)
-      const savedTheme = localStorage.getItem('renamer_theme') || 'sakura';
-      const savedMode = localStorage.getItem('renamer_mode') || THEME_DEFAULT_MODE[savedTheme] || 'light';
-
-      applyTheme(savedTheme, savedMode);
-
-      if (themeSelect) {
-        themeSelect.value = savedTheme;
-        themeSelect.addEventListener('change', (e) => {
-          const newTheme = e.target.value;
-          // 切換風格時，自動切換至該風格最具代表性的深/淺色模式（例如「旗艦科技暗黑」直接進入暗黑模式）
-          const signatureMode = THEME_DEFAULT_MODE[newTheme] || 'light';
-          applyTheme(newTheme, signatureMode);
-        });
-      }
-
-      if (modeToggleBtn) {
-        modeToggleBtn.addEventListener('click', () => {
-          const currentMode = document.documentElement.getAttribute('data-mode') || 'light';
-          const newMode = currentMode === 'dark' ? 'light' : 'dark';
-          const currentTheme = document.documentElement.getAttribute('data-theme') || 'sakura';
-          applyTheme(currentTheme, newMode);
-        });
-      }
-    }
-
-    function applyTheme(theme, mode) {
-      document.documentElement.setAttribute('data-theme', theme);
-      document.documentElement.setAttribute('data-mode', mode);
-      localStorage.setItem('renamer_theme', theme);
-      localStorage.setItem('renamer_mode', mode);
-
-      const modeIcon = document.getElementById('modeIcon');
-      const modeText = document.getElementById('modeText');
-      if (modeIcon && modeText) {
-        if (mode === 'dark') {
-          modeIcon.textContent = '☀️';
-          modeText.textContent = '切換淺色';
-        } else {
-          modeIcon.textContent = '🌙';
-          modeText.textContent = '切換深色';
+      let initialTheme = 'classic';
+      try {
+        if (window.parent && window.parent !== window) {
+          initialTheme = window.parent.document.documentElement.getAttribute('data-theme') || '';
         }
+      } catch (e) {}
+      if (!initialTheme) {
+        try { initialTheme = localStorage.getItem(PLATFORM_THEME_KEY) || 'classic'; } catch (e) {}
       }
+      applyPlatformTheme(initialTheme, false);
 
-      // 如果非櫻花主題，停止並隱藏櫻花花瓣
-      if (theme !== 'sakura') {
-        stopSakura();
-      } else if (isProcessing) {
-        startSakura();
-      }
-    }
+      // 內嵌於協同平台時，直接監聽外層平台 html[data-theme] 變化，達成 0 延遲無縫同步
+      try {
+        if (window.parent && window.parent !== window && window.parent.document?.documentElement) {
+          const parentRoot = window.parent.document.documentElement;
+          const obs = new MutationObserver(() => {
+            applyPlatformTheme(parentRoot.getAttribute('data-theme'), false);
+          });
+          obs.observe(parentRoot, { attributes: true, attributeFilter: ['data-theme'] });
+        }
+      } catch (e) {}
 
-    // -------------------------------------------------------------
-    // Sakura Festival Effect (僅在櫻花祭主題下生效)
-    // -------------------------------------------------------------
-    let sakuraInterval = null;
-    function startSakura() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      if (currentTheme !== 'sakura') return; // 非櫻花主題不啟動花瓣
-      if (document.getElementById('sakuraContainer')) return;
-      const container = document.createElement('div');
-      container.id = 'sakuraContainer';
-      container.className = 'sakura-container';
-      document.body.appendChild(container);
+      // 跨分頁開啟獨立大視窗時，透過 localStorage 事件即時同步全站風格
+      window.addEventListener('storage', (ev) => {
+        if (ev.key === PLATFORM_THEME_KEY) {
+          applyPlatformTheme(ev.newValue, false);
+        }
+      });
 
-      sakuraInterval = setInterval(() => {
-        const sakura = document.createElement('div');
-        sakura.className = 'sakura';
-        const size = Math.random() * 8 + 8; // 8px to 16px
-        sakura.style.width = size + 'px';
-        sakura.style.height = size + 'px';
-        sakura.style.left = Math.random() * 100 + 'vw';
-        sakura.style.animationDuration = (Math.random() * 3 + 4) + 's, ' + (Math.random() * 2 + 3) + 's';
-        
-        container.appendChild(sakura);
-        
-        // Remove after it falls (approx 8 seconds)
-        setTimeout(() => {
-          if(sakura.parentNode) sakura.remove();
-        }, 8000);
-      }, 300);
-    }
-    function stopSakura() {
-      if (sakuraInterval) {
-        clearInterval(sakuraInterval);
-        sakuraInterval = null;
-      }
-      const container = document.getElementById('sakuraContainer');
-      if(container) {
-        container.style.transition = 'opacity 1s';
-        container.style.opacity = '0';
-        setTimeout(() => {
-          if (container.parentNode) container.remove();
-        }, 1000);
+      // 獨立分頁模式下的全站風格切換鈕（循環切換：經典黃 -> 文青誌 -> 楓之谷）
+      const btn = document.getElementById('platformThemeBtn');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const cur = normalizePlatformTheme(document.documentElement.getAttribute('data-theme'));
+          const order = ['classic', 'editorial', 'maple'];
+          const next = order[(order.indexOf(cur) + 1) % order.length];
+          applyPlatformTheme(next, true);
+        });
       }
     }
 
@@ -2676,8 +2450,6 @@
       addConsoleLine('[系統] 啟動雙引擎佇列：第一線 Gemini 3.8 Flash 極速解析 ＋ 第二線自動深度救援...', 'system');
 
       try {
-        startSakura(); // 開始飄落櫻花 (僅在櫻花主題生效)
-        
         // 採用動態 while 迴圈：即使在辨識途中再拖曳新照片進來，也會無縫接續處理不漏單！
         while (isProcessing) {
           const item = fileQueue.find(i => i.status === 'waiting');
@@ -2710,7 +2482,6 @@
           sendDiscordError(`⚠️ **【系統異常】處理佇列時發生未預期錯誤:**\n${err.message}`);
         }
       } finally {
-        stopSakura(); // 停止飄落櫻花
         activeItemId = null;
         isProcessing = false;
         updateStats();

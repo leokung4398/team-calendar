@@ -1,5 +1,5 @@
 // AI 採購單據自動辨識與改名業務模組視圖
-// 採用同源 iframe 內嵌 ./renamer.html?embed=1，搭配雲端 Firestore 金鑰保險箱與後台權限矩陣控管
+// 採用同源 iframe 內嵌 ./renamer.html?embed=1，自動同步全站三套主題（經典黃 / 文青誌 / 楓之谷），搭配雲端 Firestore 金鑰保險箱與後台權限矩陣控管
 import { state, hasModulePermission } from '../data.js';
 
 export function mountRenamer(el) {
@@ -20,6 +20,7 @@ export function mountRenamer(el) {
   }
 
   const RENAMER_URL = './renamer.html';
+  const RENAMER_EMBED_URL = './renamer.html?embed=1&v=20261121v79';
   const isMobile = window.matchMedia('(max-width: 860px)').matches;
 
   el.innerHTML = `
@@ -52,15 +53,15 @@ export function mountRenamer(el) {
         </div>
       </div>
     ` : `
-      <div class="card bulletin-frame-card" style="padding:0; overflow:hidden; border-radius:12px; height:calc(100dvh - 150px); min-height:560px; position:relative; box-shadow:0 4px 20px rgba(15, 23, 42, 0.06); border:1px solid var(--line);">
-        <div class="bulletin-loading-mask" data-renamer-loading>
+      <div class="bulletin-frame-card" style="padding:0; overflow:hidden; height:calc(100dvh - 140px); min-height:600px; position:relative; background:transparent; border:none; box-shadow:none;">
+        <div class="bulletin-loading-mask" data-renamer-loading style="border-radius:12px;">
           <div>正在載入 AI 採購單據辨識改名工具…</div>
           <a href="${RENAMER_URL}" target="_blank" rel="noopener noreferrer" class="btn sm ghost" data-renamer-fallback hidden style="margin-top:10px;text-decoration:none">載入較慢？點此直接另開獨立大視窗 ↗</a>
         </div>
         <iframe
           id="renamer-iframe"
-          src="${RENAMER_URL}?embed=1"
-          style="width:100%; height:100%; border:none; display:block; background:#f8fafc;"
+          src="${RENAMER_EMBED_URL}"
+          style="width:100%; height:100%; border:none; display:block; background:transparent;"
           title="AI 採購單據自動辨識與改名工具"
           allow="clipboard-write; clipboard-read"
         ></iframe>
