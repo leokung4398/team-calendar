@@ -12193,3 +12193,9 @@ html[data-theme="editorial"] thead .admin-sticky-col {
     grid-template-columns: 1fr;
   }
 }
+
+/* 內嵌獨立子系統頁（採購佈告欄 / AI 單據辨識改名）：自動隱藏右下角外層懸浮球，完全讓出子系統右下角閱讀打卡與字級縮放熱區 */
+body.embed-subapp-route .chat-fab-btn,
+body.embed-subapp-route .dr-commuter-fab-wrap {
+  display: none !important;
+}

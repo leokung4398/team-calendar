@@ -175,7 +175,7 @@ async function boot() {
 
   async function showShell(d) {
     shellCleanup?.();
-    const V = '20261121v79';
+    const V = '20261121v80';
     // 首屏關鍵模組（今日動態、每日回報懸浮球、即時聊天室、新增行程）並行秒載，其餘分頁採用隨選動態載入（Lazy Route Loading）
     const [
       { mountToday },
@@ -473,6 +473,8 @@ async function boot() {
       current?.destroy?.();
       current = null;
       currentRoute = key;
+      document.body.dataset.route = key;
+      document.body.classList.toggle('embed-subapp-route', key === 'bulletin' || key === 'renamer');
       renderTabs();
       main.innerHTML = '';
       const view = document.createElement('div');
@@ -728,6 +730,8 @@ async function boot() {
     checkMeetingReminder();
 
     shellCleanup = () => {
+      document.body.classList.remove('embed-subapp-route');
+      delete document.body.dataset.route;
       window.removeEventListener('hashchange', route);
       document.removeEventListener('click', onDocClick);
       clearInterval(meetInterval);
